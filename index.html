@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Web-based tool for assessing biosecurity risks in projects">
     <title>Biosecurity Risk Assessment Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -740,6 +740,126 @@
             opacity: 1;
         }
 
+        .heat-map-legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .heat-map-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+        
+        .heat-map-legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .heat-map {
+            width: 100%;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .heat-map-row {
+            display: flex;
+            flex: 1;
+            gap: 5px;
+        }
+        
+        .heat-map-cell {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            min-height: 40px; /* Larger cells for mobile */
+            transition: all 0.2s;
+        }
+        
+        /* Better mobile form layout */
+        @media (max-width: 576px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0 !important;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+            
+            .button {
+                padding: 14px 20px;
+                font-size: 16px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+            
+            /* Make map full width on mobile */
+            .map-container {
+                margin-left: -15px;
+                margin-right: -15px;
+                width: calc(100% + 30px);
+                border-radius: 0;
+            }
+            
+            /* Adjust progress steps for mobile */
+            .progress-step {
+                font-size: 12px;
+                padding-top: 20px;
+            }
+            
+            .progress-step:before {
+                width: 16px;
+                height: 16px;
+            }
+        }
+        
+        /* Unsaved changes indicator */
+        .unsaved-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .unsaved-indicator.visible {
+            opacity: 1;
+        }
+        
         /* Scenario Modeling */
         .scenario-container {
             margin-top: 30px;
@@ -1462,6 +1582,11 @@
     </style>
 </head>
 <body>
+    <div class="unsaved-indicator" id="unsaved-indicator">
+        <i class="fas fa-exclamation-circle"></i>
+        Unsaved Changes
+    </div>
+    
     <div class="container">
         <header>
             <h1><i class="fas fa-shield-virus"></i> Biosecurity Risk Assessment Tool</h1>
@@ -1924,16 +2049,28 @@
             </div>
 
             <!-- Heat Map Visualization -->
-            <div class="heat-map-container">
-                <h3>Risk Heat Map</h3>
-                <p>Visual representation of risk factors and their relative impact.</p>
-                <div class="heat-map" id="heat-map"></div>
+                <!-- Modified Heat Map Section -->
+    <div class="heat-map-container">
+        <h3>Risk Heat Map</h3>
+        <p>Visual representation of risk factors and their relative impact.</p>
+        
+        <div class="heat-map-legend">
+            <div class="heat-map-legend-item">
+                <div class="heat-map-legend-color" style="background-color: #388e3c;"></div>
+                <span>Low Risk (0-30)</span>
             </div>
-
-            <div class="recommendations-container">
-                <h3><i class="fas fa-lightbulb"></i> Recommendations</h3>
-                <div id="recommendations" class="recommendations-list"></div>
+            <div class="heat-map-legend-item">
+                <div class="heat-map-legend-color" style="background-color: #ffa000;"></div>
+                <span>Medium Risk (31-70)</span>
             </div>
+            <div class="heat-map-legend-item">
+                <div class="heat-map-legend-color" style="background-color: #d32f2f;"></div>
+                <span>High Risk (71-100)</span>
+            </div>
+        </div>
+        
+        <div class="heat-map" id="heat-map"></div>
+    </div>
 
             <!-- Notes Section -->
             <div class="form-group notes-section">
