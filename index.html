@@ -2128,12 +2128,6 @@
             
             // Load photos for current section
             loadPhotosFromLocalStorage();
-            
-            // Update heat map when results section is shown
-            if (index === 3) {
-                updateHeatMap();
-            }
-        }
 
         function nextSection(currentId, nextId) {
             if (validateSection(currentId)) {
@@ -2293,6 +2287,28 @@
             }
         }
 
+        // Show resultsAdd commentMore actions
+                document.getElementById('scenario-result').classList.add('active');
+            });
+        }
+        
+        function setRiskLevel(elementId, score) {
+            const element = document.getElementById(elementId);
+            
+            if (score <= 30) {
+                element.textContent = "Low Risk";
+                element.className = "risk-level low";
+            } else if (score <= 60) {
+                element.textContent = "Moderate Risk";
+                element.className = "risk-level medium";
+            } else {
+                element.textContent = "High Risk";
+                element.className = "risk-level high";
+            }
+        }
+
+
+            
         // Recommendation Engine
         function updateRecommendations() {
             const recommendations = [];
