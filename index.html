@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Web-based tool for assessing biosecurity risks in projects">
     <title>Biosecurity Risk Assessment Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -678,257 +678,9 @@
             height: 300px !important;
         }
 
-        /* Heat Map Styling */
-        .heat-map-container {
-            margin-top: 20px;
-            width: 100%;
-            height: 300px;
-            position: relative;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .heat-map {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .heat-map-row {
-            display: flex;
-            flex: 1;
-        }
-
-        .heat-map-cell {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            transition: all 0.3s;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .heat-map-cell:hover {
-            transform: scale(1.05);
-            z-index: 1;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        }
-
-        .heat-map-cell .cell-tooltip {
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            white-space: nowrap;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 10;
-        }
-
-        .heat-map-cell:hover .cell-tooltip {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .heat-map-legend {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .heat-map-legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-        }
-        
-        .heat-map-legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-        }
-        
-        .heat-map {
-            width: 100%;
-            height: 300px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        
-        .heat-map-row {
-            display: flex;
-            flex: 1;
-            gap: 5px;
-        }
-        
-        .heat-map-cell {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            position: relative;
-            min-height: 40px; /* Larger cells for mobile */
-            transition: all 0.2s;
-        }
-        
-        /* Better mobile form layout */
-        @media (max-width: 576px) {
-            .form-row {
-                flex-direction: column;
-                gap: 0 !important;
-            }
-            
-            .form-group {
-                margin-bottom: 15px;
-            }
-            
-            .button {
-                padding: 14px 20px;
-                font-size: 16px;
-            }
-            
-            .card {
-                padding: 15px;
-            }
-            
-            h1 {
-                font-size: 24px;
-            }
-            
-            h2 {
-                font-size: 20px;
-            }
-            
-            /* Make map full width on mobile */
-            .map-container {
-                margin-left: -15px;
-                margin-right: -15px;
-                width: calc(100% + 30px);
-                border-radius: 0;
-            }
-            
-            /* Adjust progress steps for mobile */
-            .progress-step {
-                font-size: 12px;
-                padding-top: 20px;
-            }
-            
-            .progress-step:before {
-                width: 16px;
-                height: 16px;
-            }
-        }
-        
-        /* Unsaved changes indicator */
-        .unsaved-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #e74c3c;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 1000;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .unsaved-indicator.visible {
-            opacity: 1;
-        }
-        
-        /* Scenario Modeling */
-        .scenario-container {
-            margin-top: 30px;
-            background: #f0f7f6;
-            padding: 20px;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-
-        .dark-mode .scenario-container {
-            background: #2a3a38;
-        }
-
-        .scenario-controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .scenario-select {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .scenario-result {
-            margin-top: 20px;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            display: none;
-            transition: all 0.3s;
-        }
-
-        .dark-mode .scenario-result {
-            background: #333;
-        }
-
-        .scenario-result.active {
-            display: block;
-        }
-
-        .scenario-comparison {
-            display: flex;
-            gap: 20px;
-            margin-top: 15px;
-        }
-
-        .scenario-comparison-item {
-            flex: 1;
-            text-align: center;
-            padding: 10px;
-            border-radius: 8px;
-            background: #e0f0ee;
-            transition: all 0.3s;
-        }
-
-        .dark-mode .scenario-comparison-item {
-            background: #2a4a45;
-        }
-
-        .scenario-comparison-value {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
         /* Recommendations */
         .recommendations-container {
+            margin-top: 20px;
             background: #f9f9f9;
             padding: 20px;
             border-radius: 8px;
@@ -1556,10 +1308,6 @@
                 right: auto;
                 margin-bottom: 15px;
             }
-
-            .scenario-controls {
-                flex-direction: column;
-            }
         }
 
         @media (max-width: 480px) {
@@ -1582,11 +1330,6 @@
     </style>
 </head>
 <body>
-    <div class="unsaved-indicator" id="unsaved-indicator">
-        <i class="fas fa-exclamation-circle"></i>
-        Unsaved Changes
-    </div>
-    
     <div class="container">
         <header>
             <h1><i class="fas fa-shield-virus"></i> Biosecurity Risk Assessment Tool</h1>
@@ -1934,60 +1677,6 @@
                 </div>
             </div>
 
-            <!-- Scenario Modeling Section -->
-            <div class="scenario-container">
-                <h3><i class="fas fa-random"></i> Scenario Modeling</h3>
-                <p>Explore "what-if" scenarios to understand how different factors affect your risk profile.</p>
-                
-                <div class="scenario-controls">
-                    <div class="form-group scenario-select">
-                        <label for="scenario-factor">Select Factor:</label>
-                        <select id="scenario-factor" class="form-control">
-                            <option value="invasive-species">Invasive Species Risk</option>
-                            <option value="pathogen-spread">Pathogen Spread Risk</option>
-                            <option value="contamination">Contamination Risk</option>
-                            <option value="transportation">Transportation Risk</option>
-                            <option value="quarantine-breach">Quarantine Breach Risk</option>
-                            <option value="training-compliance">Training Compliance</option>
-                            <option value="supply-chain">Supply Chain Risk</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group scenario-select">
-                        <label for="scenario-value">Set Value:</label>
-                        <input type="range" id="scenario-value" min="0" max="100" value="50" class="form-control">
-                        <output id="scenario-value-display">50</output>
-                    </div>
-                    
-                    <button type="button" class="button primary-button" id="run-scenario">
-                        <i class="fas fa-play"></i> Run Scenario
-                    </button>
-                </div>
-                
-                <div class="scenario-result" id="scenario-result">
-                    <h4>Scenario Results</h4>
-                    <p>Adjusting <span id="scenario-factor-name">Invasive Species Risk</span> to <span id="scenario-adjusted-value">50</span> would result in:</p>
-                    
-                    <div class="scenario-comparison">
-                        <div class="scenario-comparison-item">
-                            <div>Current Risk Score</div>
-                            <div class="scenario-comparison-value" id="current-risk-score">0</div>
-                            <div class="risk-level" id="current-risk-level">Low Risk</div>
-                        </div>
-                        <div class="scenario-comparison-item">
-                            <div>Scenario Risk Score</div>
-                            <div class="scenario-comparison-value" id="scenario-risk-score">0</div>
-                            <div class="risk-level" id="scenario-risk-level">Low Risk</div>
-                        </div>
-                        <div class="scenario-comparison-item">
-                            <div>Difference</div>
-                            <div class="scenario-comparison-value" id="scenario-difference">0</div>
-                            <div id="scenario-impact">No change</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Photo Upload Section -->
             <div class="form-group photo-upload">
                 <label>Add Risk Evidence Photos: <span class="tooltip"><i class="fas fa-info-circle"></i>
@@ -2048,29 +1737,10 @@
                 </div>
             </div>
 
-            <!-- Heat Map Visualization -->
-                <!-- Modified Heat Map Section -->
-    <div class="heat-map-container">
-        <h3>Risk Heat Map</h3>
-        <p>Visual representation of risk factors and their relative impact.</p>
-        
-        <div class="heat-map-legend">
-            <div class="heat-map-legend-item">
-                <div class="heat-map-legend-color" style="background-color: #388e3c;"></div>
-                <span>Low Risk (0-30)</span>
+            <div class="recommendations-container">
+                <h3><i class="fas fa-lightbulb"></i> Recommendations</h3>
+                <div id="recommendations" class="recommendations-list"></div>
             </div>
-            <div class="heat-map-legend-item">
-                <div class="heat-map-legend-color" style="background-color: #ffa000;"></div>
-                <span>Medium Risk (31-70)</span>
-            </div>
-            <div class="heat-map-legend-item">
-                <div class="heat-map-legend-color" style="background-color: #d32f2f;"></div>
-                <span>High Risk (71-100)</span>
-            </div>
-        </div>
-        
-        <div class="heat-map" id="heat-map"></div>
-    </div>
 
             <!-- Notes Section -->
             <div class="form-group notes-section">
@@ -2258,9 +1928,6 @@
             // Initialize the radar chart
             initializeRadarChart();
             
-            // Initialize the heat map
-            initializeHeatMap();
-            
             // Set up event listeners
             setupEventListeners();
             
@@ -2316,7 +1983,6 @@
                 
                 // Update charts
                 updateRadarChart();
-                updateHeatMap();
             });
         }
 
@@ -2463,11 +2129,6 @@
             
             // Load photos for current section
             loadPhotosFromLocalStorage();
-            
-            // Update heat map when results section is shown
-            if (index === 3) {
-                updateHeatMap();
-            }
         }
 
         function nextSection(currentId, nextId) {
@@ -2625,211 +2286,6 @@
                 riskLevelElement.className = "risk-level high";
                 riskMeterFill.className = "risk-meter-fill high";
                 riskMeterFill.style.width = `${totalScore}%`;
-            }
-        }
-
-        // Heat Map Functions
-        function initializeHeatMap() {
-            const heatMap = document.getElementById('heat-map');
-            heatMap.innerHTML = '';
-            
-            const riskFactors = [
-                { id: 'invasive-species', name: 'Invasive Species', weight: 0.28 },
-                { id: 'pathogen-spread', name: 'Pathogen Spread', weight: 0.22 },
-                { id: 'contamination', name: 'Contamination', weight: 0.18 },
-                { id: 'transportation', name: 'Transportation', weight: 0.12 },
-                { id: 'quarantine-breach', name: 'Quarantine Breach', weight: 0.10 },
-                { id: 'training-compliance', name: 'Training', weight: 0.10 },
-                { id: 'supply-chain', name: 'Supply Chain', weight: 0.10 }
-            ];
-            
-            // Create 5x5 grid for visualization
-            const gridSize = 5;
-            const totalCells = gridSize * gridSize;
-            
-            // Calculate cell weights based on risk factor weights
-            const cellWeights = [];
-            let remainingWeight = 1;
-            
-            // Distribute weights to cells based on risk factor weights
-            riskFactors.forEach(factor => {
-                const cellsForFactor = Math.max(1, Math.round(factor.weight * totalCells));
-                const weightPerCell = factor.weight / cellsForFactor;
-                
-                for (let i = 0; i < cellsForFactor; i++) {
-                    cellWeights.push({
-                        factor: factor,
-                        weight: weightPerCell
-                    });
-                }
-                
-                remainingWeight -= factor.weight;
-            });
-            
-            // Fill remaining cells with neutral weight
-            while (cellWeights.length < totalCells) {
-                cellWeights.push({
-                    factor: null,
-                    weight: 0
-                });
-            }
-            
-            // Shuffle cells for better visual distribution
-            for (let i = cellWeights.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [cellWeights[i], cellWeights[j]] = [cellWeights[j], cellWeights[i]];
-            }
-            
-            // Create heat map rows and cells
-            for (let row = 0; row < gridSize; row++) {
-                const heatMapRow = document.createElement('div');
-                heatMapRow.className = 'heat-map-row';
-                
-                for (let col = 0; col < gridSize; col++) {
-                    const index = row * gridSize + col;
-                    const cellData = cellWeights[index];
-                    
-                    const cell = document.createElement('div');
-                    cell.className = 'heat-map-cell';
-                    
-                    if (cellData.factor) {
-                        const value = parseInt(document.getElementById(cellData.factor.id).value);
-                        const weightedValue = value * cellData.weight;
-                        
-                        // Set color based on weighted value
-                        let color, textColor = '#fff';
-                        
-                        if (weightedValue > 70 * cellData.weight) {
-                            color = '#d32f2f'; // Red
-                        } else if (weightedValue > 30 * cellData.weight) {
-                            color = '#ffa000'; // Orange
-                        } else {
-                            color = '#388e3c'; // Green
-                        }
-                        
-                        cell.style.backgroundColor = color;
-                        cell.style.color = textColor;
-                        
-                        // Add tooltip
-                        const tooltip = document.createElement('div');
-                        tooltip.className = 'cell-tooltip';
-                        tooltip.textContent = `${cellData.factor.name}: ${value}`;
-                        cell.appendChild(tooltip);
-                    } else {
-                        cell.style.backgroundColor = '#f5f5f5';
-                        cell.style.color = '#333';
-                        
-                        if (document.body.classList.contains('dark-mode')) {
-                            cell.style.backgroundColor = '#444';
-                            cell.style.color = '#e0e0e0';
-                        }
-                    }
-                    
-                    heatMapRow.appendChild(cell);
-                }
-                
-                heatMap.appendChild(heatMapRow);
-            }
-        }
-        
-        function updateHeatMap() {
-            initializeHeatMap(); // For simplicity, we're regenerating the heat map
-        }
-
-        // Scenario Modeling Functions
-        function setupScenarioModeling() {
-            const scenarioFactor = document.getElementById('scenario-factor');
-            const scenarioValue = document.getElementById('scenario-value');
-            const scenarioValueDisplay = document.getElementById('scenario-value-display');
-            const runScenarioBtn = document.getElementById('run-scenario');
-            
-            // Update scenario value display
-            scenarioValue.addEventListener('input', function() {
-                scenarioValueDisplay.textContent = this.value;
-            });
-            
-            // Update factor name when selection changes
-            scenarioFactor.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                document.getElementById('scenario-factor-name').textContent = selectedOption.text;
-            });
-            
-            // Run scenario when button is clicked
-            runScenarioBtn.addEventListener('click', function() {
-                const selectedFactor = scenarioFactor.value;
-                const scenarioValue = parseInt(document.getElementById('scenario-value').value);
-                
-                // Get current values
-                const currentValues = {};
-                let currentScore = 0;
-                
-                document.querySelectorAll("input[type='range']").forEach(slider => {
-                    currentValues[slider.id] = parseInt(slider.value);
-                    const weight = parseFloat(slider.dataset.weight) || 1;
-                    currentScore += parseInt(slider.value) * weight;
-                });
-                
-                // Calculate scenario score
-                let scenarioScore = 0;
-                
-                document.querySelectorAll("input[type='range']").forEach(slider => {
-                    const weight = parseFloat(slider.dataset.weight) || 1;
-                    if (slider.id === selectedFactor) {
-                        scenarioScore += scenarioValue * weight;
-                    } else {
-                        scenarioScore += currentValues[slider.id] * weight;
-                    }
-                });
-                
-                // Cap the scores at 100
-                currentScore = Math.min(Math.round(currentScore), 100);
-                scenarioScore = Math.min(Math.round(scenarioScore), 100);
-                
-                // Update scenario results
-                document.getElementById('current-risk-score').textContent = currentScore;
-                document.getElementById('scenario-risk-score').textContent = scenarioScore;
-                document.getElementById('scenario-adjusted-value').textContent = scenarioValue;
-                document.getElementById('scenario-difference').textContent = scenarioScore - currentScore;
-                
-                // Set risk levels
-                setRiskLevel('current-risk-level', currentScore);
-                setRiskLevel('scenario-risk-level', scenarioScore);
-                
-                // Set impact description
-                const difference = scenarioScore - currentScore;
-                let impactText = '';
-                
-                if (difference > 15) {
-                    impactText = 'Significant increase in risk';
-                } else if (difference > 5) {
-                    impactText = 'Moderate increase in risk';
-                } else if (difference > -5) {
-                    impactText = 'Minimal change in risk';
-                } else if (difference > -15) {
-                    impactText = 'Moderate decrease in risk';
-                } else {
-                    impactText = 'Significant decrease in risk';
-                }
-                
-                document.getElementById('scenario-impact').textContent = impactText;
-                
-                // Show results
-                document.getElementById('scenario-result').classList.add('active');
-            });
-        }
-        
-        function setRiskLevel(elementId, score) {
-            const element = document.getElementById(elementId);
-            
-            if (score <= 30) {
-                element.textContent = "Low Risk";
-                element.className = "risk-level low";
-            } else if (score <= 60) {
-                element.textContent = "Moderate Risk";
-                element.className = "risk-level medium";
-            } else {
-                element.textContent = "High Risk";
-                element.className = "risk-level high";
             }
         }
 
@@ -4168,4 +3624,4 @@
         }
     </script>
 </body>
-    </html>
+</html>
