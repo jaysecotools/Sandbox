@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Web-based tool for assessing biosecurity risks in projects">
     <title>Biosecurity Risk Assessment Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -98,7 +98,6 @@
             margin-bottom: 30px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: background-color 0.3s;
-            position: relative;
         }
 
         .dark-mode header {
@@ -679,10 +678,11 @@
             height: 300px !important;
         }
 
-        /* Improved Heat Map Styling */
+        /* Heat Map Styling */
         .heat-map-container {
             margin-top: 20px;
             width: 100%;
+            height: 300px;
             position: relative;
             border-radius: 8px;
             overflow: hidden;
@@ -690,15 +690,9 @@
 
         .heat-map {
             width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .dark-mode .heat-map {
-            border-color: #444;
         }
 
         .heat-map-row {
@@ -716,9 +710,6 @@
             transition: all 0.3s;
             cursor: pointer;
             position: relative;
-            min-height: 40px;
-            aspect-ratio: 1;
-            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .heat-map-cell:hover {
@@ -747,28 +738,6 @@
         .heat-map-cell:hover .cell-tooltip {
             visibility: visible;
             opacity: 1;
-        }
-
-        .heat-map-legend {
-            display: flex;
-            justify-content: center;
-            margin-top: 15px;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-        }
-
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            margin-right: 5px;
-            border: 1px solid rgba(0,0,0,0.1);
         }
 
         /* Scenario Modeling */
@@ -1471,18 +1440,6 @@
             .scenario-controls {
                 flex-direction: column;
             }
-
-            /* Improved heat map for mobile */
-            .heat-map-cell {
-                min-height: 30px;
-                font-size: 10px;
-            }
-
-            .heat-map-legend {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-            }
         }
 
         @media (max-width: 480px) {
@@ -1500,12 +1457,6 @@
 
             .welcome-content {
                 padding: 15px;
-            }
-
-            /* Further heat map improvements for small screens */
-            .heat-map-cell {
-                min-height: 25px;
-                font-size: 8px;
             }
         }
     </style>
@@ -1972,25 +1923,11 @@
                 </div>
             </div>
 
-            <!-- Improved Heat Map Visualization -->
+            <!-- Heat Map Visualization -->
             <div class="heat-map-container">
                 <h3>Risk Heat Map</h3>
-                <p>Visual representation of risk factors and their relative impact. Click cells for details.</p>
+                <p>Visual representation of risk factors and their relative impact.</p>
                 <div class="heat-map" id="heat-map"></div>
-                <div class="heat-map-legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #4CAF50;"></div>
-                        <span>Low Risk (0-30)</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #FFC107;"></div>
-                        <span>Medium Risk (31-70)</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background-color: #F44336;"></div>
-                        <span>High Risk (71-100)</span>
-                    </div>
-                </div>
             </div>
 
             <div class="recommendations-container">
@@ -2098,7 +2035,6 @@
             <div class="confirmation-buttons">
                 <button id="confirm-cancel" class="button secondary-button">Cancel</button>
                 <button id="confirm-leave" class="button primary-button">Leave Without Saving</button>
-                <button id="confirm-save" class="button save-progress-button">Save & Continue</button>
             </div>
         </div>
     </div>
@@ -2555,7 +2491,7 @@
             }
         }
 
-        // Improved Heat Map Functions
+        // Heat Map Functions
         function initializeHeatMap() {
             const heatMap = document.getElementById('heat-map');
             heatMap.innerHTML = '';
@@ -2626,9 +2562,9 @@
                         // Set color based on weighted value
                         let color, textColor = '#fff';
                         
-                        if (value > 70) {
+                        if (weightedValue > 70 * cellData.weight) {
                             color = '#d32f2f'; // Red
-                        } else if (value > 30) {
+                        } else if (weightedValue > 30 * cellData.weight) {
                             color = '#ffa000'; // Orange
                         } else {
                             color = '#388e3c'; // Green
@@ -2642,11 +2578,6 @@
                         tooltip.className = 'cell-tooltip';
                         tooltip.textContent = `${cellData.factor.name}: ${value}`;
                         cell.appendChild(tooltip);
-                        
-                        // Add click event for mobile users
-                        cell.addEventListener('click', function() {
-                            alert(`${cellData.factor.name}\nScore: ${value}\nWeight: ${(cellData.weight * 100).toFixed(1)}%`);
-                        });
                     } else {
                         cell.style.backgroundColor = '#f5f5f5';
                         cell.style.color = '#333';
@@ -3118,3 +3049,986 @@
             const currentData = JSON.parse(localStorage.getItem('biosecurityAssessmentData') || '{}');
             if (!currentData.photos) return;
             
+            // Determine which section we're in and load appropriate photos
+            let previewId, section;
+            switch(currentSection) {
+                case 0: // Project section
+                    previewId = 'photo-preview';
+                    section = 'project';
+                    break;
+                case 1: // Site section
+                    previewId = 'photo-preview-site';
+                    section = 'site';
+                    break;
+                case 2: // Risk section
+                    previewId = 'photo-preview-risk';
+                    section = 'risk';
+                    break;
+                default:
+                    return;
+            }
+            
+            const photoPreview = document.getElementById(previewId);
+            if (!photoPreview) return;
+            
+            photoPreview.innerHTML = '';
+            
+            if (currentData.photos[section]) {
+                currentData.photos[section].forEach((photoSrc, index) => {
+                    const photoDiv = document.createElement('div');
+                    photoDiv.className = 'photo-preview';
+                    
+                    const img = document.createElement('img');
+                    img.src = photoSrc;
+                    img.alt = `${section} photo ${index + 1}`;
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-photo';
+                    deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    deleteBtn.setAttribute('aria-label', `Delete ${section} photo ${index + 1}`);
+                    deleteBtn.addEventListener('click', () => {
+                        photoDiv.remove();
+                        savePhotosToLocalStorage(section);
+                        markAsChanged();
+                    });
+                    
+                    photoDiv.appendChild(img);
+                    photoDiv.appendChild(deleteBtn);
+                    photoPreview.appendChild(photoDiv);
+                });
+            }
+        }
+
+        // Data Management Functions
+        function saveDataToLocalStorage() {
+            const data = {
+                projectDetails: {
+                    name: document.getElementById('project-name').value,
+                    location: document.getElementById('location').value,
+                    coordinates: currentLatLng,
+                    assessor: document.getElementById('assessor-name').value,
+                    date: document.getElementById('date').value,
+                    description: document.getElementById('project-description').value,
+                    purpose: document.getElementById('project-purpose').value
+                },
+                siteInfo: {
+                    floraFauna: document.getElementById('flora-fauna').value,
+                    environmentalFeatures: Array.from(document.getElementById('environmental-features').selectedOptions)
+                        .map(option => option.value),
+                    distanceEcosystem: document.getElementById('distance-ecosystem').value,
+                    distanceInfrastructure: document.getElementById('distance-infrastructure').value,
+                    landUseHistory: document.getElementById('land-use-history').value,
+                    currentActivities: document.getElementById('current-activities').value,
+                    accessibility: document.getElementById('accessibility').value,
+                    siteNotes: document.getElementById('site-notes').value
+                },
+                riskMetrics: {
+                    invasiveSpecies: document.getElementById('invasive-species').value,
+                    pathogenSpread: document.getElementById('pathogen-spread').value,
+                    contamination: document.getElementById('contamination').value,
+                    transportation: document.getElementById('transportation').value,
+                    quarantineBreach: document.getElementById('quarantine-breach').value,
+                    trainingCompliance: document.getElementById('training-compliance').value,
+                    supplyChain: document.getElementById('supply-chain').value,
+                    riskNotes: document.getElementById('risk-notes').value
+                },
+                resultsNotes: document.getElementById('results-notes').value,
+                photos: {},
+                theme: document.body.classList.contains('dark-mode') ? 'dark' : 'light'
+            };
+            
+            // Save photos from all sections
+            ['project', 'site', 'risk'].forEach(section => {
+                let previewId;
+                switch(section) {
+                    case 'project':
+                        previewId = 'photo-preview';
+                        break;
+                    case 'site':
+                        previewId = 'photo-preview-site';
+                        break;
+                    case 'risk':
+                        previewId = 'photo-preview-risk';
+                        break;
+                }
+                
+                const photoPreview = document.getElementById(previewId);
+                if (photoPreview) {
+                    data.photos[section] = Array.from(photoPreview.querySelectorAll('img')).map(img => img.src);
+                }
+            });
+            
+            localStorage.setItem('biosecurityAssessmentData', JSON.stringify(data));
+            hasUnsavedChanges = false;
+            
+            // Show save confirmation
+            const saveButtons = document.querySelectorAll('.save-progress-button');
+            saveButtons.forEach(button => {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Saved!';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+
+        function loadSavedData() {
+            const savedData = localStorage.getItem('biosecurityAssessmentData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                
+                // Restore theme if saved
+                if (data.theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+                }
+                
+                // Project Details
+                if (data.projectDetails) {
+                    document.getElementById('project-name').value = data.projectDetails.name || '';
+                    document.getElementById('location').value = data.projectDetails.location || '';
+                    document.getElementById('assessor-name').value = data.projectDetails.assessor || '';
+                    document.getElementById('date').value = data.projectDetails.date || '';
+                    document.getElementById('project-description').value = data.projectDetails.description || '';
+                    document.getElementById('project-purpose').value = data.projectDetails.purpose || '';
+                    
+                    // Restore map position if coordinates exist
+                    if (data.projectDetails.coordinates) {
+                        currentLatLng = data.projectDetails.coordinates;
+                        updateMapMarker(currentLatLng);
+                        updateLocationInput(currentLatLng);
+                    }
+                }
+                
+                // Site Information
+                if (data.siteInfo) {
+                    document.getElementById('flora-fauna').value = data.siteInfo.floraFauna || '';
+                    
+                    if (data.siteInfo.environmentalFeatures) {
+                        const featuresSelect = document.getElementById('environmental-features');
+                        Array.from(featuresSelect.options).forEach(option => {
+                            option.selected = data.siteInfo.environmentalFeatures.includes(option.value);
+                        });
+                    }
+                    
+                    document.getElementById('distance-ecosystem').value = data.siteInfo.distanceEcosystem || '';
+                    document.getElementById('distance-infrastructure').value = data.siteInfo.distanceInfrastructure || '';
+                    document.getElementById('land-use-history').value = data.siteInfo.landUseHistory || '';
+                    document.getElementById('current-activities').value = data.siteInfo.currentActivities || '';
+                    document.getElementById('accessibility').value = data.siteInfo.accessibility || '';
+                    document.getElementById('site-notes').value = data.siteInfo.siteNotes || '';
+                }
+                
+                // Risk Metrics
+                if (data.riskMetrics) {
+                    document.getElementById('invasive-species').value = data.riskMetrics.invasiveSpecies || '0';
+                    document.getElementById('pathogen-spread').value = data.riskMetrics.pathogenSpread || '0';
+                    document.getElementById('contamination').value = data.riskMetrics.contamination || '0';
+                    document.getElementById('transportation').value = data.riskMetrics.transportation || '0';
+                    document.getElementById('quarantine-breach').value = data.riskMetrics.quarantineBreach || '0';
+                    document.getElementById('training-compliance').value = data.riskMetrics.trainingCompliance || '0';
+                    document.getElementById('supply-chain').value = data.riskMetrics.supplyChain || '0';
+                    document.getElementById('risk-notes').value = data.riskMetrics.riskNotes || '';
+                    
+                    // Trigger updates for sliders
+                    document.querySelectorAll("input[type='range']").forEach(slider => {
+                        slider.dispatchEvent(new Event('input'));
+                    });
+                }
+                
+                // Results Notes
+                if (data.resultsNotes) {
+                    document.getElementById('results-notes').value = data.resultsNotes || '';
+                }
+                
+                // Photos will be loaded when the section is shown
+            }
+        }
+
+        function saveDataToCSV() {
+            const headers = [
+                "Category", "Field", "Value"
+            ];
+
+            const data = [
+                ["Project Details", "Project Name", document.getElementById("project-name").value || "N/A"],
+                ["Project Details", "Location", document.getElementById("location").value || "N/A"],
+                ["Project Details", "Coordinates", `${currentLatLng.lat.toFixed(6)}, ${currentLatLng.lng.toFixed(6)}`],
+                ["Project Details", "Assessor Name", document.getElementById("assessor-name").value || "N/A"],
+                ["Project Details", "Date of Assessment", document.getElementById("date").value || "N/A"],
+                ["Project Details", "Project Description", document.getElementById("project-description").value || "N/A"],
+                ["Project Details", "Project Purpose", document.getElementById("project-purpose").value || "N/A"],
+                
+                ["Site Information", "Flora & Fauna", document.getElementById("flora-fauna").value || "N/A"],
+                ["Site Information", "Environmental Features", Array.from(document.getElementById("environmental-features").selectedOptions)
+                    .map(option => option.value).join(", ") || "N/A"],
+                ["Site Information", "Distance to Sensitive Ecosystems (km)", document.getElementById("distance-ecosystem").value || "N/A"],
+                ["Site Information", "Distance to Critical Infrastructure (km)", document.getElementById("distance-infrastructure").value || "N/A"],
+                ["Site Information", "Land Use History", document.getElementById("land-use-history").value || "N/A"],
+                ["Site Information", "Current Site Activities", document.getElementById("current-activities").value || "N/A"],
+                ["Site Information", "Site Accessibility", document.getElementById("accessibility").value || "N/A"],
+                ["Site Information", "Site Notes", document.getElementById("site-notes").value || "N/A"],
+                
+                ["Risk Metrics", "Invasive Species Risk", document.getElementById("invasive-species").value || "0"],
+                ["Risk Metrics", "Pathogen Spread Risk", document.getElementById("pathogen-spread").value || "0"],
+                ["Risk Metrics", "Contamination Risk", document.getElementById("contamination").value || "0"],
+                ["Risk Metrics", "Transportation Risk", document.getElementById("transportation").value || "0"],
+                ["Risk Metrics", "Quarantine Breach Risk", document.getElementById("quarantine-breach").value || "0"],
+                ["Risk Metrics", "Training Compliance", document.getElementById("training-compliance").value || "0"],
+                ["Risk Metrics", "Supply Chain Risk", document.getElementById("supply-chain").value || "0"],
+                ["Risk Metrics", "Risk Notes", document.getElementById("risk-notes").value || "N/A"],
+                
+                ["Risk Assessment", "Total Risk Score", document.getElementById("risk-score").textContent || "0"],
+                ["Risk Assessment", "Risk Level", document.getElementById("risk-level").textContent || "Low Risk"],
+                ["Risk Assessment", "Results Notes", document.getElementById("results-notes").value || "N/A"]
+            ];
+
+            const csvContent = [
+                headers.join(","),
+                ...data.map(row => row.map(field => `"${field.replace(/"/g, '""')}"`).join(","))
+            ].join("\n");
+
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            saveAs(blob, `Biosecurity_Risk_Assessment_${new Date().toISOString().slice(0,10)}.csv`);
+        }
+
+        async function generatePDFReport() {
+            const { jsPDF } = window.jspdf;
+            
+            // Ask for report name
+            const defaultName = document.getElementById("project-name").value 
+                ? `Biosecurity_Report_${document.getElementById("project-name").value.replace(/[^a-z0-9]/gi, '_')}`
+                : "Biosecurity_Risk_Report";
+            
+            const pdfName = prompt("Enter the file name for your PDF:", defaultName);
+            
+            // Check if user canceled the prompt (pdfName will be null)
+            if (pdfName === null) {
+                return; // Exit the function if user canceled
+            }
+            
+            // If user clicked OK but left the field empty, use the default name
+            const finalPdfName = pdfName.trim() === "" ? defaultName : pdfName;
+
+            try {
+                const doc = new jsPDF({
+                    orientation: "portrait",
+                    unit: "mm",
+                    format: "a4"
+                });
+                
+                // Colors
+                const primaryColor = document.body.classList.contains('dark-mode') ? "#4db8a7" : "#007a6c";
+                const secondaryColor = document.body.classList.contains('dark-mode') ? "#666" : "#4a4a4a";
+                const accentColor = document.body.classList.contains('dark-mode') ? "#ff9800" : "#e57200";
+                
+                // Font sizes
+                const titleSize = 18;
+                const sectionTitleSize = 14;
+                const subHeadingSize = 12;
+                const bodyTextSize = 10;
+                const smallTextSize = 8;
+                
+                // Margins and spacing
+                const margin = 15;
+                const lineHeight = 5; // Reduced from 6 for better density
+                const paragraphSpacing = 3; // Space between paragraphs
+                let yPos = margin;
+                
+                // Page dimensions
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const textWidth = pageWidth - (2 * margin) - 5; // 5mm safety margin
+                
+                // Add header (now with better vertical positioning)
+                const addHeader = (pageNum, totalPages) => {
+                    doc.setFontSize(smallTextSize);
+                    doc.setTextColor(secondaryColor);
+                    doc.text(`Biosecurity Risk Assessment Report - Page ${pageNum} of ${totalPages}`, 
+                        pageWidth - margin, margin - 5, { align: "right" }); // Moved up slightly
+                };
+                
+                // Add footer (now with better vertical positioning)
+                const addFooter = () => {
+                    doc.setFontSize(smallTextSize);
+                    doc.setTextColor(secondaryColor);
+                    doc.text("Produced with Biosecurity Risk Assessment Tool", 
+                        margin, pageHeight - 10);
+                    doc.text(`Generated on ${new Date().toLocaleDateString()}`, 
+                        pageWidth - margin, pageHeight - 10, { align: "right" });
+                    
+                    // Add a subtle divider line
+                    doc.setDrawColor(200, 200, 200);
+                    doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
+                };
+
+                // Improved text writing function with better overflow handling
+                const writeText = (text, x, y, options = {}) => {
+                    const { maxWidth = textWidth, fontSize = bodyTextSize, fontStyle = 'normal', color = secondaryColor } = options;
+                    
+                    doc.setFontSize(fontSize);
+                    doc.setTextColor(color);
+                    doc.setFont("helvetica", fontStyle);
+                    
+                    const lines = doc.splitTextToSize(text, maxWidth);
+                    let currentY = y;
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        // Check if we need a new page
+                        if (currentY > pageHeight - margin - 10) {
+                            doc.addPage();
+                            addHeader(doc.internal.getNumberOfPages(), 0);
+                            addFooter();
+                            currentY = margin;
+                        }
+                        
+                        doc.text(lines[i], x, currentY);
+                        currentY += lineHeight;
+                    }
+                    
+                    return currentY;
+                };
+                
+                // Add title page
+                doc.setFontSize(titleSize);
+                doc.setTextColor(primaryColor);
+                doc.setFont("helvetica", "bold");
+                doc.text("Biosecurity Risk Assessment Report", pageWidth / 2, 40, { align: "center" });
+                
+                doc.setFontSize(sectionTitleSize);
+                doc.setTextColor(secondaryColor); // Changed to secondary color for consistency
+                doc.setFont("helvetica", "normal");
+                
+                const projectName = document.getElementById("project-name").value || "Unnamed Project";
+                doc.text(`Project: ${projectName}`, pageWidth / 2, 60, { align: "center" });
+                
+                const assessorName = document.getElementById("assessor-name").value || "Unassigned";
+                doc.text(`Assessor: ${assessorName}`, pageWidth / 2, 70, { align: "center" });
+                
+                const assessmentDate = document.getElementById("date").value || new Date().toISOString().slice(0,10);
+                doc.text(`Date: ${assessmentDate}`, pageWidth / 2, 80, { align: "center" });
+                
+                // Add location information
+                const location = document.getElementById("location").value || "Location not specified";
+                doc.text(`Location: ${location}`, pageWidth / 2, 90, { align: "center" });
+                
+                // Add coordinates
+                doc.text(`Coordinates: ${currentLatLng.lat.toFixed(6)}, ${currentLatLng.lng.toFixed(6)}`, pageWidth / 2, 100, { align: "center" });
+                
+                // Add risk summary
+                doc.setFontSize(sectionTitleSize);
+                doc.setTextColor(primaryColor);
+                doc.text("Risk Summary", pageWidth / 2, 110, { align: "center" });
+                
+                const riskScore = document.getElementById("risk-score").textContent || "0";
+                const riskLevel = document.getElementById("risk-level").textContent || "Low Risk";
+                
+                // Draw risk meter
+                const scoreWidth = (pageWidth - 2 * margin) * (parseInt(riskScore) / 100);
+                doc.setFillColor(primaryColor);
+                doc.rect(margin, 120, scoreWidth, 8, "F");
+                
+                doc.setDrawColor(secondaryColor);
+                doc.rect(margin, 120, pageWidth - 2 * margin, 8);
+                
+                doc.setFontSize(bodyTextSize);
+                doc.setTextColor(secondaryColor); // Changed to secondary color for consistency
+                doc.text(`Risk Score: ${riskScore} (${riskLevel})`, margin, 135);
+                
+                // Add Project Details page with improved text handling
+                doc.addPage();
+                yPos = margin;
+                addHeader(2, 0);
+                addFooter();
+                
+                yPos = writeText("1. Project Details", margin, yPos, {
+                    fontSize: sectionTitleSize,
+                    color: primaryColor,
+                    fontStyle: 'bold'
+                }) + lineHeight * 2;
+                
+                const projectFields = [
+                    { label: "Project Name", value: document.getElementById("project-name").value || "N/A" },
+                    { label: "Location", value: document.getElementById("location").value || "N/A" },
+                    { label: "Coordinates", value: `${currentLatLng.lat.toFixed(6)}, ${currentLatLng.lng.toFixed(6)}` },
+                    { label: "Assessor", value: document.getElementById("assessor-name").value || "N/A" },
+                    { label: "Date", value: document.getElementById("date").value || "N/A" },
+                    { label: "Description", value: document.getElementById("project-description").value || "N/A" },
+                    { label: "Purpose", value: document.getElementById("project-purpose").value || "N/A" }
+                ];
+                
+                projectFields.forEach(field => {
+                    // Write label
+                    yPos = writeText(`${field.label}:`, margin, yPos, {
+                        fontSize: subHeadingSize,
+                        fontStyle: 'bold'
+                    });
+                    
+                    // Write value with proper wrapping
+                    yPos = writeText(field.value, margin + 5, yPos) + paragraphSpacing;
+                });
+
+                // Add Site Information page with improved layout
+                doc.addPage();
+                yPos = margin;
+                addHeader(3, 0);
+                addFooter();
+                
+                yPos = writeText("2. Site Information", margin, yPos, {
+                    fontSize: sectionTitleSize,
+                    color: primaryColor,
+                    fontStyle: 'bold'
+                }) + lineHeight * 2;
+                
+                const siteFields = [
+                    { label: "Flora & Fauna", value: document.getElementById("flora-fauna").value || "N/A" },
+                    { label: "Environmental Features", 
+                      value: Array.from(document.getElementById("environmental-features").selectedOptions)
+                          .map(option => option.value).join(", ") || "N/A" },
+                    { label: "Distance to Sensitive Ecosystems (km)", 
+                      value: document.getElementById("distance-ecosystem").value || "N/A" },
+                    { label: "Distance to Critical Infrastructure (km)", 
+                      value: document.getElementById("distance-infrastructure").value || "N/A" },
+                    { label: "Land Use History", 
+                      value: document.getElementById("land-use-history").value || "N/A" },
+                    { label: "Current Site Activities", 
+                      value: document.getElementById("current-activities").value || "N/A" },
+                    { label: "Site Accessibility", 
+                      value: document.getElementById("accessibility").value || "N/A" },
+                    { label: "Site Notes", 
+                      value: document.getElementById("site-notes").value || "N/A" }
+                ];
+                
+                siteFields.forEach(field => {
+                    // Write label
+                    yPos = writeText(`${field.label}:`, margin, yPos, {
+                        fontSize: subHeadingSize,
+                        fontStyle: 'bold'
+                    });
+                    
+                    // Write value with proper wrapping
+                    yPos = writeText(field.value, margin + 5, yPos) + paragraphSpacing;
+                });
+
+                // Add Map to PDF
+                if (map) {
+                    try {
+                        // Convert map to image
+                        const mapContainer = document.getElementById('map');
+                        const mapImage = await htmlToCanvasPromise(mapContainer);
+                        
+                        // Add to PDF
+                        doc.addPage();
+                        yPos = margin;
+                        addHeader(doc.internal.getNumberOfPages(), 0);
+                        addFooter();
+                        
+                        doc.setFontSize(sectionTitleSize);
+                        doc.setTextColor(primaryColor);
+                        doc.text("Project Location Map", margin, yPos);
+                        yPos += lineHeight * 2;
+                        
+                        const mapWidth = pageWidth - 2 * margin;
+                        const mapHeight = (mapContainer.offsetHeight / mapContainer.offsetWidth) * mapWidth;
+                        doc.addImage(mapImage, 'PNG', margin, yPos, mapWidth, mapHeight);
+                        yPos += mapHeight + lineHeight;
+                        
+                        // Add coordinates
+                        doc.setFontSize(bodyTextSize);
+                        doc.setTextColor(secondaryColor);
+                        doc.text(`Coordinates: ${currentLatLng.lat.toFixed(6)}, ${currentLatLng.lng.toFixed(6)}`, margin, yPos);
+                        yPos += lineHeight;
+                        
+                        // Add location description if available
+                        const location = document.getElementById("location").value;
+                        if (location) {
+                            doc.text(`Location: ${location}`, margin, yPos);
+                            yPos += lineHeight;
+                        }
+                    } catch (e) {
+                        console.error("Error adding map to PDF:", e);
+                    }
+                }
+
+                // Add Photos to PDF
+                const photoSections = [
+                    { id: 'photo-preview', title: 'Project Photos' },
+                    { id: 'photo-preview-site', title: 'Site Photos' },
+                    { id: 'photo-preview-risk', title: 'Risk Evidence Photos' }
+                ];
+                
+                for (const section of photoSections) {
+                    const photoPreview = document.getElementById(section.id);
+                    if (photoPreview && photoPreview.children.length > 0) {
+                        doc.addPage();
+                        yPos = margin;
+                        addHeader(doc.internal.getNumberOfPages(), 0);
+                        addFooter();
+                        
+                        doc.setFontSize(sectionTitleSize);
+                        doc.setTextColor(primaryColor);
+                        doc.text(section.title, margin, yPos);
+                        yPos += lineHeight * 2;
+                        
+                        const photos = Array.from(photoPreview.querySelectorAll('img'));
+                        const photoWidth = (pageWidth - 2 * margin - 10) / 2; // 2 photos per row
+                        const photoHeight = photoWidth * 0.75; // 4:3 aspect ratio
+                        
+                        for (let i = 0; i < photos.length; i++) {
+                            // Check if we need a new page (4 photos per page)
+                            if (i > 0 && i % 4 === 0) {
+                                doc.addPage();
+                                yPos = margin;
+                                addHeader(doc.internal.getNumberOfPages(), 0);
+                                addFooter();
+                                doc.setFontSize(sectionTitleSize);
+                                doc.setTextColor(primaryColor);
+                                doc.text(`${section.title} (continued)`, margin, yPos);
+                                yPos += lineHeight * 2;
+                            }
+                            
+                            const xPos = margin + (i % 2) * (photoWidth + 10);
+                            const currentY = yPos + Math.floor(i / 2) % 2 * (photoHeight + 10);
+                            
+                            try {
+                                doc.addImage(photos[i].src, 'JPEG', xPos, currentY, photoWidth, photoHeight);
+                            } catch (e) {
+                                console.error("Error adding photo to PDF:", e);
+                            }
+                        }
+                    }
+                }
+
+                // Add Risk Assessment page with improved table layout
+                doc.addPage();
+                yPos = margin;
+                addHeader(doc.internal.getNumberOfPages(), 0);
+                addFooter();
+                
+                yPos = writeText("3. Risk Assessment", margin, yPos, {
+                    fontSize: sectionTitleSize,
+                    color: primaryColor,
+                    fontStyle: 'bold'
+                }) + lineHeight * 2;
+                
+                // Risk metrics table with better column alignment
+                const riskMetrics = [
+                    { label: "Invasive Species Risk", value: document.getElementById("invasive-species").value || "0" },
+                    { label: "Pathogen Spread Risk", value: document.getElementById("pathogen-spread").value || "0" },
+                    { label: "Contamination Risk", value: document.getElementById("contamination").value || "0" },
+                    { label: "Transportation Risk", value: document.getElementById("transportation").value || "0" },
+                    { label: "Quarantine Breach Risk", value: document.getElementById("quarantine-breach").value || "0" },
+                    { label: "Training Compliance", value: document.getElementById("training-compliance").value || "0" },
+                    { label: "Supply Chain Risk", value: document.getElementById("supply-chain").value || "0" },
+                    { label: "Risk Notes", value: document.getElementById("risk-notes").value || "N/A" }
+                ];
+                
+                // Table header
+                doc.setFontSize(subHeadingSize);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(secondaryColor);
+                doc.text("Risk Factor", margin, yPos);
+                doc.text("Score", pageWidth - margin - 15, yPos, { align: "right" });
+                yPos += lineHeight;
+                
+                // Divider line
+                doc.setDrawColor(secondaryColor);
+                doc.line(margin, yPos, pageWidth - margin, yPos);
+                yPos += lineHeight;
+                
+                // Table rows
+                doc.setFontSize(bodyTextSize);
+                doc.setFont("helvetica", "normal");
+                riskMetrics.forEach(metric => {
+                    if (yPos > pageHeight - margin - 10) {
+                        doc.addPage();
+                        addHeader(doc.internal.getNumberOfPages(), 0);
+                        addFooter();
+                        yPos = margin;
+                    }
+                    
+                    // Write metric label with proper wrapping
+                    const labelLines = doc.splitTextToSize(metric.label, textWidth - 30);
+                    doc.text(labelLines, margin, yPos);
+                    
+                    // Write score aligned to right
+                    doc.text(metric.value, pageWidth - margin - 15, yPos + ((labelLines.length - 1) * lineHeight), { align: "right" });
+                    
+                    yPos += (labelLines.length * lineHeight) + 2;
+                });
+                
+                // Add radar chart with better positioning
+                const chartCanvas = document.getElementById("impact-chart");
+                if (chartCanvas) {
+                    yPos += lineHeight; // Add some space before the chart
+                    
+                    if (yPos > pageHeight - 100) {
+                        doc.addPage();
+                        addHeader(doc.internal.getNumberOfPages(), 0);
+                        addFooter();
+                        yPos = margin;
+                    }
+                    
+                    const chartImage = chartCanvas.toDataURL("image/png");
+                    const chartWidth = 150;
+                    const chartHeight = (chartCanvas.height / chartCanvas.width) * chartWidth;
+                    
+                    doc.addImage(chartImage, "PNG", (pageWidth - chartWidth) / 2, yPos, chartWidth, chartHeight);
+                    yPos += chartHeight + lineHeight;
+                }
+                
+                // Add heat map visualization
+                const heatMapContainer = document.getElementById("heat-map");
+                if (heatMapContainer) {
+                    yPos += lineHeight;
+                    
+                    if (yPos > pageHeight - 100) {
+                        doc.addPage();
+                        addHeader(doc.internal.getNumberOfPages(), 0);
+                        addFooter();
+                        yPos = margin;
+                    }
+                    
+                    doc.setFontSize(sectionTitleSize);
+                    doc.setTextColor(primaryColor);
+                    doc.text("Risk Heat Map", margin, yPos);
+                    yPos += lineHeight * 2;
+                    
+                    try {
+                        const heatMapImage = await htmlToCanvasPromise(heatMapContainer);
+                        const heatMapWidth = pageWidth - 2 * margin;
+                        const heatMapHeight = (heatMapContainer.offsetHeight / heatMapContainer.offsetWidth) * heatMapWidth;
+                        
+                        doc.addImage(heatMapImage, "PNG", margin, yPos, heatMapWidth, heatMapHeight);
+                        yPos += heatMapHeight + lineHeight;
+                    } catch (e) {
+                        console.error("Error adding heat map to PDF:", e);
+                    }
+                }
+                
+                // Add Recommendations page
+                doc.addPage();
+                yPos = margin;
+                
+                doc.setFontSize(sectionTitleSize);
+                doc.setTextColor(primaryColor);
+                doc.text("4. Recommendations", margin, yPos);
+                yPos += lineHeight * 2;
+                
+                const recommendationsContainer = document.getElementById("recommendations");
+                if (recommendationsContainer) {
+                    const recommendations = Array.from(recommendationsContainer.querySelectorAll("li")).map(li => li.textContent);
+                    
+                    if (recommendations.length > 0) {
+                        doc.setFontSize(subHeadingSize);
+                        doc.setTextColor(secondaryColor);
+                        doc.text("Key Recommendations:", margin, yPos);
+                        yPos += lineHeight * 1.5;
+                        
+                        doc.setFontSize(bodyTextSize);
+                        recommendations.forEach((rec, index) => {
+                            if (yPos > pageHeight - margin - 20) {
+                                doc.addPage();
+                                yPos = margin;
+                            }
+                            
+                            // Split long recommendations into multiple lines
+                            const lines = doc.splitTextToSize(`${index + 1}. ${rec}`, pageWidth - 2 * margin - 10);
+                            lines.forEach(line => {
+                                if (yPos > pageHeight - margin - 20) {
+                                    doc.addPage();
+                                    yPos = margin;
+                                }
+                                doc.text(line, margin, yPos);
+                                yPos += lineHeight * 1.5;
+                            });
+                        });
+                    } else {
+                        doc.setFontSize(bodyTextSize);
+                        doc.text("No significant risks detected. Regular monitoring recommended.", margin, yPos);
+                        yPos += lineHeight;
+                    }
+                }
+                
+                // Add Results Notes if they exist
+                const resultsNotes = document.getElementById("results-notes").value;
+                if (resultsNotes) {
+                    doc.addPage();
+                    yPos = margin;
+                    addHeader(doc.internal.getNumberOfPages(), 0);
+                    addFooter();
+                    
+                    doc.setFontSize(sectionTitleSize);
+                    doc.setTextColor(primaryColor);
+                    doc.text("5. Assessment Notes", margin, yPos);
+                    yPos += lineHeight * 2;
+                    
+                    yPos = writeText(resultsNotes, margin, yPos);
+                }
+                
+                // Add headers and footers to all pages
+                const finalPageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= finalPageCount; i++) {
+                    doc.setPage(i);
+                    addHeader(i, finalPageCount);
+                    addFooter();
+                }
+                
+               // Save the PDF with the final name
+                doc.save(`${finalPdfName}.pdf`);
+            } catch (error) {
+                alert("An error occurred during PDF generation: " + error.message);
+                console.error(error);
+            }
+        }
+
+        // Helper function for converting HTML to canvas
+        function htmlToCanvasPromise(element) {
+            return new Promise((resolve) => {
+                html2canvas(element).then(canvas => {
+                    resolve(canvas.toDataURL('image/png'));
+                });
+            });
+        }
+
+        function clearAllData() {
+            if (confirm("Are you sure you want to delete all data? This action cannot be undone.")) {
+                // Clear form inputs
+                document.querySelectorAll("input[type='text'], input[type='date'], input[type='number'], textarea").forEach(input => {
+                    input.value = "";
+                });
+                
+                // Reset select elements
+                document.querySelectorAll("select").forEach(select => {
+                    if (select.multiple) {
+                        Array.from(select.options).forEach(option => {
+                            option.selected = false;
+                        });
+                    } else {
+                        select.selectedIndex = 0;
+                    }
+                });
+                
+                // Reset sliders
+                document.querySelectorAll("input[type='range']").forEach(slider => {
+                    slider.value = 0;
+                    slider.dispatchEvent(new Event('input'));
+                });
+                
+                // Reset map
+                currentLatLng = { lat: 0, lng: 0 };
+                updateMapMarker(currentLatLng);
+                updateLocationInput(currentLatLng);
+                
+                // Clear photo previews
+                document.querySelectorAll('.photo-preview-container').forEach(container => {
+                    container.innerHTML = '';
+                });
+                
+                // Clear local storage
+                localStorage.removeItem('biosecurityAssessmentData');
+                
+                // Reset to first section
+                showSection(0);
+                
+                alert("All data has been cleared. Starting a new assessment.");
+                
+                hasUnsavedChanges = false;
+            }
+        }
+
+        function startNewAssessment() {
+            if (hasUnsavedChanges) {
+                showConfirmationDialog(() => {
+                    saveDataToLocalStorage();
+                    clearAllData();
+                });
+            } else {
+                clearAllData();
+            }
+        }
+
+        // Modal Functions
+        function setupModals() {
+            // Get all modal elements
+            const modals = {
+                privacy: document.getElementById("privacy-modal"),
+                terms: document.getElementById("terms-modal"),
+                contact: document.getElementById("contact-modal"),
+                welcome: document.getElementById("welcome-modal"),
+                confirmation: document.getElementById("confirmation-dialog")
+            };
+            
+            // Get all buttons that open modals
+            const buttons = {
+                privacy: document.getElementById("privacy-policy"),
+                terms: document.getElementById("terms-of-use"),
+                contact: document.getElementById("contact-support"),
+                start: document.getElementById("start-assessment"),
+                tutorial: document.getElementById("view-tutorial")
+            };
+            
+            // Get all close buttons
+            const closeButtons = document.getElementsByClassName("close-modal");
+            
+            // Set up click handlers for each modal button
+            buttons.privacy.onclick = function() {
+                modals.privacy.style.display = "block";
+            }
+            
+            buttons.terms.onclick = function() {
+                modals.terms.style.display = "block";
+            }
+            
+            buttons.contact.onclick = function() {
+                modals.contact.style.display = "block";
+            }
+            
+            buttons.start.onclick = function() {
+                modals.welcome.style.display = "none";
+            }
+            
+            buttons.tutorial.onclick = function() {
+                alert("Tutorial video will open in a new window.");
+                // In a real implementation, you would open a tutorial video or page
+            }
+            
+            // Set up close handlers for all modals
+            Array.from(closeButtons).forEach(button => {
+                button.onclick = function() {
+                    Object.values(modals).forEach(modal => {
+                        modal.style.display = "none";
+                    });
+                }
+            });
+            
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                Object.values(modals).forEach(modal => {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                });
+            }
+            
+            // Confirmation dialog buttons
+            document.getElementById("confirm-cancel").addEventListener("click", function() {
+                modals.confirmation.style.display = "none";
+            });
+            
+            document.getElementById("confirm-leave").addEventListener("click", function() {
+                modals.confirmation.style.display = "none";
+                if (window.pendingNavigationAction) {
+                    window.pendingNavigationAction();
+                    window.pendingNavigationAction = null;
+                }
+            });
+        }
+
+        function showConfirmationDialog(callback) {
+            const dialog = document.getElementById("confirmation-dialog");
+            dialog.style.display = "block";
+            
+            // Store the callback for when user confirms
+            window.pendingNavigationAction = callback;
+        }
+
+        // Track form changes for unsaved changes detection
+        function trackFormChanges() {
+            const formElements = document.querySelectorAll("input, textarea, select");
+            
+            formElements.forEach(element => {
+                // Skip file inputs and buttons
+                if (element.type === 'file' || element.type === 'button' || element.type === 'submit') {
+                    return;
+                }
+                
+                element.addEventListener('change', function() {
+                    if (!isInitialLoad) {
+                        markAsChanged();
+                    }
+                });
+                
+                // For text inputs, also track keyup events
+                if (element.type === 'text' || element.tagName === 'TEXTAREA') {
+                    element.addEventListener('keyup', function() {
+                        if (!isInitialLoad) {
+                            markAsChanged();
+                        }
+                    });
+                }
+            });
+            
+            // After initial load, set flag to false
+            setTimeout(() => {
+                isInitialLoad = false;
+            }, 1000);
+        }
+        
+        function markAsChanged() {
+            if (!isInitialLoad) {
+                hasUnsavedChanges = true;
+            }
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Form input auto-save
+            document.querySelectorAll("input, textarea, select").forEach(element => {
+                element.addEventListener("change", function() {
+                    if (!isInitialLoad) {
+                        markAsChanged();
+                    }
+                });
+            });
+            
+            // Save progress buttons
+            document.querySelectorAll(".save-progress-button").forEach(button => {
+                button.addEventListener("click", saveDataToLocalStorage);
+            });
+            
+            // Sliders
+            setupSliderListeners();
+            
+            // Scenario modeling
+            setupScenarioModeling();
+            
+            // Action buttons
+            document.getElementById("generate-report").addEventListener("click", generatePDFReport);
+            document.getElementById("save-local").addEventListener("click", saveDataToCSV);
+            document.getElementById("delete-data").addEventListener("click", clearAllData);
+            document.getElementById("new-assessment").addEventListener("click", startNewAssessment);
+            
+            // Location buttons
+            document.getElementById("get-location-btn").addEventListener("click", getCurrentLocation);
+            document.getElementById("search-location-btn").addEventListener("click", searchLocation);
+            
+            // Footer links
+            setupModals();
+            
+            // Beforeunload event for unsaved changes
+            window.addEventListener('beforeunload', function(e) {
+                if (hasUnsavedChanges) {
+                    e.preventDefault();
+                    e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+                    return e.returnValue;
+                }
+            });
+            
+            // Navigation buttons with confirmation
+            document.querySelectorAll(".next-button, .prev-button").forEach(button => {
+                button.addEventListener("click", function() {
+                    if (hasUnsavedChanges) {
+                        const originalAction = this.getAttribute("onclick");
+                        showConfirmationDialog(function() {
+                            eval(originalAction);
+                        });
+                        return false;
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+    </html>
