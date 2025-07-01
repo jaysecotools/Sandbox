@@ -254,7 +254,7 @@ function exportToPDF() {
 
       // Generate schedule output
       let out = `<h2>📅 Schedule</h2><p><strong>Actual Duration:</strong> ${weeks} weeks (${formatDate(start)} to ${formatDate(end)})</p>`;
-      if (weeks > 50) out += `<p style="color:red">⚠ Course exceeds the 50-week target window.</p>`;
+      if (weeks > 100) out += `<p style="color:red">⚠ Course exceeds the 100-week target window.</p>`;
 
       out += `<table><tr><th>Code</th><th>Name</th><th>Start</th><th>End</th></tr>`;
       schedule.forEach(u => {
