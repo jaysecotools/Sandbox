@@ -185,31 +185,28 @@ function exportToPDF() {
       return selected;
     }
 
-function generateSchedule(units, startDate) {
-  const totalWeeks = 100;
-  const totalDuration = units.reduce((sum, u) => sum + u.duration, 0);
-  const spacingWeeks = Math.floor((totalWeeks - totalDuration) / units.length);
-
-  const schedule = [];
-  let current = new Date(startDate);
-
-  for (let u of units) {
-    const start = new Date(current);
-    const end = new Date(start);
-    end.setDate(end.getDate() + (u.duration * 7) - 1);
-
-    schedule.push({
-      ...u,
-      startDate: formatDate(start),
-      endDate: formatDate(end),
-    });
-
-    // Advance to next unit start: end date + spacing
-    current.setDate(end.getDate() + (spacingWeeks * 7));
-  }
-
-  return schedule;
-}
+    function generateSchedule(units, startDate) {
+      const schedule = [];
+      let currentDate = new Date(startDate);
+      
+      for (const unit of units) {
+        const start = new Date(currentDate);
+        const end = new Date(start);
+        end.setDate(end.getDate() + (unit.duration * 7) - 1); // Subtract 1 day to get last day of week
+        
+        schedule.push({
+          ...unit,
+          startDate: formatDate(start),
+          endDate: formatDate(end)
+        });
+        
+        // Move to next unit start date (after this unit ends)
+        currentDate = new Date(end);
+        currentDate.setDate(currentDate.getDate() + 1); // Start next unit the day after previous ends
+      }
+      
+      return schedule;
+    }
 
     // Format Date DD/MM/YYYY
     function formatDate(d) {
@@ -238,35 +235,35 @@ function generateSchedule(units, startDate) {
       return errors;
     }
 
-function renderSchedule(schedule, startDate) {
-  if (!schedule.length) {
-    document.getElementById("results").innerHTML = "<p>No schedule available.</p>";
-    return;
-  }
+    function renderSchedule(schedule, startDate) {
+      if (!schedule.length) {
+        document.getElementById("results").innerHTML = "<p>No schedule available.</p>";
+        return;
+      }
 
-  // Convert input start date string (YYYY-MM-DD) to Date object
-  const [year, month, day] = startDate.split("-");
-  const start = new Date(year, month - 1, day);
+      // Convert input start date string (YYYY-MM-DD) to Date object
+      const [year, month, day] = startDate.split("-");
+      const start = new Date(year, month - 1, day);
 
-  // Parse the end date from the final scheduled unit (format: DD/MM/YYYY)
-  const endParts = schedule.at(-1).endDate.split("/");
-  const end = new Date(endParts[2], endParts[1] - 1, endParts[0]);
+      // Parse the end date from the final scheduled unit (format: DD/MM/YYYY)
+      const endParts = schedule.at(-1).endDate.split("/");
+      const end = new Date(endParts[2], endParts[1] - 1, endParts[0]);
 
-  // Calculate duration in weeks
-  const weeks = Math.round((end - start) / (1000 * 60 * 60 * 24 * 7));
+      // Calculate duration in weeks
+      const weeks = Math.round((end - start) / (1000 * 60 * 60 * 24 * 7));
 
-  // Generate schedule output
-  let out = `<h2>📅 Schedule</h2><p><strong>Actual Duration:</strong> ${weeks} weeks (${formatDate(start)} to ${formatDate(end)})</p>`;
-  if (weeks > 50) out += `<p style="color:red">⚠ Course exceeds the 50-week target window.</p>`;
+      // Generate schedule output
+      let out = `<h2>📅 Schedule</h2><p><strong>Actual Duration:</strong> ${weeks} weeks (${formatDate(start)} to ${formatDate(end)})</p>`;
+      if (weeks > 50) out += `<p style="color:red">⚠ Course exceeds the 50-week target window.</p>`;
 
-  out += `<table><tr><th>Code</th><th>Name</th><th>Start</th><th>End</th></tr>`;
-  schedule.forEach(u => {
-    out += `<tr><td>${u.code}</td><td>${u.name}</td><td>${u.startDate}</td><td>${u.endDate}</td></tr>`;
-  });
-  out += `</table>`;
+      out += `<table><tr><th>Code</th><th>Name</th><th>Start</th><th>End</th></tr>`;
+      schedule.forEach(u => {
+        out += `<tr><td>${u.code}</td><td>${u.name}</td><td>${u.startDate}</td><td>${u.endDate}</td></tr>`;
+      });
+      out += `</table>`;
 
-  document.getElementById("results").innerHTML = out;
-}
+      document.getElementById("results").innerHTML = out;
+    }
 
     // Update validation indicator (called on checkbox or duration change)
     function updateValidationIndicator() {
@@ -290,7 +287,7 @@ function renderSchedule(schedule, startDate) {
       const errors = validate(selected);
       if (errors.length) return alert(errors.join("\n"));
       const startDate = document.getElementById("startDate").value;
-      const schedule = generateSchedule(selected, startDate, buffer);
+      const schedule = generateSchedule(selected, startDate);
       renderSchedule(schedule, startDate);
     });
 
