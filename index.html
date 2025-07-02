@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Qualification Planner Builder</title>
     <style>
         body {
@@ -19,23 +18,16 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        h1 {
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
         .tabs {
             display: flex;
             margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
         }
         .tab-btn {
             padding: 10px 20px;
-            background: #eee;
+            background: #e0e0e0;
             border: none;
             cursor: pointer;
             margin-right: 5px;
-            border-radius: 5px 5px 0 0;
         }
         .tab-btn.active {
             background: #3498db;
@@ -44,39 +36,16 @@
         .tab-content {
             display: none;
             padding: 20px;
-            background: #f9f9f9;
-            border-radius: 0 0 5px 5px;
+            border: 1px solid #ddd;
+            border-top: none;
         }
         .tab-content.active {
             display: block;
         }
-        label {
-            display: block;
-            margin: 10px 0 5px;
-        }
-        input, select {
-            padding: 8px;
-            width: 100%;
-            max-width: 300px;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-        }
-        button {
-            padding: 8px 15px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        button:hover {
-            background: #2980b9;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin-top: 20px;
         }
         th, td {
             padding: 10px;
@@ -84,7 +53,7 @@
             text-align: left;
         }
         th {
-            background: #3498db;
+            background-color: #3498db;
             color: white;
         }
         #generatedCode {
@@ -99,36 +68,31 @@
         <h1>Qualification Planner Builder</h1>
         
         <div class="tabs">
-            <button class="tab-btn active" data-tab="qualification">Qualification</button>
-            <button class="tab-btn" data-tab="groups">Unit Groups</button>
-            <button class="tab-btn" data-tab="units">Units</button>
-            <button class="tab-btn" data-tab="rules">Rules</button>
-            <button class="tab-btn" data-tab="export">Generate</button>
+            <button class="tab-btn active" onclick="showTab('qualification')">Qualification</button>
+            <button class="tab-btn" onclick="showTab('groups')">Groups</button>
+            <button class="tab-btn" onclick="showTab('units')">Units</button>
+            <button class="tab-btn" onclick="showTab('rules')">Rules</button>
+            <button class="tab-btn" onclick="showTab('export')">Generate</button>
         </div>
         
         <div id="qualification" class="tab-content active">
             <h2>Qualification Details</h2>
-            <label>Qualification Title:</label>
-            <input type="text" id="qualTitle" placeholder="e.g., CIII Conservation">
-            
-            <label>Qualification Code:</label>
-            <input type="text" id="qualCode" placeholder="e.g., AHC31420">
-            
-            <label>Default Unit Duration (weeks):</label>
-            <input type="number" id="defaultDuration" value="6" min="1">
+            <label>Title: <input type="text" id="qualTitle"></label><br>
+            <label>Code: <input type="text" id="qualCode"></label><br>
+            <label>Default Duration: <input type="number" id="defaultDuration" value="6"> weeks</label>
         </div>
         
         <div id="groups" class="tab-content">
             <h2>Unit Groups</h2>
-            <button id="addGroup">Add Group</button>
+            <button onclick="addGroup()">Add Group</button>
             <table id="groupsTable">
                 <thead>
                     <tr>
-                        <th>Group ID</th>
+                        <th>ID</th>
                         <th>Name</th>
-                        <th>Min Units</th>
-                        <th>Max Units</th>
-                        <th>Actions</th>
+                        <th>Min</th>
+                        <th>Max</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -137,7 +101,7 @@
         
         <div id="units" class="tab-content">
             <h2>Units</h2>
-            <button id="addUnit">Add Unit</button>
+            <button onclick="addUnit()">Add Unit</button>
             <table id="unitsTable">
                 <thead>
                     <tr>
@@ -145,7 +109,7 @@
                         <th>Name</th>
                         <th>Groups</th>
                         <th>Duration</th>
-                        <th>Actions</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -154,240 +118,157 @@
         
         <div id="rules" class="tab-content">
             <h2>Packaging Rules</h2>
-            <div class="rule-section">
-                <h3>Core Units</h3>
-                <label>
-                    <input type="checkbox" id="coreRequired" checked>
-                    Require <input type="number" id="coreCount" value="2" min="0"> core units
-                </label>
-            </div>
-            
-            <div class="rule-section">
-                <h3>Group Rules</h3>
-                <div id="groupRulesContainer"></div>
-            </div>
-            
-            <div class="rule-section">
-                <h3>Total Units</h3>
-                <label>
-                    Total required: <input type="number" id="totalUnits" value="16" min="1">
-                </label>
+            <div>
+                <label><input type="checkbox" id="coreRequired" checked> Core units required</label>
+                <label>Total units: <input type="number" id="totalUnits" value="16"></label>
             </div>
         </div>
         
         <div id="export" class="tab-content">
             <h2>Generate Planner</h2>
-            <button id="generateBtn">Generate Tool</button>
-            <div style="margin-top: 20px;">
-                <textarea id="generatedCode" readonly></textarea>
-                <button id="downloadBtn">Download</button>
-                <button id="testBtn">Test</button>
-            </div>
+            <button onclick="generatePlanner()">Generate</button>
+            <textarea id="generatedCode" readonly></textarea>
+            <button onclick="downloadPlanner()">Download</button>
+            <button onclick="testPlanner()">Test</button>
         </div>
     </div>
 
     <script>
         // Data storage
-        const data = {
+        const appData = {
             groups: [
-                {id: "core", name: "Core Units", min: 2, max: 2}
+                {id: "core", name: "Core Units", min: 1, max: 1}
             ],
             units: [
-                {code: "AHCECR309", name: "Conduct inspections", groups: ["core"], duration: 6}
-            ],
-            rules: {
-                coreRequired: true,
-                coreCount: 2,
-                totalUnits: 16
-            }
+                {code: "SAMPLE001", name: "Sample Unit", groups: ["core"], duration: 6}
+            ]
         };
-        
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', function() {
-            setupTabs();
-            renderGroups();
-            renderUnits();
-            renderRules();
-            
-            // Event listeners
-            document.getElementById('addGroup').addEventListener('click', addGroup);
-            document.getElementById('addUnit').addEventListener('click', addUnit);
-            document.getElementById('generateBtn').addEventListener('click', generateTool);
-            document.getElementById('downloadBtn').addEventListener('click', downloadTool);
-            document.getElementById('testBtn').addEventListener('click', testTool);
-        });
-        
-        // Tab functionality
-        function setupTabs() {
-            const tabs = document.querySelectorAll('.tab-btn');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    // Remove active class from all tabs
-                    tabs.forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    
-                    // Add active class to clicked tab
-                    this.classList.add('active');
-                    const tabId = this.getAttribute('data-tab');
-                    document.getElementById(tabId).classList.add('active');
-                });
+
+        // Tab navigation
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
             });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            if (tabId === 'groups') renderGroups();
+            if (tabId === 'units') renderUnits();
         }
-        
+
         // Group management
         function renderGroups() {
             const tbody = document.querySelector('#groupsTable tbody');
             tbody.innerHTML = '';
             
-            data.groups.forEach((group, index) => {
+            appData.groups.forEach((group, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><input type="text" value="${group.id}" onchange="data.groups[${index}].id = this.value"></td>
-                    <td><input type="text" value="${group.name}" onchange="data.groups[${index}].name = this.value"></td>
-                    <td><input type="number" value="${group.min}" onchange="data.groups[${index}].min = parseInt(this.value)"></td>
-                    <td><input type="number" value="${group.max}" onchange="data.groups[${index}].max = parseInt(this.value)"></td>
+                    <td><input value="${group.id}" onchange="appData.groups[${index}].id = this.value"></td>
+                    <td><input value="${group.name}" onchange="appData.groups[${index}].name = this.value"></td>
+                    <td><input type="number" value="${group.min}" onchange="appData.groups[${index}].min = this.value"></td>
+                    <td><input type="number" value="${group.max}" onchange="appData.groups[${index}].max = this.value"></td>
                     <td><button onclick="deleteGroup(${index})">Delete</button></td>
                 `;
                 tbody.appendChild(row);
             });
         }
-        
+
         function addGroup() {
             const id = prompt("Enter group ID:");
             if (!id) return;
             
             const name = prompt("Enter group name:", id);
-            if (!name) return;
-            
-            data.groups.push({
+            appData.groups.push({
                 id: id,
                 name: name,
-                min: 0,
-                max: null
+                min: 1,
+                max: 1
             });
-            
             renderGroups();
-            renderRules();
         }
-        
+
         function deleteGroup(index) {
-            if (confirm(`Delete group ${data.groups[index].id}?`)) {
-                data.groups.splice(index, 1);
+            if (confirm("Delete this group?")) {
+                appData.groups.splice(index, 1);
                 renderGroups();
-                renderRules();
             }
         }
-        
+
         // Unit management
         function renderUnits() {
             const tbody = document.querySelector('#unitsTable tbody');
             tbody.innerHTML = '';
             
-            data.units.forEach((unit, index) => {
+            appData.units.forEach((unit, index) => {
                 const row = document.createElement('tr');
                 
                 // Create group options
-                let groupOptions = '';
-                data.groups.forEach(group => {
+                let options = '';
+                appData.groups.forEach(group => {
                     const selected = unit.groups.includes(group.id) ? 'selected' : '';
-                    groupOptions += `<option value="${group.id}" ${selected}>${group.name}</option>`;
+                    options += `<option value="${group.id}" ${selected}>${group.name}</option>`;
                 });
                 
                 row.innerHTML = `
-                    <td><input type="text" value="${unit.code}" onchange="data.units[${index}].code = this.value"></td>
-                    <td><input type="text" value="${unit.name}" onchange="data.units[${index}].name = this.value"></td>
+                    <td><input value="${unit.code}" onchange="appData.units[${index}].code = this.value"></td>
+                    <td><input value="${unit.name}" onchange="appData.units[${index}].name = this.value"></td>
                     <td>
                         <select multiple onchange="updateUnitGroups(${index}, this)">
-                            ${groupOptions}
+                            ${options}
                         </select>
                     </td>
-                    <td><input type="number" value="${unit.duration}" onchange="data.units[${index}].duration = parseInt(this.value)"></td>
+                    <td><input type="number" value="${unit.duration}" onchange="appData.units[${index}].duration = this.value"></td>
                     <td><button onclick="deleteUnit(${index})">Delete</button></td>
                 `;
                 tbody.appendChild(row);
             });
         }
-        
+
         function updateUnitGroups(index, select) {
-            const selected = Array.from(select.selectedOptions).map(option => option.value);
-            data.units[index].groups = selected;
+            const selected = Array.from(select.selectedOptions).map(opt => opt.value);
+            appData.units[index].groups = selected;
         }
-        
+
         function addUnit() {
             const code = prompt("Enter unit code:");
             if (!code) return;
             
             const name = prompt("Enter unit name:");
-            if (!name) return;
-            
-            data.units.push({
+            appData.units.push({
                 code: code,
                 name: name,
                 groups: ["core"],
                 duration: parseInt(document.getElementById('defaultDuration').value) || 6
             });
-            
             renderUnits();
         }
-        
+
         function deleteUnit(index) {
-            if (confirm(`Delete unit ${data.units[index].code}?`)) {
-                data.units.splice(index, 1);
+            if (confirm("Delete this unit?")) {
+                appData.units.splice(index, 1);
                 renderUnits();
             }
         }
-        
-        // Rules management
-        function renderRules() {
-            const container = document.getElementById('groupRulesContainer');
-            container.innerHTML = '';
-            
-            data.groups.forEach(group => {
-                if (group.id === 'core') return;
-                
-                const div = document.createElement('div');
-                div.innerHTML = `
-                    <label>
-                        ${group.name} (${group.id}): 
-                        Require <input type="number" value="${group.min || 0}" 
-                            onchange="data.groups.find(g => g.id === '${group.id}').min = parseInt(this.value)">
-                        to <input type="number" value="${group.max || ''}" placeholder="No max"
-                            onchange="data.groups.find(g => g.id === '${group.id}').max = this.value ? parseInt(this.value) : null">
-                        units
-                    </label>
-                `;
-                container.appendChild(div);
-            });
-        }
-        
-        // Tool generation
-        function generateTool() {
-            // Update rules from UI
-            data.rules = {
-                coreRequired: document.getElementById('coreRequired').checked,
-                coreCount: parseInt(document.getElementById('coreCount').value) || 0,
-                totalUnits: parseInt(document.getElementById('totalUnits').value) || 16
-            };
-            
-            // Generate the config object
+
+        // Generation functions
+        function generatePlanner() {
             const config = {
-                title: document.getElementById('qualTitle').value || "Qualification Planner",
+                title: document.getElementById('qualTitle').value || "Qualification",
                 code: document.getElementById('qualCode').value || "",
-                defaultDuration: parseInt(document.getElementById('defaultDuration').value) || 6,
-                groups: data.groups,
-                units: data.units,
-                rules: data.rules
+                groups: appData.groups,
+                units: appData.units,
+                rules: {
+                    coreRequired: document.getElementById('coreRequired').checked,
+                    totalUnits: parseInt(document.getElementById('totalUnits').value) || 16
+                }
             };
             
-            // Generate the HTML tool
-            const html = generateHTMLTool(config);
-            document.getElementById('generatedCode').value = html;
-        }
-        
-        function generateHTMLTool(config) {
-            // This would generate the complete planner HTML
-            // Simplified for this example
-            return `<!DOCTYPE html>
+            const html = `<!DOCTYPE html>
 <html>
 <head>
     <title>${config.title}</title>
@@ -399,38 +280,27 @@
 <body>
     <h1>${config.title}${config.code ? ` (${config.code})` : ''}</h1>
     <p>Generated qualification planner would appear here</p>
-    <script>
-        const config = ${JSON.stringify(config, null, 2)};
-        console.log(config);
-    </script>
 </body>
 </html>`;
-        }
-        
-        function downloadTool() {
-            const code = document.getElementById('generatedCode').value;
-            if (!code) {
-                alert('Please generate the tool first');
-                return;
-            }
             
-            const blob = new Blob([code], { type: 'text/html' });
+            document.getElementById('generatedCode').value = html;
+        }
+
+        function downloadPlanner() {
+            const code = document.getElementById('generatedCode').value;
+            if (!code) return alert('Generate the planner first');
+            
+            const blob = new Blob([code], {type: 'text/html'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'qualification-planner.html';
-            document.body.appendChild(a);
+            a.download = 'planner.html';
             a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
         }
-        
-        function testTool() {
+
+        function testPlanner() {
             const code = document.getElementById('generatedCode').value;
-            if (!code) {
-                alert('Please generate the tool first');
-                return;
-            }
+            if (!code) return alert('Generate the planner first');
             
             const win = window.open('', '_blank');
             win.document.write(code);
