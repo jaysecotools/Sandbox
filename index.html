@@ -1,310 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>CIII CEM Unit Planner (Multi-Group)</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; background: #f7f9fa; }
-    h2 { margin-top: 2em; }
-    table, th, td { border: 1px solid #ccc; border-collapse: collapse; padding: 6px; }
-    th { background: #e0e0e0; }
-    input[type="number"] { width: 60px; }
-    .unit-group { margin-bottom: 1em; padding: 1em; background: #fff; border: 1px solid #ddd; }
-    .group-label { font-weight: bold; font-size: 1.1em; margin-bottom: 0.5em; display: block; }
-    #validationIndicator {
-      margin-top: 1em;
-      font-weight: bold;
-      padding: 0.5em;
-      border-radius: 5px;
-      display: inline-block;
-    }
-    #validationIndicator.valid {
-      color: #155724;
-      background-color: #d4edda;
-      border: 1px solid #c3e6cb;
-    }
-    #validationIndicator.invalid {
-      color: #721c24;
-      background-color: #f8d7da;
-      border: 1px solid #f5c6cb;
-    }
-    .export-buttons {
-      margin-top: 1em;
-    }
-    .export-buttons button {
-      margin-right: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Qualification Planner Builder</title>
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #f9f9f9;
+}
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 30px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+h1, h2, h3 {
+    color: #2c3e50;
+}
+h1 {
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+.tab-buttons {
+    margin-bottom: 20px;
+}
+.tab-buttons button {
+    background: #95a5a6;
+    margin-right: 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.tab-buttons button.active {
+    background: #3498db;
+    color: white;
+}
+.tab {
+    display: none;
+}
+.tab.active {
+    display: block;
+}
+.builder-section {
+    background: #f5f7fa;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 5px;
+    border-left: 4px solid #3498db;
+}
+input, select {
+    padding: 8px 12px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+button {
+    padding: 8px 16px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+button:hover {
+    background: #2980b9;
+}
+#generatedCode {
+    width: 100%;
+    height: 300px;
+    font-family: monospace;
+}
+</style>
 </head>
 <body>
-  <h1>CIII Conservation & Ecosystem Management – Unit Planner</h1>
+<div class="container">
+    <h1>Qualification Planner Builder</h1>
+    
+    <div class="tab-buttons">
+        <button class="active" onclick="openTab(event, 'tab-qualification')">1. Qualification</button>
+        <button onclick="openTab(event, 'tab-groups')">2. Unit Groups</button>
+        <button onclick="openTab(event, 'tab-units')">3. Units</button>
+        <button onclick="openTab(event, 'tab-rules')">4. Rules</button>
+        <button onclick="openTab(event, 'tab-export')">5. Generate</button>
+    </div>
 
-  <form id="unitForm">
-    <h2>1. Select Units</h2>
-    <div class="unit-group" id="core-units"><span class="group-label">Core Units (Select all 2)</span></div>
-    <div class="unit-group" id="groupB"><span class="group-label">Group B – Ecological Restoration</span></div>
-    <div class="unit-group" id="groupC"><span class="group-label">Group C – Land, Parks & Wildlife</span></div>
-    <div class="unit-group" id="groupD"><span class="group-label">Group D – Conservation Earthworks</span></div>
-    <div class="unit-group" id="groupG"><span class="group-label">Group G – Fire</span></div>
-    <div class="unit-group" id="groupI"><span class="group-label">Group I – General Electives</span></div>
-    <div class="unit-group" id="imported"><span class="group-label">Imported Units</span></div>
+    <div id="tab-qualification" class="tab active">
+        <div class="builder-section">
+            <h2>Qualification Details</h2>
+            <label>Qualification Title: <input type="text" id="qualTitle" placeholder="e.g., CIII Conservation"></label><br>
+            <label>Qualification Code: <input type="text" id="qualCode" placeholder="e.g., AHC31420"></label><br>
+            <label>Default Unit Duration: <input type="number" id="defaultDuration" value="6" min="1"> weeks</label>
+        </div>
+    </div>
 
-    <div id="validationIndicator" class="invalid">Please select units according to packaging rules.</div>
+    <div id="tab-groups" class="tab">
+        <div class="builder-section">
+            <h2>Unit Groups</h2>
+            <p>Group management will appear here</p>
+        </div>
+    </div>
 
-    <h2>2. Schedule Options</h2>
-    <label>Course Start Date: <input type="date" id="startDate" required /></label><br /><br />
-    <button type="submit">Generate Schedule</button>
-  </form>
+    <div id="tab-units" class="tab">
+        <div class="builder-section">
+            <h2>Units</h2>
+            <p>Unit management will appear here</p>
+        </div>
+    </div>
 
-  <div class="export-buttons">
-    <button onclick="exportToCSV()">Export to CSV</button>
-    <button onclick="exportToPDF()">Export to PDF</button>
-  </div>
+    <div id="tab-rules" class="tab">
+        <div class="builder-section">
+            <h2>Packaging Rules</h2>
+            <p>Rules configuration will appear here</p>
+        </div>
+    </div>
 
-  <div id="results" style="margin-top:2em;"></div>
+    <div id="tab-export" class="tab">
+        <div class="builder-section">
+            <h2>Generate Planner</h2>
+            <button onclick="generateTool()">Generate Tool</button>
+            <div id="output" style="margin-top:30px">
+                <h3>Generated Code</h3>
+                <textarea id="generatedCode" readonly></textarea>
+                <button onclick="downloadTool()">Download HTML</button>
+                <button onclick="testTool()">Test in New Tab</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-
-  <script>
-    window.jsPDF = window.jspdf.jsPDF;
-
-function exportToCSV() {
-  const table = document.querySelector("#results table");
-  if (!table) return alert("No schedule to export");
-  let csv = "";
-  table.querySelectorAll("tr").forEach(row => {
-    const cells = Array.from(row.querySelectorAll("th,td")).map(cell => '"' + cell.textContent.trim().replace(/"/g, '""') + '"');
-    csv += cells.join(",") + "\n";
-  });
-
-  const filename = prompt("Enter a name for your CSV file:", "schedule") || "schedule";
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${filename}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+<script>
+// Tab navigation
+function openTab(event, tabId) {
+    // Hide all tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.tab-buttons button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show the selected tab
+    document.getElementById(tabId).classList.add('active');
+    
+    // Add active class to the clicked button
+    event.currentTarget.classList.add('active');
 }
 
-function exportToPDF() {
-  const table = document.querySelector("#results table");
-  if (!table) return alert("No schedule to export");
-
-  const filename = prompt("Enter a name for your PDF file:", "schedule") || "schedule";
-  const doc = new jsPDF();
-  doc.text("CIII CEM Schedule", 14, 16);
-
-  const rows = [];
-  table.querySelectorAll("tr").forEach(row => {
-    const rowData = Array.from(row.querySelectorAll("th,td")).map(cell => cell.textContent.trim());
-    rows.push(rowData);
-  });
-
-  doc.autoTable({ head: [rows[0]], body: rows.slice(1), startY: 20 });
-  doc.save(`${filename}.pdf`);
+// Tool generation functions
+function generateTool() {
+    const title = document.getElementById("qualTitle").value || "Qualification Planner";
+    const code = document.getElementById("qualCode").value || "";
+    const duration = document.getElementById("defaultDuration").value || 6;
+    
+    const generatedCode = `<!DOCTYPE html>
+<html>
+<head>
+    <title>${title}</title>
+</head>
+<body>
+    <h1>${title} ${code ? `(${code})` : ''}</h1>
+    <p>Default duration: ${duration} weeks</p>
+    <!-- More generated content would go here -->
+</body>
+</html>`;
+    
+    document.getElementById("generatedCode").value = generatedCode;
 }
 
-    const coreUnits = [
-      { code: "AHCECR309", name: "Conduct an ecological and cultural site inspection prior to works", duration: 4 },
-      { code: "AHCWHS302", name: "Contribute to workplace health and safety processes", duration: 4 },
-    ];
+function downloadTool() {
+    const code = document.getElementById("generatedCode").value;
+    if (!code) return alert('Please generate the tool first');
+    
+    const blob = new Blob([code], { type: "text/html" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "qualification-planner.html";
+    a.click();
+}
 
-    const electiveUnits = [
-      { code: "AHCECR301", name: "Maintain native ecosystem areas", duration: 4, groups: ["groupB"] },
-      { code: "AHCECR305", name: "Collect native seed", duration: 4, groups: ["groupB"] },
-      { code: "AHCECR307", name: "Read and interpret maps", duration: 4, groups: ["groupB"] },
-      { code: "AHCPCM303", name: "Identify plant specimens", duration: 4, groups: ["groupB"] },
-      { code: "AHCPMG301", name: "Control weeds", duration: 4, groups: ["groupB"] },
-      { code: "AHCPMG302", name: "Control plant pests, diseases and disorders", duration: 4, groups: ["groupB"] },
-      { code: "AHCFAU302", name: "Identify fauna in the field", duration: 4, groups: ["groupC"] },
-      { code: "AHCLPW310", name: "Supervise park visitor activities", duration: 4, groups: ["groupC"] },
-      { code: "AHCWRK320", name: "Apply environmentally sustainable work practices", duration: 4, groups: ["groupC"] },
-      { code: "AHCBIO303", name: "Apply biosecurity measures", duration: 4, groups: ["groupD", "groupI"] },
-      { code: "AHCMOM302", name: "Perform machinery maintenance", duration: 4, groups: ["groupD"] },
-      { code: "AHCMOM304", name: "Operate machinery and equipment", duration: 4, groups: ["groupD"] },
-      { code: "AHCPCM204", name: "Recognise plants", duration: 4, groups: ["groupD"] },
-      { code: "FWPCOT3325", name: "Operate four wheel drive vehicle on unsealed roads", duration: 4, groups: ["groupG", "groupI"] },
-      { code: "AHCCHM304", name: "Transport and store chemicals", duration: 4, groups: ["groupI"] },
-      { code: "AHCCHM307", name: "Prepare and apply chemicals", duration: 4, groups: ["groupI"] },
-      { code: "AHCLPW313", name: "Undertake water sampling", duration: 4, groups: ["groupI"] },
-      { code: "AHCMOM213", name: "Operate and maintain chainsaws", duration: 4, groups: ["groupI"] },
-      { code: "CPPSSI3011", name: "Produce basic maps", duration: 4, groups: ["groupI"] },
-      { code: "FWPCOT3326", name: "Recover 4WD vehicle", duration: 4, groups: ["groupI"] },
-      { code: "HLTAID011", name: "Provide First Aid", duration: 4, groups: ["groupI"] },
-      { code: "AHCMOM202", name: "Operate tractors", duration: 4, groups: ["imported"] },
-      { code: "AHCMOM207", name: "Conduct front-end loader ops", duration: 4, groups: ["imported"] },
-      { code: "AHCMOM216", name: "Operate side by side utility vehicles", duration: 4, groups: ["imported"] },
-      { code: "AHCMOM217", name: "Operate quad bikes", duration: 4, groups: ["imported"] },
-      { code: "AHCNSY207", name: "Undertake propagation", duration: 4, groups: ["imported"] },
-      { code: "FWPCOT2266", name: "Operate brush cutter", duration: 4, groups: ["imported"] }
-    ];
-
-    function buildUnitCheckboxes() {
-      coreUnits.forEach(unit => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-          <label>
-            <input type="checkbox" value="${unit.code}" data-code="${unit.code}" data-name="${unit.name}" data-groups="core" checked disabled>
-            ${unit.code} – ${unit.name}
-            &nbsp; Duration (weeks): <input type="number" min="1" value="${unit.duration}" class="duration" data-unit="${unit.code}">
-          </label>`;
-        document.getElementById("core-units").appendChild(div);
-      });
-
-      electiveUnits.forEach(unit => {
-        unit.groups.forEach(group => {
-          const div = document.createElement("div");
-          div.innerHTML = `
-            <label>
-              <input type="checkbox" data-code="${unit.code}" data-name="${unit.name}" data-groups="${unit.groups.join(',')}" value="${unit.code}">
-              ${unit.code} – ${unit.name} ${unit.groups.length > 1 ? `(Groups: ${unit.groups.map(g => g.replace("group", "").toUpperCase()).join(", ")})` : ""}
-              &nbsp; Duration (weeks): <input type="number" min="1" value="${unit.duration}" class="duration" data-unit="${unit.code}">
-            </label>`;
-          document.getElementById(group).appendChild(div);
-        });
-      });
-    }
-
-    function getSelectedUnits() {
-      const selected = [];
-
-      document.querySelectorAll("input[type=checkbox]").forEach(cb => {
-        if (cb.checked) {
-          const code = cb.dataset.code;
-          const name = cb.dataset.name;
-          const groups = cb.dataset.groups ? cb.dataset.groups.split(",") : ["core"];
-          const durationInput = document.querySelector(`input.duration[data-unit="${code}"]`);
-          const duration = parseInt(durationInput?.value || 4);
-          selected.push({ code, name, groups, duration });
-        }
-      });
-
-      return selected;
-    }
-
-    function generateSchedule(units, startDate) {
-      const schedule = [];
-      let currentDate = new Date(startDate);
-      
-      for (const unit of units) {
-        const start = new Date(currentDate);
-        const end = new Date(start);
-        end.setDate(end.getDate() + (unit.duration * 7) - 1); // Subtract 1 day to get last day of week
-        
-        schedule.push({
-          ...unit,
-          startDate: formatDate(start),
-          endDate: formatDate(end)
-        });
-        
-        // Move to next unit start date (after this unit ends)
-        currentDate = new Date(end);
-        currentDate.setDate(currentDate.getDate() + 1); // Start next unit the day after previous ends
-      }
-      
-      return schedule;
-    }
-
-    // Format Date DD/MM/YYYY
-    function formatDate(d) {
-      const day = String(d.getDate()).padStart(2, "0");
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const year = d.getFullYear();
-      return `${day}/${month}/${year}`;
-    }
-
-    function validate(selected) {
-      const groupCounts = { core: 0, groupI: 0, imported: 0, AtoH: 0 };
-      selected.forEach(u => {
-        if (u.groups.includes("core")) groupCounts.core++;
-        if (u.groups.includes("groupI")) groupCounts.groupI++;
-        if (u.groups.includes("imported")) groupCounts.imported++;
-        if (u.groups.some(g => ["groupB", "groupC", "groupD", "groupG"].includes(g))) groupCounts.AtoH++;
-      });
-
-      const errors = [];
-      if (groupCounts.core !== 2) errors.push("You must include exactly 2 core units.");
-      if (groupCounts.AtoH < 6) errors.push("At least 6 units must be from Groups A–H.");
-      if (groupCounts.groupI > 6) errors.push("Max 6 electives from Group I.");
-      if (groupCounts.imported > 4) errors.push("Max 4 imported electives.");
-      if (selected.length !== 16) errors.push("Exactly 16 units must be selected.");
-
-      return errors;
-    }
-
-    function renderSchedule(schedule, startDate) {
-      if (!schedule.length) {
-        document.getElementById("results").innerHTML = "<p>No schedule available.</p>";
-        return;
-      }
-
-      // Convert input start date string (YYYY-MM-DD) to Date object
-      const [year, month, day] = startDate.split("-");
-      const start = new Date(year, month - 1, day);
-
-      // Parse the end date from the final scheduled unit (format: DD/MM/YYYY)
-      const endParts = schedule.at(-1).endDate.split("/");
-      const end = new Date(endParts[2], endParts[1] - 1, endParts[0]);
-
-      // Calculate duration in weeks
-      const weeks = Math.round((end - start) / (1000 * 60 * 60 * 24 * 7));
-
-      // Generate schedule output
-      let out = `<h2>📅 Schedule</h2><p><strong>Actual Duration:</strong> ${weeks} weeks (${formatDate(start)} to ${formatDate(end)})</p>`;
-      if (weeks > 100) out += `<p style="color:red">⚠ Course exceeds the 100-week target window.</p>`;
-
-      out += `<table><tr><th>Code</th><th>Name</th><th>Start</th><th>End</th></tr>`;
-      schedule.forEach(u => {
-        out += `<tr><td>${u.code}</td><td>${u.name}</td><td>${u.startDate}</td><td>${u.endDate}</td></tr>`;
-      });
-      out += `</table>`;
-
-      document.getElementById("results").innerHTML = out;
-    }
-
-    // Update validation indicator (called on checkbox or duration change)
-    function updateValidationIndicator() {
-      const selected = getSelectedUnits();
-      const errors = validate(selected);
-      const indicator = document.getElementById("validationIndicator");
-      if (errors.length === 0) {
-        indicator.textContent = "✅ Selection meets qualification packaging rules.";
-        indicator.classList.remove("invalid");
-        indicator.classList.add("valid");
-      } else {
-        indicator.textContent = "❌ " + errors.join(" ");
-        indicator.classList.remove("valid");
-        indicator.classList.add("invalid");
-      }
-    }
-
-    document.getElementById("unitForm").addEventListener("submit", e => {
-      e.preventDefault();
-      const selected = getSelectedUnits();
-      const errors = validate(selected);
-      if (errors.length) return alert(errors.join("\n"));
-      const startDate = document.getElementById("startDate").value;
-      const schedule = generateSchedule(selected, startDate);
-      renderSchedule(schedule, startDate);
-    });
-
-    // When any checkbox or duration input changes, update validation indicator live
-    document.body.addEventListener("change", e => {
-      if (
-        e.target.matches("input[type=checkbox]") ||
-        e.target.matches("input.duration")
-      ) {
-        updateValidationIndicator();
-      }
-    });
-
-    buildUnitCheckboxes();
-
-    // Initial validation on load (core units are pre-selected)
-    updateValidationIndicator();
-  </script>
+function testTool() {
+    const code = document.getElementById("generatedCode").value;
+    if (!code) return alert('Please generate the tool first');
+    
+    const win = window.open("", "_blank");
+    win.document.write(code);
+    win.document.close();
+}
+</script>
 </body>
 </html>
