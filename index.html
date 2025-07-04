@@ -933,6 +933,9 @@
         
         // Initialize the tool
         document.addEventListener('DOMContentLoaded', function() {
+            // Set default industry selection
+            selectIndustry('natural');
+            
             loadProgress();
             updateStepIndicator();
             
@@ -980,20 +983,19 @@
             document.getElementById('step-indicator').textContent = stepIndicators[currentStep];
             document.getElementById('progress-bar').style.width = `${(currentStep / (totalSteps-1)) * 100}%`;
             document.getElementById('progress-text').textContent = `Step ${currentStep+1} of ${totalSteps}`;
-            
-            // Update review summary if we're on the review step
-            if (currentStep === 8) {
-                updateReviewSummary();
-            }
         }
         
         function validateStep(step) {
             // Simple validation for required fields
             let isValid = true;
-            
+
             if (step === 0) {
-                if (!document.getElementById('industry').value) {
+                const industry = document.getElementById('industry').value;
+                if (!industry) {
                     alert('Please select an industry');
+                    isValid = false;
+                } else if (industry === 'other' && !document.getElementById('industry-other-text').value) {
+                    alert('Please specify your industry');
                     isValid = false;
                 }
             } else if (step === 1) {
@@ -1066,13 +1068,20 @@
             });
             document.getElementById(`industry-card-${industry}`).classList.add('selected');
             
-            // Set industry value
-            document.getElementById('industry').value = industryConfig[industry].name;
+            // Set industry value - this is what the validation checks for
+            document.getElementById('industry').value = industry;
             
             // Show/hide other text field
             const otherText = document.getElementById('industry-other-text');
             otherText.style.display = industry === 'other' ? 'block' : 'none';
             if (industry !== 'other') otherText.value = '';
+            
+            // Update industry name in config if "other" is selected
+            if (industry === 'other' && otherText.value) {
+                industryConfig.other.name = otherText.value;
+            } else {
+                industryConfig.other.name = 'Other';
+            }
         }
         
         // Template selection
@@ -1086,8 +1095,10 @@
         
         // Dynamic content updates based on industry
         function updateActivities() {
-            const industry = document.querySelector('input[name="industry"]:checked')?.value || 'natural';
-            const config = industryConfig[industry] || industryConfig.natural;
+            const industry = document.getElementById('industry').value || 'natural';
+            const industryKey = Object.keys(industryConfig).find(key => 
+                industryConfig[key].name === industry) || 'natural';
+            const config = industryConfig[industryKey] || industryConfig.natural;
             
             const container = document.getElementById('activities-container');
             container.innerHTML = config.activities.map(activity => `
@@ -1108,11 +1119,27 @@
                 document.getElementById('activity-other-text').style.display = 
                     this.checked ? 'block' : 'none';
             });
+            
+            // Load saved activities if they exist
+            const savedData = localStorage.getItem('biosecurityPlanData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                setSelectedCheckboxes('activities', data.activities || []);
+                document.getElementById('activity-other-text').value = data.activityOther || '';
+                if (data.activities && data.activities.includes('Other')) {
+                    document.getElementById('activity-other').checked = true;
+                    document.getElementById('activity-other-text').style.display = 'block';
+                }
+                document.getElementById('activity-frequency').value = data.activityFrequency || '';
+                document.getElementById('activity-staff').value = data.activityStaff || '';
+            }
         }
         
         function updateRisks() {
-            const industry = document.querySelector('input[name="industry"]:checked')?.value || 'natural';
-            const config = industryConfig[industry] || industryConfig.natural;
+            const industry = document.getElementById('industry').value || 'natural';
+            const industryKey = Object.keys(industryConfig).find(key => 
+                industryConfig[key].name === industry) || 'natural';
+            const config = industryConfig[industryKey] || industryConfig.natural;
             
             const container = document.getElementById('risks-container');
             container.innerHTML = config.risks.map(risk => `
@@ -1133,11 +1160,27 @@
                 document.getElementById('risk-other-text').style.display = 
                     this.checked ? 'block' : 'none';
             });
+            
+            // Load saved risks if they exist
+            const savedData = localStorage.getItem('biosecurityPlanData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                setSelectedCheckboxes('risks', data.risks || []);
+                document.getElementById('risk-other-text').value = data.riskOther || '';
+                if (data.risks && data.risks.includes('Other')) {
+                    document.getElementById('risk-other').checked = true;
+                    document.getElementById('risk-other-text').style.display = 'block';
+                }
+                document.getElementById('known-issues').value = data.knownIssues || '';
+                document.getElementById('visitor-frequency').value = data.visitorFrequency || '';
+            }
         }
         
         function updateMeasures() {
-            const industry = document.querySelector('input[name="industry"]:checked')?.value || 'natural';
-            const config = industryConfig[industry] || industryConfig.natural;
+            const industry = document.getElementById('industry').value || 'natural';
+            const industryKey = Object.keys(industryConfig).find(key => 
+                industryConfig[key].name === industry) || 'natural';
+            const config = industryConfig[industryKey] || industryConfig.natural;
             
             const container = document.getElementById('measures-container');
             container.innerHTML = config.measures.map(measure => `
@@ -1158,6 +1201,22 @@
                 document.getElementById('measure-other-text').style.display = 
                     this.checked ? 'block' : 'none';
             });
+            
+            // Load saved measures if they exist
+            const savedData = localStorage.getItem('biosecurityPlanData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                setSelectedCheckboxes('measures', data.measures || []);
+                document.getElementById('measure-other-text').value = data.measureOther || '';
+                if (data.measures && data.measures.includes('Other')) {
+                    document.getElementById('measure-other').checked = true;
+                    document.getElementById('measure-other-text').style.display = 'block';
+                }
+                document.getElementById('implementation').value = data.implementation || '';
+                document.getElementById('monitoring').value = data.monitoring || '';
+                document.getElementById('budget').value = data.budget || '';
+                document.getElementById('timeline').value = data.timeline || '';
+            }
         }
         
         // Risk assessment matrix
@@ -1186,6 +1245,23 @@
                     <td class="risk-priority">Low</td>
                 </tr>
             `).join('');
+            
+            // Load saved risk scores if they exist
+            const savedData = localStorage.getItem('biosecurityPlanData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                if (data.riskScores) {
+                    data.riskScores.forEach((risk, i) => {
+                        const row = document.querySelectorAll('#risk-matrix-body tr')[i];
+                        if (row) {
+                            row.querySelector('.likelihood').value = risk.likelihood;
+                            row.querySelector('.impact').value = risk.impact;
+                            updateRiskScore(row.querySelector('.likelihood'));
+                        }
+                    });
+                    document.getElementById('risk-notes').value = data.riskNotes || '';
+                }
+            }
             
             // Initialize risk chart
             updateRiskChart();
@@ -1240,57 +1316,59 @@
                 riskChart.destroy();
             }
             
-            riskChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: risks.map(r => r.name),
-                    datasets: [{
-                        label: 'Risk Score',
-                        data: risks.map(r => r.score),
-                        backgroundColor: risks.map(r => 
-                            r.priority === 'High' ? 'rgba(198, 40, 40, 0.7)' :
-                            r.priority === 'Medium' ? 'rgba(255, 143, 0, 0.7)' :
-                            'rgba(46, 125, 50, 0.7)'),
-                        borderColor: risks.map(r => 
-                            r.priority === 'High' ? 'rgba(198, 40, 40, 1)' :
-                            r.priority === 'Medium' ? 'rgba(255, 143, 0, 1)' :
-                            'rgba(46, 125, 50, 1)'),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 9,
-                            title: {
-                                display: true,
-                                text: 'Risk Score'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Identified Risks'
-                            }
-                        }
+            if (risks.length > 0) {
+                riskChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: risks.map(r => r.name),
+                        datasets: [{
+                            label: 'Risk Score',
+                            data: risks.map(r => r.score),
+                            backgroundColor: risks.map(r => 
+                                r.priority === 'High' ? 'rgba(198, 40, 40, 0.7)' :
+                                r.priority === 'Medium' ? 'rgba(255, 143, 0, 0.7)' :
+                                'rgba(46, 125, 50, 0.7)'),
+                            borderColor: risks.map(r => 
+                                r.priority === 'High' ? 'rgba(198, 40, 40, 1)' :
+                                r.priority === 'Medium' ? 'rgba(255, 143, 0, 1)' :
+                                'rgba(46, 125, 50, 1)'),
+                            borderWidth: 1
+                        }]
                     },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Score: ${context.raw} (${risks[context.dataIndex].priority} priority)`;
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 9,
+                                title: {
+                                    display: true,
+                                    text: 'Risk Score'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Identified Risks'
                                 }
                             }
                         },
-                        legend: {
-                            display: false
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Score: ${context.raw} (${risks[context.dataIndex].priority} priority)`;
+                                    }
+                                }
+                            },
+                            legend: {
+                                display: false
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
         
         // Team management
@@ -1422,47 +1500,10 @@
                 document.getElementById('project-description').value = data.projectDescription || '';
                 
                 // Step 3 (will be populated when step is activated)
-                if (data.activities) {
-                    setTimeout(() => {
-                        setSelectedCheckboxes('activities', data.activities || []);
-                        document.getElementById('activity-other-text').value = data.activityOther || '';
-                        if (data.activities.includes('Other')) {
-                            document.getElementById('activity-other').checked = true;
-                            document.getElementById('activity-other-text').style.display = 'block';
-                        }
-                        document.getElementById('activity-frequency').value = data.activityFrequency || '';
-                        document.getElementById('activity-staff').value = data.activityStaff || '';
-                    }, 0);
-                }
                 
                 // Step 4 (will be populated when step is activated)
-                if (data.risks) {
-                    setTimeout(() => {
-                        setSelectedCheckboxes('risks', data.risks || []);
-                        document.getElementById('risk-other-text').value = data.riskOther || '';
-                        if (data.risks.includes('Other')) {
-                            document.getElementById('risk-other').checked = true;
-                            document.getElementById('risk-other-text').style.display = 'block';
-                        }
-                        document.getElementById('known-issues').value = data.knownIssues || '';
-                        document.getElementById('visitor-frequency').value = data.visitorFrequency || '';
-                    }, 0);
-                }
                 
                 // Step 5 (will be populated when step is activated)
-                if (data.riskScores) {
-                    setTimeout(() => {
-                        data.riskScores.forEach((risk, i) => {
-                            const row = document.querySelectorAll('#risk-matrix-body tr')[i];
-                            if (row) {
-                                row.querySelector('.likelihood').value = risk.likelihood;
-                                row.querySelector('.impact').value = risk.impact;
-                                updateRiskScore(row.querySelector('.likelihood'));
-                            }
-                        });
-                        document.getElementById('risk-notes').value = data.riskNotes || '';
-                    }, 0);
-                }
                 
                 // Step 6
                 setSelectedCheckboxes('controls', data.controls || []);
@@ -1475,20 +1516,6 @@
                 document.getElementById('challenges').value = data.challenges || '';
                 
                 // Step 7 (will be populated when step is activated)
-                if (data.measures) {
-                    setTimeout(() => {
-                        setSelectedCheckboxes('measures', data.measures || []);
-                        document.getElementById('measure-other-text').value = data.measureOther || '';
-                        if (data.measures.includes('Other')) {
-                            document.getElementById('measure-other').checked = true;
-                            document.getElementById('measure-other-text').style.display = 'block';
-                        }
-                        document.getElementById('implementation').value = data.implementation || '';
-                        document.getElementById('monitoring').value = data.monitoring || '';
-                        document.getElementById('budget').value = data.budget || '';
-                        document.getElementById('timeline').value = data.timeline || '';
-                    }, 0);
-                }
                 
                 // Step 8
                 if (data.teamMembers && data.teamMembers.length > 0) {
@@ -1523,52 +1550,6 @@
             checkboxes.forEach(cb => {
                 cb.checked = values.includes(cb.value);
             });
-        }
-        
-        function updateReviewSummary() {
-            const data = JSON.parse(localStorage.getItem('biosecurityPlanData'));
-            if (!data) return;
-            
-            let html = `
-                <div class="output-section">
-                    <h3>Organization Details</h3>
-                    <p><strong>Organization:</strong> ${data.orgName}</p>
-                    <p><strong>Type:</strong> ${data.orgType || 'Not specified'}</p>
-                    <p><strong>Size:</strong> ${data.orgSize || 'Not specified'}</p>
-                    <p><strong>Primary Contact:</strong> ${data.primaryContact}</p>
-                    <p><strong>Email:</strong> ${data.contactEmail}</p>
-                </div>
-                
-                <div class="output-section">
-                    <h3>Project/Site Details</h3>
-                    <p><strong>Name:</strong> ${data.projectName}</p>
-                    <p><strong>Location:</strong> ${data.projectLocation}</p>
-                    <p><strong>Size:</strong> ${data.projectSize || 'Not specified'} ${data.sizeUnit || 'hectares'}</p>
-                    <p><strong>Description:</strong> ${data.projectDescription || 'Not provided'}</p>
-                </div>
-                
-                <div class="output-section">
-                    <h3>Activities</h3>
-                    <p><strong>Primary Activities:</strong> ${data.activities.join(', ')}${data.activityOther ? ' (' + data.activityOther + ')' : ''}</p>
-                    <p><strong>Frequency:</strong> ${data.activityFrequency || 'Not specified'}</p>
-                    <p><strong>Staff/Volunteers:</strong> ${data.activityStaff || 'Not specified'}</p>
-                </div>
-                
-                <div class="output-section">
-                    <h3>Risk Assessment</h3>
-                    <p><strong>Identified Risks:</strong> ${data.risks.join(', ')}${data.riskOther ? ' (' + data.riskOther + ')' : ''}</p>
-                    <p><strong>Known Issues:</strong> ${data.knownIssues || 'None specified'}</p>
-                    <p><strong>Visitor Frequency:</strong> ${data.visitorFrequency}</p>
-                    ${data.riskScores && data.riskScores.length > 0 ? `
-                        <p><strong>Risk Scores:</strong></p>
-                        <ul>
-                            ${data.riskScores.map(r => `<li>${r.name}: Score ${r.score} (${r.priority} priority)</li>`).join('')}
-                        </ul>
-                    ` : ''}
-                </div>
-            `;
-            
-            document.getElementById('review-summary').innerHTML = html;
         }
         
         // Plan generation functions
@@ -1944,59 +1925,61 @@
                     // This script will be executed when the PDF is generated
                     function generatePDFChart() {
                         const ctx = document.getElementById('pdfRiskChart').getContext('2d');
-                        const risks = ${JSON.stringify(data.riskScores)};
+                        const risks = ${JSON.stringify(data.riskScores || [])};
                         
-                        new Chart(ctx, {
-                            type: 'bar',
-                            data: {
-                                labels: risks.map(r => r.name),
-                                datasets: [{
-                                    label: 'Risk Score',
-                                    data: risks.map(r => r.score),
-                                    backgroundColor: risks.map(r => 
-                                        r.priority === 'High' ? 'rgba(198, 40, 40, 0.7)' :
-                                        r.priority === 'Medium' ? 'rgba(255, 143, 0, 0.7)' :
-                                        'rgba(46, 125, 50, 0.7)'),
-                                    borderColor: risks.map(r => 
-                                        r.priority === 'High' ? 'rgba(198, 40, 40, 1)' :
-                                        r.priority === 'Medium' ? 'rgba(255, 143, 0, 1)' :
-                                        'rgba(46, 125, 50, 1)'),
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        max: 9,
-                                        title: {
-                                            display: true,
-                                            text: 'Risk Score'
-                                        }
-                                    },
-                                    x: {
-                                        title: {
-                                            display: true,
-                                            text: 'Identified Risks'
-                                        }
-                                    }
+                        if (risks.length > 0) {
+                            new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels: risks.map(r => r.name),
+                                    datasets: [{
+                                        label: 'Risk Score',
+                                        data: risks.map(r => r.score),
+                                        backgroundColor: risks.map(r => 
+                                            r.priority === 'High' ? 'rgba(198, 40, 40, 0.7)' :
+                                            r.priority === 'Medium' ? 'rgba(255, 143, 0, 0.7)' :
+                                            'rgba(46, 125, 50, 0.7)'),
+                                        borderColor: risks.map(r => 
+                                            r.priority === 'High' ? 'rgba(198, 40, 40, 1)' :
+                                            r.priority === 'Medium' ? 'rgba(255, 143, 0, 1)' :
+                                            'rgba(46, 125, 50, 1)'),
+                                        borderWidth: 1
+                                    }]
                                 },
-                                plugins: {
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                return \`Score: \${context.raw} (\${risks[context.dataIndex].priority} priority)\`;
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            max: 9,
+                                            title: {
+                                                display: true,
+                                                text: 'Risk Score'
+                                            }
+                                        },
+                                        x: {
+                                            title: {
+                                                display: true,
+                                                text: 'Identified Risks'
                                             }
                                         }
                                     },
-                                    legend: {
-                                        display: false
+                                    plugins: {
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(context) {
+                                                    return \`Score: \${context.raw} (\${risks[context.dataIndex].priority} priority)\`;
+                                                }
+                                            }
+                                        },
+                                        legend: {
+                                            display: false
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                     
                     // Generate the chart when the page loads
@@ -2128,8 +2111,9 @@
                     card.classList.remove('selected');
                 });
                 document.getElementById('industry-card-natural').classList.add('selected');
-                document.getElementById('industry').value = 'Natural Area Restoration';
+                document.getElementById('industry').value = 'natural';
                 document.getElementById('industry-other-text').style.display = 'none';
+                document.getElementById('industry-other-text').value = '';
                 
                 // Reset template selection
                 document.querySelectorAll('.template-card').forEach(card => {
