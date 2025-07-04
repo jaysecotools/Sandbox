@@ -1,1356 +1,2161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CIII CEM Unit Planner (Multi-Group)</title>
-  <style>
-    :root {
-      --primary-color: #2c7d4d;
-      --primary-light: #e8f5e9;
-      --secondary-color: #1565c0;
-      --accent-color: #ff9800;
-      --error-color: #d32f2f;
-      --success-color: #388e3c;
-      --warning-color: #ffa000;
-      --text-color: #333;
-      --light-gray: #f5f5f5;
-      --medium-gray: #e0e0e0;
-      --dark-gray: #757575;
-      --white: #ffffff;
-      --shadow: 0 2px 8px rgba(0,0,0,0.1);
-      --border-radius: 6px;
-    }
-    
-    body {
-      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-      line-height: 1.6;
-      color: var(--text-color);
-      background: var(--light-gray);
-      padding: 0;
-      margin: 0;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    h1, h2, h3 {
-      color: var(--primary-color);
-      margin-top: 0;
-    }
-    
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1.5rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid var(--primary-color);
-    }
-    
-    h2 {
-      font-size: 1.5rem;
-      margin-top: 2em;
-      margin-bottom: 1em;
-      padding-bottom: 0.3em;
-      border-bottom: 1px solid var(--medium-gray);
-    }
-    
-    h3 {
-      font-size: 1.2rem;
-    }
-    
-    table, th, td {
-      border: 1px solid var(--medium-gray);
-      border-collapse: collapse;
-    }
-    
-    th, td {
-      padding: 10px;
-      text-align: left;
-    }
-    
-    th {
-      background: var(--primary-color);
-      color: white;
-      font-weight: 500;
-    }
-    
-    tr:nth-child(even) {
-      background-color: var(--primary-light);
-    }
-    
-    input[type="text"],
-    input[type="number"],
-    input[type="date"],
-    select,
-    textarea {
-      padding: 8px 12px;
-      border: 1px solid var(--medium-gray);
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      transition: border 0.2s;
-    }
-    
-    input[type="text"]:focus,
-    input[type="number"]:focus,
-    input[type="date"]:focus,
-    select:focus,
-    textarea:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(44, 125, 77, 0.2);
-    }
-    
-    input[type="number"] {
-      width: 70px;
-    }
-    
-    input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-    
-    .unit-group {
-      margin-bottom: 1.5em;
-      padding: 1.5em;
-      background: var(--white);
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow);
-    }
-    
-    .group-label {
-      font-weight: 600;
-      font-size: 1.1em;
-      margin-bottom: 1em;
-      display: block;
-      color: var(--secondary-color);
-    }
-    
-    .unit-item {
-      margin-bottom: 0.8em;
-      padding: 0.5em;
-      border-left: 3px solid transparent;
-      transition: all 0.2s;
-    }
-    
-    .unit-item:hover {
-      background: var(--primary-light);
-      border-left-color: var(--primary-color);
-    }
-    
-    #validationIndicator {
-      margin-top: 1.5em;
-      font-weight: 600;
-      padding: 1em;
-      border-radius: var(--border-radius);
-      display: inline-block;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    
-    #validationIndicator.valid {
-      color: var(--success-color);
-      background-color: rgba(56, 142, 60, 0.1);
-      border: 1px solid rgba(56, 142, 60, 0.3);
-    }
-    
-    #validationIndicator.invalid {
-      color: var(--error-color);
-      background-color: rgba(211, 47, 47, 0.1);
-      border: 1px solid rgba(211, 47, 47, 0.3);
-    }
-    
-    #validationIndicator.override {
-      color: var(--warning-color);
-      background-color: rgba(255, 160, 0, 0.1);
-      border: 1px solid rgba(255, 160, 0, 0.3);
-    }
-    
-    .export-buttons {
-      margin-top: 1.5em;
-      display: flex;
-      gap: 10px;
-    }
-    
-    button {
-      padding: 10px 16px;
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    button:hover {
-      background-color: #236641;
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
-    }
-    
-    button:active {
-      transform: translateY(0);
-    }
-    
-    button.secondary {
-      background-color: var(--secondary-color);
-    }
-    
-    button.secondary:hover {
-      background-color: #0d47a1;
-    }
-    
-    .other-unit-container {
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px dashed var(--medium-gray);
-    }
-    
-    .other-unit {
-      margin-bottom: 12px;
-      padding: 12px;
-      background: var(--light-gray);
-      border-radius: var(--border-radius);
-      position: relative;
-    }
-    
-    .other-unit input[type="text"] {
-      width: 100%;
-      max-width: 400px;
-      margin-left: 5px;
-    }
-    
-    .remove-other-unit {
-      position: absolute;
-      right: 10px;
-      top: 10px;
-      background: var(--error-color);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      padding: 0;
-    }
-    
-    .remove-other-unit:hover {
-      background: #b71c1c;
-    }
-    
-    .add-other-unit {
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      margin-top: 5px;
-      margin-right: 8px;
-      font-size: 0.9rem;
-    }
-    
-    .add-other-unit:hover {
-      background: #236641;
-    }
-    
-    .notes-section {
-      margin-top: 20px;
-    }
-    
-    .notes-section textarea {
-      width: 100%;
-      min-height: 100px;
-      padding: 12px;
-      box-sizing: border-box;
-      border: 1px solid var(--medium-gray);
-      border-radius: var(--border-radius);
-      font-family: inherit;
-    }
-    
-    .info-box {
-      background: var(--white);
-      padding: 20px; 
-      margin-bottom: 30px; 
-      border-radius: var(--border-radius); 
-      box-shadow: var(--shadow);
-      border-left: 4px solid var(--primary-color);
-    }
-    
-    .info-box h3 {
-      margin-top: 0;
-      color: var(--primary-color);
-    }
-    
-    .info-box ul {
-      margin: 0;
-      padding-left: 20px;
-    }
-    
-    .info-box li {
-      margin-bottom: 8px;
-    }
-    
-    .warning-box {
-      background: #fff8e1;
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: var(--border-radius);
-      border-left: 4px solid var(--warning-color);
-    }
-    
-    .warning-box p {
-      font-size: 0.9em; 
-      margin: 8px 0 0;
-      color: #5d4037;
-    }
-    
-    .quarter-selector {
-      margin-left: 15px;
-      display: none;
-    }
-    
-    .quarter-selector select {
-      margin-left: 5px;
-      padding: 5px;
-    }
-    
-    .schedule-mode-selector {
-      margin: 20px 0;
-      padding: 15px;
-      background: var(--white);
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-    
-    .schedule-mode-selector label {
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-    }
-    
-    .schedule-mode-selector input[type="radio"] {
-      margin-right: 8px;
-    }
-    
-    .quarter-section {
-      background-color: var(--white);
-      border-left: 4px solid var(--secondary-color);
-      padding: 15px;
-      margin: 20px 0;
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow);
-    }
-    
-    .quarter-header {
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: var(--secondary-color);
-    }
-    
-    .duration-input {
-      display: inline;
-      margin-left: 10px;
-    }
-    
-    .quarter-total {
-      font-weight: 600;
-      margin-top: 10px;
-      color: var(--secondary-color);
-    }
-    
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    
-    .form-group {
-      margin-bottom: 15px;
-    }
-    
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-    
-    @media (max-width: 768px) {
-      .container {
-        padding: 15px;
-      }
-      
-      .unit-group {
-        padding: 15px;
-      }
-      
-      .schedule-mode-selector {
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-    
-    /* Custom checkbox styling */
-    input[type="checkbox"] {
-      -webkit-appearance: none;
-      appearance: none;
-      background-color: var(--white);
-      margin: 0;
-      font: inherit;
-      color: currentColor;
-      width: 1.15em;
-      height: 1.15em;
-      border: 0.15em solid var(--medium-gray);
-      border-radius: 0.15em;
-      transform: translateY(-0.075em);
-      display: inline-grid;
-      place-content: center;
-    }
-    
-    input[type="checkbox"]::before {
-      content: "";
-      width: 0.65em;
-      height: 0.65em;
-      transform: scale(0);
-      transition: 120ms transform ease-in-out;
-      box-shadow: inset 1em 1em var(--primary-color);
-      transform-origin: bottom left;
-      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
-    }
-    
-    input[type="checkbox"]:checked::before {
-      transform: scale(1);
-    }
-    
-    input[type="checkbox"]:disabled {
-      border-color: var(--dark-gray);
-      background-color: var(--medium-gray);
-    }
-    
-    input[type="checkbox"]:disabled::before {
-      box-shadow: inset 1em 1em var(--dark-gray);
-    }
-    
-    /* Custom radio button styling */
-    input[type="radio"] {
-      -webkit-appearance: none;
-      appearance: none;
-      background-color: var(--white);
-      margin: 0;
-      font: inherit;
-      color: currentColor;
-      width: 1.15em;
-      height: 1.15em;
-      border: 0.15em solid var(--medium-gray);
-      border-radius: 50%;
-      transform: translateY(-0.075em);
-      display: inline-grid;
-      place-content: center;
-    }
-    
-    input[type="radio"]::before {
-      content: "";
-      width: 0.65em;
-      height: 0.65em;
-      border-radius: 50%;
-      transform: scale(0);
-      transition: 120ms transform ease-in-out;
-      background-color: var(--primary-color);
-    }
-    
-    input[type="radio"]:checked::before {
-      transform: scale(1);
-    }
-    
-    /* Results styling */
-    .results-container {
-      margin-top: 30px;
-      background: var(--white);
-      padding: 20px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow);
-    }
-    
-    .schedule-summary {
-      background: var(--light-gray);
-      padding: 15px;
-      border-radius: var(--border-radius);
-      margin-bottom: 20px;
-    }
-    
-    .notes-output {
-      background: var(--light-gray);
-      padding: 15px;
-      border-radius: var(--border-radius);
-      margin: 15px 0;
-    }
-    
-    .notes-output p {
-      margin: 8px 0 0;
-    }
-    
-    /* Tooltip for unit codes */
-    [data-tooltip] {
-      position: relative;
-    }
-    
-    [data-tooltip]:hover::after {
-      content: attr(data-tooltip);
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--text-color);
-      color: white;
-      padding: 5px 10px;
-      border-radius: var(--border-radius);
-      font-size: 0.8rem;
-      white-space: nowrap;
-      z-index: 10;
-    }
-    
-    /* Badge for unit groups */
-    .unit-badge {
-      display: inline-block;
-      padding: 2px 6px;
-      background: var(--medium-gray);
-      border-radius: 10px;
-      font-size: 0.8rem;
-      margin-left: 5px;
-      color: var(--text-color);
-    }
-    
-    /* Status indicators */
-    .status-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-weight: 500;
-    }
-    
-    .status-indicator::before {
-      content: "";
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-    }
-    
-    .status-valid::before {
-      background: var(--success-color);
-    }
-    
-    .status-invalid::before {
-      background: var(--error-color);
-    }
-    
-    .status-warning::before {
-      background: var(--warning-color);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Biosecurity Plan Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --secondary: #81c784;
+            --light: #f1f8e9;
+            --dark: #1b5e20;
+            --warning: #ff8f00;
+            --danger: #c62828;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 25px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        
+        .wizard-container {
+            background-color: white;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .step {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        .step.active {
+            display: block;
+        }
+        
+        .question {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        
+        input[type="text"], 
+        input[type="number"],
+        input[type="email"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input[type="text"]:focus, 
+        input[type="number"]:focus,
+        input[type="email"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .radio-group, .checkbox-group {
+            margin-top: 10px;
+        }
+        
+        .radio-option, .checkbox-option {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        input[type="radio"], input[type="checkbox"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--dark);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background-color: #e0e0e0;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #bdbdbd;
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #8e0000;
+            transform: translateY(-1px);
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--secondary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            margin-left: 15px;
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 80px;
+            text-align: right;
+        }
+        
+        .step-indicator {
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: help;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-weight: normal;
+            font-size: 14px;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        #plan-output {
+            display: none;
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        
+        .output-section {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .output-section h3 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .required:after {
+            content: " *";
+            color: var(--danger);
+        }
+        
+        .industry-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .industry-card {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .industry-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .industry-card.selected {
+            border-color: var(--primary);
+            background-color: var(--light);
+        }
+        
+        .industry-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            color: var(--primary);
+        }
+        
+        .risk-matrix {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .risk-matrix th, .risk-matrix td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        .risk-matrix th {
+            background-color: var(--light);
+            font-weight: 600;
+        }
+        
+        .risk-matrix tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .risk-matrix tr.high-risk {
+            background-color: #ffebee;
+            font-weight: 600;
+        }
+        
+        .risk-score {
+            font-weight: 600;
+        }
+        
+        .risk-score.high {
+            color: var(--danger);
+        }
+        
+        .risk-score.medium {
+            color: var(--warning);
+        }
+        
+        .risk-score.low {
+            color: var(--primary);
+        }
+        
+        .chart-container {
+            margin: 20px 0;
+            height: 300px;
+        }
+        
+        .share-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .template-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .template-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .template-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .template-card.selected {
+            border-color: var(--primary);
+            background-color: var(--light);
+        }
+        
+        .template-icon {
+            font-size: 40px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .team-member {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .team-member input {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        
+        .team-member button {
+            padding: 8px 12px;
+        }
+        
+        .login-container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        
+        .login-container h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 25px;
+        }
+        
+        .login-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .industry-selection {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>CIII Conservation & Ecosystem Management – Unit Planner</h1>
-
-    <div class="info-box">
-      <h3>Packaging Rules Summary</h3>
-      <ul>
-        <li><strong>Total Units:</strong> 16 units must be selected</li>
-        <li><strong>Core Units:</strong> All 2 core units are required</li>
-        <li><strong>Groups A-H:</strong> At least 6 units must be from Groups A-H</li>
-        <li><strong>Group I:</strong> Maximum 6 electives from Group I</li>
-        <li><strong>Imported Units:</strong> Maximum 4 imported electives</li>
-      </ul>
-    </div>
-
-    <div class="warning-box">
-      <label>
-        <input type="checkbox" id="overrideRules"> 
-        <span class="status-indicator status-warning">Override packaging rules (for special cases only)</span>
-      </label>
-      <p>
-        Warning: Only use this if student has previously completed units elsewhere.
-        Qualification may not meet standards if rules aren't followed.
-      </p>
-    </div>
-
-    <form id="unitForm">
-      <h2>1. Select Units</h2>
-      
-      <div class="schedule-mode-selector">
-        <label>
-          <input type="radio" name="scheduleMode" value="weekly" checked> 
-          <span>Weekly Schedule (units run sequentially)</span>
-        </label>
-        <label>
-          <input type="radio" name="scheduleMode" value="quarterly"> 
-          <span>Quarterly Schedule (units grouped by quarter)</span>
-        </label>
-      </div>
-      
-      <div class="unit-group" id="core-units">
-        <span class="group-label">Core Units (Select all 2)</span>
-      </div>
-      <div class="unit-group" id="groupB">
-        <span class="group-label">Group B – Ecological Restoration</span>
-      </div>
-      <div class="unit-group" id="groupC">
-        <span class="group-label">Group C – Land, Parks & Wildlife</span>
-      </div>
-      <div class="unit-group" id="groupD">
-        <span class="group-label">Group D – Conservation Earthworks</span>
-      </div>
-      <div class="unit-group" id="groupG">
-        <span class="group-label">Group G – Fire</span>
-      </div>
-      <div class="unit-group" id="groupI">
-        <span class="group-label">Group I – General Electives</span>
-      </div>
-      <div class="unit-group" id="imported">
-        <span class="group-label">Imported Units</span>
-      </div>
-
-      <div id="validationIndicator" class="invalid">Please select units according to packaging rules.</div>
-
-      <h2>2. Student Details</h2>
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="studentName">Student Name</label>
-          <input type="text" id="studentName" required />
+    <header>
+        <h1>Advanced Biosecurity Plan Generator</h1>
+        <p>Create customized biosecurity plans for your organization and industry</p>
+    </header>
+    
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress" id="progress-bar"></div>
         </div>
-        <div class="form-group">
-          <label for="studentId">Student ID</label>
-          <input type="text" id="studentId" />
-        </div>
-        <div class="form-group">
-          <label for="startDate">Course Start Date</label>
-          <input type="date" id="startDate" required />
-        </div>
-      </div>
-      
-      <div class="notes-section">
-        <label for="notes">Notes/Manual Entries</label>
-        <textarea id="notes" placeholder="Add any additional notes or manual entries here..."></textarea>
-      </div>
-
-      <button type="submit">Generate Schedule</button>
-    </form>
-
-    <div class="export-buttons">
-      <button onclick="exportToCSV()" class="secondary">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="7 10 12 15 17 10"></polyline>
-          <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        Export to CSV
-      </button>
-      <button onclick="exportToPDF()" class="secondary">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="7 10 12 15 17 10"></polyline>
-          <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        Export to PDF
-      </button>
+        <div class="progress-text" id="progress-text">Step 1 of 9</div>
     </div>
-
-    <div id="results" class="results-container"></div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-
-  <script>
-    window.jsPDF = window.jspdf.jsPDF;
-
-    function formatDate(date) {
-      if (!(date instanceof Date)) {
-        // If it's already a formatted string, return it
-        if (typeof date === 'string' && date.includes('/')) return date;
-        // Otherwise try to parse it
-        date = new Date(date);
-        if (isNaN(date.getTime())) return 'Invalid Date';
-      }
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
-    }
-
-    function exportToCSV() {
-      const tables = document.querySelectorAll("#results table");
-      const studentName = document.getElementById("studentName").value || "Unknown Student";
-      const notes = document.getElementById("notes").value;
-      if (!tables.length) return alert("No schedule to export");
-      
-      let csv = `Student Name,${studentName}\n`;
-      csv += `Student ID,${document.getElementById("studentId").value || ''}\n`;
-      csv += `Generated,${new Date().toLocaleDateString()}\n`;
-      csv += `Notes,"${notes.replace(/"/g, '""')}"\n\n`;
-      
-      // Handle both weekly (single table) and quarterly (multiple tables) modes
-      tables.forEach(table => {
-        table.querySelectorAll("tr").forEach(row => {
-          const cells = Array.from(row.querySelectorAll("th,td")).map(cell => '"' + cell.textContent.trim().replace(/"/g, '""') + '"');
-          csv += cells.join(",") + "\n";
-        });
-        // Add a separator between quarterly tables
-        if (tables.length > 1) csv += "\n";
-      });
-
-      const filename = prompt("Enter a name for your CSV file:", `schedule_${studentName.replace(/[^a-z0-9]/gi, '_')}`) || "schedule";
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${filename}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-
-    function exportToPDF() {  
-      const tables = document.querySelectorAll("#results table");  
-      const studentName = document.getElementById("studentName").value || "Unknown Student";  
-      const studentId = document.getElementById("studentId").value || "";  
-      const notes = document.getElementById("notes").value;  
-      if (!tables.length) return alert("No schedule to export");  
-      
-      const filename = prompt("Enter a name for your PDF file:", `schedule_${studentName.replace(/[^a-z0-9]/gi, '_')}`) || "schedule";  
-      const doc = new jsPDF();  
+    
+    <div class="wizard-container">
+        <div class="step-indicator" id="step-indicator">Getting Started</div>
         
-      // Set document properties  
-      doc.setProperties({  
-        title: `CIII CEM Schedule - ${studentName}`,  
-        subject: 'Training Schedule',  
-        author: 'CIII CEM Unit Planner',  
-        creator: 'CIII CEM Unit Planner'  
-      });  
-      
-      // Add logo or header
-      doc.setFontSize(16);  
-      doc.setTextColor(44, 125, 77); // Primary color
-      doc.text(`CIII CEM Schedule - ${studentName}`, 14, 16);  
-      doc.setFontSize(10);  
-      doc.setTextColor(0, 0, 0); // Black
-      doc.text(`Student ID: ${studentId}`, 14, 24);  
-      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 32);  
-      
-      let startY = 40;  
-        
-      // Add notes if they exist  
-      if (notes) {  
-        doc.text("Notes:", 14, 40);  
-        const splitNotes = doc.splitTextToSize(notes, 180);  
-        doc.text(splitNotes, 14, 48);  
-        startY = 48 + (splitNotes.length * 6);  
-      }  
-      
-      // Process all tables  
-      let currentY = startY;  
-      let isFirstTable = true;  
-        
-      tables.forEach((table, index) => {  
-        const rows = [];  
-        table.querySelectorAll("tr").forEach(row => {  
-          const rowData = Array.from(row.querySelectorAll("th,td")).map(cell => cell.textContent.trim());  
-          rows.push(rowData);  
-        });  
-      
-        // Check if we need a new page before adding this table  
-        const tableHeight = (rows.length + 1) * 10; // Approximate height calculation  
-        if (currentY + tableHeight > doc.internal.pageSize.height - 20 && !isFirstTable) {  
-          doc.addPage();  
-          currentY = 20;  
-        }  
-      
-        doc.autoTable({   
-          head: [rows[0]],   
-          body: rows.slice(1),   
-          startY: currentY,  
-          headStyles: {  
-            fillColor: [44, 125, 77], // Primary color
-            textColor: 255,
-            fontStyle: 'bold'
-          },  
-          margin: { top: currentY },  
-          styles: {  
-            fontSize: 8, // Smaller font to fit more content  
-            cellPadding: 3, // Less padding to save space  
-            overflow: 'linebreak' // Ensure text wraps  
-          },  
-          columnStyles: {  
-            1: { cellWidth: 'auto' } // Let the name column auto-size  
-          }  
-        });  
-          
-        currentY = doc.lastAutoTable.finalY + 10;  
-        isFirstTable = false;  
-      });  
-        
-      doc.save(`${filename}.pdf`);  
-    }
-
-    const coreUnits = [
-      { code: "AHCECR309", name: "Conduct an ecological and cultural site inspection prior to works", duration: 6 },
-      { code: "AHCWHS302", name: "Contribute to workplace health and safety processes", duration: 6 },
-    ];
-
-    const electiveUnits = [
-      { code: "AHCECR301", name: "Maintain native ecosystem areas", duration: 6, groups: ["groupB"] },
-      { code: "AHCECR305", name: "Collect native seed", duration: 6, groups: ["groupB"] },
-      { code: "AHCECR307", name: "Read and interpret maps", duration: 6, groups: ["groupB"] },
-      { code: "AHCPCM303", name: "Identify plant specimens", duration: 6, groups: ["groupB"] },
-      { code: "AHCPMG301", name: "Control weeds", duration: 6, groups: ["groupB"] },
-      { code: "AHCPMG302", name: "Control plant pests, diseases and disorders", duration: 6, groups: ["groupB"] },
-      { code: "AHCFAU302", name: "Identify fauna in the field", duration: 6, groups: ["groupC"] },
-      { code: "AHCLPW310", name: "Supervise park visitor activities", duration: 6, groups: ["groupC"] },
-      { code: "AHCWRK320", name: "Apply environmentally sustainable work practices", duration: 6, groups: ["groupC"] },
-      { code: "AHCBIO303", name: "Apply biosecurity measures", duration: 6, groups: ["groupD", "groupI"] },
-      { code: "AHCMOM302", name: "Perform machinery maintenance", duration: 6, groups: ["groupD"] },
-      { code: "AHCMOM304", name: "Operate machinery and equipment", duration: 6, groups: ["groupD"] },
-      { code: "AHCPCM204", name: "Recognise plants", duration: 6, groups: ["groupD"] },
-      { code: "FWPCOT3325", name: "Operate four wheel drive vehicle on unsealed roads", duration: 6, groups: ["groupG", "groupI"] },
-      { code: "AHCCHM304", name: "Transport and store chemicals", duration: 6, groups: ["groupI"] },
-      { code: "AHCCHM307", name: "Prepare and apply chemicals", duration: 6, groups: ["groupI"] },
-      { code: "AHCLPW313", name: "Undertake water sampling", duration: 6, groups: ["groupI"] },
-      { code: "AHCMOM213", name: "Operate and maintain chainsaws", duration: 6, groups: ["groupI"] },
-      { code: "CPPSSI3011", name: "Produce basic maps", duration: 6, groups: ["groupI"] },
-      { code: "FWPCOT3326", name: "Recover 4WD vehicle", duration: 6, groups: ["groupI"] },
-      { code: "HLTAID011", name: "Provide First Aid", duration: 6, groups: ["groupI"] },
-      { code: "AHCMOM202", name: "Operate tractors", duration: 6, groups: ["imported"] },
-      { code: "AHCMOM207", name: "Conduct front-end loader ops", duration: 6, groups: ["imported"] },
-      { code: "AHCMOM216", name: "Operate side by side utility vehicles", duration: 6, groups: ["imported"] },
-      { code: "AHCMOM217", name: "Operate quad bikes", duration: 6, groups: ["imported"] },
-      { code: "AHCNSY207", name: "Undertake propagation", duration: 6, groups: ["imported"] },
-      { code: "FWPCOT2266", name: "Operate brush cutter", duration: 6, groups: ["imported"] }
-    ];
-
-    function buildUnitCheckboxes() {
-      coreUnits.forEach(unit => {
-        const div = document.createElement("div");
-        div.className = "unit-item";
-        div.innerHTML = `
-          <label>
-            <input type="checkbox" value="${unit.code}" data-code="${unit.code}" data-name="${unit.name}" data-groups="core" checked disabled>
-            <strong>${unit.code}</strong> – ${unit.name}
-            <span class="duration-input">
-              &nbsp; Duration (weeks): <input type="number" min="1" value="${unit.duration}" class="duration" data-unit="${unit.code}">
-            </span>
-            <span class="quarter-selector">
-              Quarter: <select class="quarter-select" data-unit="${unit.code}">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-              </select>
-            </span>
-          </label>`;
-        document.getElementById("core-units").appendChild(div);
-      });
-
-      electiveUnits.forEach(unit => {
-        unit.groups.forEach(group => {
-          const div = document.createElement("div");
-          div.className = "unit-item";
-          
-          // Create badge for units in multiple groups
-          const badge = unit.groups.length > 1 
-            ? `<span class="unit-badge">Groups: ${unit.groups.map(g => g.replace("group", "").toUpperCase()).join(", ")}</span>`
-            : "";
+        <!-- Step 0: Industry Selection -->
+        <div class="step active" id="step0">
+            <h2>Select Your Industry</h2>
+            <p>Choose the industry that best matches your organization to get a customized biosecurity plan.</p>
             
-          div.innerHTML = `
-            <label>
-              <input type="checkbox" data-code="${unit.code}" data-name="${unit.name}" data-groups="${unit.groups.join(',')}" value="${unit.code}">
-              <strong>${unit.code}</strong> – ${unit.name} ${badge}
-              <span class="duration-input">
-                &nbsp; Duration (weeks): <input type="number" min="1" value="${unit.duration}" class="duration" data-unit="${unit.code}">
-              </span>
-              <span class="quarter-selector">
-                Quarter: <select class="quarter-select" data-unit="${unit.code}">
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                  <option value="6">6</option>
-                  <option value="7">7</option>
-                  <option value="8">8</option>
+            <div class="question">
+                <label class="required">Primary Industry</label>
+                <div class="industry-selection">
+                    <div class="industry-card" onclick="selectIndustry('natural')" id="industry-card-natural">
+                        <div class="industry-icon">🌱</div>
+                        <div>
+                            <h3>Natural Area Restoration</h3>
+                            <p>Parks, conservation areas, ecological restoration</p>
+                        </div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('agriculture')" id="industry-card-agriculture">
+                        <div class="industry-icon">🚜</div>
+                        <div>
+                            <h3>Agriculture</h3>
+                            <p>Crop production, livestock farming, horticulture</p>
+                        </div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('aquaculture')" id="industry-card-aquaculture">
+                        <div class="industry-icon">🐟</div>
+                        <div>
+                            <h3>Aquaculture</h3>
+                            <p>Fish farming, shellfish production, hatcheries</p>
+                        </div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('healthcare')" id="industry-card-healthcare">
+                        <div class="industry-icon">🏥</div>
+                        <div>
+                            <h3>Healthcare</h3>
+                            <p>Hospitals, clinics, laboratories, research</p>
+                        </div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('research')" id="industry-card-research">
+                        <div class="industry-icon">🔬</div>
+                        <div>
+                            <h3>Research Facilities</h3>
+                            <p>Biological research, universities, testing labs</p>
+                        </div>
+                    </div>
+                    
+                    <div class="industry-card" onclick="selectIndustry('other')" id="industry-card-other">
+                        <div class="industry-icon">❓</div>
+                        <div>
+                            <h3>Other Industry</h3>
+                            <p>Specify your industry below</p>
+                            <input type="text" id="industry-other-text" placeholder="Enter your industry" style="margin-top: 10px; display: none;">
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" id="industry" value="">
+            </div>
+            
+            <div class="nav-buttons">
+                <button disabled class="btn-secondary">Previous</button>
+                <button onclick="nextStep()" class="btn-primary">Continue</button>
+            </div>
+        </div>
+        
+        <!-- Step 1: Organization Information -->
+        <div class="step" id="step1">
+            <h2>Organization Information</h2>
+            
+            <div class="question">
+                <label for="org-name" class="required">Organization Name</label>
+                <input type="text" id="org-name" required>
+            </div>
+            
+            <div class="question">
+                <label for="org-type">Organization Type</label>
+                <select id="org-type">
+                    <option value="">Select type...</option>
+                    <option value="Government">Government</option>
+                    <option value="Non-profit">Non-profit</option>
+                    <option value="Private Company">Private Company</option>
+                    <option value="Educational">Educational</option>
+                    <option value="Other">Other</option>
                 </select>
-              </span>
-            </label>`;
-          document.getElementById(group).appendChild(div);
-        });
-      });
-
-      const importedDiv = document.getElementById("imported");
-      const otherContainer = document.createElement("div");
-      otherContainer.className = "other-unit-container";
-      otherContainer.innerHTML = `
-        <button class="add-other-unit" onclick="addOtherUnit('AtoH')">+ Add Other Unit (Groups A-H)</button>
-        <button class="add-other-unit" onclick="addOtherUnit('groupI')">+ Add Other Unit (Group I)</button>
-        <button class="add-other-unit" onclick="addOtherUnit('imported')">+ Add Other Imported Unit</button>
-        <div id="otherUnitsList"></div>
-      `;
-      importedDiv.appendChild(otherContainer);
-      
-      updateQuarterSelectorsVisibility();
-    }
-
-    function addOtherUnit(groupType) {
-      const otherUnitsList = document.getElementById("otherUnitsList");
-      const newId = Date.now();
-      
-      const groupLabel = {
-        'AtoH': 'Groups A-H',
-        'groupI': 'Group I',
-        'imported': 'Imported'
-      }[groupType] || 'Custom';
-      
-      const otherUnitDiv = document.createElement("div");
-      otherUnitDiv.className = "other-unit";
-      otherUnitDiv.innerHTML = `
-        <label>
-          <input type="checkbox" id="otherUnitCheckbox-${newId}" checked>
-          ${groupLabel} Unit:
-          <input type="text" id="otherUnitDetails-${newId}" placeholder="Unit code and name" required>
-          <span class="duration-input">
-            &nbsp; Duration (weeks): <input type="number" min="1" value="6" class="duration" id="otherUnitDuration-${newId}">
-          </span>
-          <span class="quarter-selector">
-            Quarter: <select class="quarter-select" id="otherUnitQuarter-${newId}">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-            </select>
-          </span>
-        </label>
-        <input type="hidden" id="otherUnitGroup-${newId}" value="${groupType}">
-        <button class="remove-other-unit" onclick="removeOtherUnit(${newId})">×</button>
-      `;
-      otherUnitsList.appendChild(otherUnitDiv);
-      
-      updateValidationIndicator();
-      updateQuarterSelectorsVisibility();
-    }
-
-    function removeOtherUnit(id) {
-      const unitToRemove = document.querySelector(`#otherUnitCheckbox-${id}`).closest('.other-unit');
-      unitToRemove.remove();
-      updateValidationIndicator();
-    }
-
-    function getSelectedUnits() {
-      const selected = [];
-      const scheduleMode = document.querySelector('input[name="scheduleMode"]:checked').value;
-
-      document.querySelectorAll("input[type=checkbox]:not([id^='otherUnitCheckbox-'])").forEach(cb => {
-        if (cb.checked) {
-          const code = cb.dataset.code;
-          const name = cb.dataset.name;
-          const allGroups = cb.dataset.groups ? cb.dataset.groups.split(",") : ["core"];
-          const selectedGroup = cb.closest('.unit-group').id;
-          
-          let duration = scheduleMode === 'quarterly' ? 12 : 6;
-          if (scheduleMode === 'weekly') {
-            const durationInput = document.querySelector(`input.duration[data-unit="${code}"]`);
-            duration = parseInt(durationInput?.value || 6);
-          }
-          
-          let quarter = null;
-          if (scheduleMode === 'quarterly') {
-            const quarterSelect = cb.parentElement.querySelector('select.quarter-select');
-            quarter = quarterSelect ? parseInt(quarterSelect.value) : 1;
-          }
-          
-          // Check if this unit is already in the selected array (from another group)
-          const existingIndex = selected.findIndex(u => u.code === code);
-          if (existingIndex >= 0) {
-            // Update the existing entry with the new group info
-            selected[existingIndex].allGroups = [...new Set([...selected[existingIndex].allGroups, ...allGroups])];
-            selected[existingIndex].selectedGroup = selectedGroup;
-          } else {
-            selected.push({ code, name, allGroups, selectedGroup, duration, quarter });
-          }
-        }
-      });
-
-      document.querySelectorAll("[id^='otherUnitCheckbox-']").forEach(cb => {
-        if (cb.checked) {
-          const id = cb.id.split("-")[1];
-          const details = document.getElementById(`otherUnitDetails-${id}`).value.trim();
-          if (details) {
-            let duration = 6;
-            const scheduleMode = document.querySelector('input[name="scheduleMode"]:checked').value;
-            if (scheduleMode === 'quarterly') {
-              duration = 12;
-            } else {
-              duration = parseInt(document.getElementById(`otherUnitDuration-${id}`).value || 6);
+            </div>
+            
+            <div class="question">
+                <label for="org-size">Organization Size</label>
+                <select id="org-size">
+                    <option value="">Select size...</option>
+                    <option value="Small (1-10 employees)">Small (1-10 employees)</option>
+                    <option value="Medium (11-50 employees)">Medium (11-50 employees)</option>
+                    <option value="Large (51-200 employees)">Large (51-200 employees)</option>
+                    <option value="Enterprise (200+ employees)">Enterprise (200+ employees)</option>
+                </select>
+            </div>
+            
+            <div class="question">
+                <label for="primary-contact" class="required">Primary Contact</label>
+                <input type="text" id="primary-contact" required>
+            </div>
+            
+            <div class="question">
+                <label for="contact-email" class="required">Contact Email</label>
+                <input type="email" id="contact-email" required>
+            </div>
+            
+            <div class="nav-buttons">
+                <button onclick="prevStep()" class="btn-secondary">Previous</button>
+                <button onclick="nextStep()" class="btn-primary">Next</button>
+            </div>
+        </div>
+        
+        <!-- Step 2: Project Information -->
+        <div class="step" id="step2">
+            <h2>Project/Site Information</h2>
+            
+            <div class="question">
+                <label for="project-name" class="required">Project/Site Name</label>
+                <input type="text" id="project-name" required>
+            </div>
+            
+            <div class="question">
+                <label for="project-location" class="required">Location (address or coordinates)</label>
+                <input type="text" id="project-location" required>
+            </div>
+            
+            <div class="question">
+                <label for="project-size">Site Size</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="project-size" min="0" step="0.1" style="flex: 1;">
+                    <select id="size-unit" style="width: 100px;">
+                        <option value="hectares">hectares</option>
+                        <option value="acres">acres</option>
+                        <option value="sq meters">sq meters</option>
+                        <option value="sq feet">sq feet</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="question">
+                <label for="project-description">Project Description</label>
+                <textarea id="project-description" placeholder="Briefly describe your project or site"></textarea>
+            </div>
+            
+            <div class="nav-buttons">
+                <button onclick="prevStep()" class="btn-secondary">Previous</button>
+                <button onclick="nextStep()" class="btn-primary">Next</button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Activities -->
+        <div class="step" id="step3">
+            <h2>Activities</h2>
+            <p>Select all activities that apply to your project/site.</p>
+            
+            <div class="question">
+                <label class="required">Primary Activities</label>
+                <div class="checkbox-group" id="activities-container">
+                    <!-- Will be populated dynamically based on industry -->
+                </div>
+            </div>
+            
+            <div class="question">
+                <label for="activity-frequency">How frequently are these activities conducted?</label>
+                <select id="activity-frequency">
+                    <option value="">Select frequency...</option>
+                    <option value="Daily">Daily</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Seasonally">Seasonally</option>
+                    <option value="Yearly">Yearly</option>
+                    <option value="As needed">As needed</option>
+                </select>
+            </div>
+            
+            <div class="question">
+                <label for="activity-staff">How many staff/volunteers typically participate?</label>
+                <input type="number" id="activity-staff" min="0">
+            </div>
+            
+            <div class="nav-buttons">
+                <button onclick="prevStep()" class="btn-secondary">Previous</button>
+                <button onclick="nextStep()" class="btn-primary">Next</button>
+            </div>
+        </div>
+        
+        <!-- Step 4: Biosecurity Risks -->
+        <div class="step" id="step4">
+            <h2>Biosecurity Risks</h2>
+            <p>Identify potential biosecurity risks relevant to your activities.</p>
+            
+            <div class="question">
+                <label class="required">Potential Risks</label>
+                <div class="checkbox-group" id="risks-container">
+                    <!-- Will be populated dynamically based on industry -->
+                </div>
+            </div>
+            
+            <div class="question">
+                <label for="known-issues">Known biosecurity issues in the area</label>
+                <textarea id="known-issues" placeholder="List any known problem species, pathogens, or contamination issues in or near your site"></textarea>
+            </div>
+            
+            <div class="question">
+                <label for="visitor-frequency" class="required">How frequently do visitors access the site?</label>
+                <select id="visitor-frequency" required>
+                    <option value="">Select frequency...</option>
+                    <option value="Daily">Daily</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Seasonally">Seasonally</option>
+                    <option value="Rarely">Rarely</option>
+                </select>
+            </div>
+            
+            <div class="nav-buttons">
+                <button onclick="prevStep()" class="btn-secondary">Previous</button>
+                <button onclick="nextStep()" class="btn-primary">Next</button>
+            </div>
+        </div>
+        
+        <!-- Step 5: Risk Assessment Matrix -->
+        <div class="step" id="step5">
+            <h2>Risk Assessment</h2>
+            <p>Assess the likelihood and impact of each identified risk.</p>
+            
+            <div class="question">
+                <table class="risk-matrix">
+                    <thead>
+                        <tr>
+                            <th>Risk</th>
+                            <th>Likelihood</th>
+                            <th>Impact</th>
+                            <th>Risk Score</th>
+                            <th>Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody id="risk-matrix-body">
+                        <!-- Will be populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="question">
+                <label for="risk-notes">Additional Risk Notes</label>
+                <textarea id="risk-notes" placeholder="Add any additional notes about risk assessment"></textarea>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="riskChart"></canvas>
+            </div>
+            
+            <div class="nav-buttons">
+                <button onclick="prevStep()" class="btn-secondary">Previous</button>
+                <button onclick="nextStep()" class="btn-primary">Next</button>
+            </div>
+        </div>
+        
+        <!-- Step 6: Current Controls -->
+        <div class="step" id="step6">
+            <h2>Current Biosecurity Measures</h2>
+            
+            <div class="question">
+                <label>Existing Biosecurity Controls</label>
+                <div class="checkbox-group" id="controls-container">
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="control-cleaning" name="controls" value="Equipment cleaning protocols">
+                        <label for="control-cleaning">Equipment cleaning protocols</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="control-quarantine" name="controls" value="Quarantine areas">
+                        <label for="control-quarantine">Quarantine areas</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="control-monitoring" name="controls" value="Regular monitoring">
+                        <label for="control-monitoring">Regular monitoring</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="control-signage" name="controls" value="Biosecurity signage">
+                        <label for="control-signage">Biosecurity signage</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="control-training" name="controls" value="Staff training">
+                        <label for="control-training">Staff training</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="control-ppe" name="controls" value="Personal protective equipment">
+                        <label for="control-ppe">Personal protective equipment</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="control-other" name="controls" value="Other">
+                        <label for="control-other">Other (please specify)</label>
+                        <input type="text" id="control-other-text" style="margin-top: 5px; display: none;">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question">
+                <label for="existing-protocols">Describe existing biosecurity protocols:</label>
+                <textarea id="existing-protocols"></textarea>
+            </div>
+            
+            <div class="question">
+                <label for="challenges">What are your biggest biosecurity challenges?</label>
+                <textarea id="challenges"></textarea>
+            </div>
+            
+            <div class="nav-buttons">
+                <button onclick="prevStep()" class="btn-secondary">Previous</button>
+                <button onclick="nextStep()" class="btn-primary">Next</button>
+            </div>
+        </div>
+        
+        <!-- Step 7: Proposed Measures -->
+        <div class="step" id="step7">
+            <h2>Proposed Biosecurity Measures</h2>
+            
+            <div class="question">
+                <label class="required">Additional Measures to Implement</label>
+                <div class="checkbox-group" id="measures-container">
+                    <!-- Will be populated dynamically based on industry -->
+                </div>
+            </div>
+            
+            <div class="question">
+                <label for="implementation">Implementation Plan</label>
+                <textarea id="implementation" placeholder="Describe how you will implement these measures"></textarea>
+            </div>
+            
+            <div class="question">
+                <label for="monitoring">Monitoring Approach</label>
+                <textarea id="monitoring" placeholder="Describe how you will monitor biosecurity effectiveness"></textarea>
+            </div>
+            
+            <div class="question">
+                <label for="budget">Estimated Budget for Biosecurity Measures</label>
+                <input type="text" id="budget" placeholder="Enter amount and currency (e.g., $5,000)">
+            </div>
+            
+            <div class="question">
+                <label for="timeline">Implementation Timeline</label>
+                <textarea id="timeline" placeholder="Describe the timeline for implementing these measures"></textarea>
+            </div>
+            
+            <div class="nav-buttons">
+                <button onclick="prevStep()" class="btn-secondary">Previous</button>
+                <button onclick="nextStep()" class="btn-primary">Next</button>
+            </div>
+        </div>
+        
+        <!-- Step 8: Team & Review -->
+        <div class="step" id="step8">
+            <h2>Team & Review</h2>
+            
+            <div class="question">
+                <label>Team Members Responsible</label>
+                <div id="team-members">
+                    <div class="team-member">
+                        <input type="text" placeholder="Name" class="team-name">
+                        <input type="text" placeholder="Role" class="team-role">
+                        <button onclick="removeTeamMember(this)" class="btn-danger">Remove</button>
+                    </div>
+                </div>
+                <button onclick="addTeamMember()" class="btn-secondary" style="margin-top: 10px;">Add Team Member</button>
+            </div>
+            
+            <div class="question">
+                <label for="review-frequency">Plan Review Frequency</label>
+                <select id="review-frequency">
+                    <option value="">Select frequency...</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Quarterly">Quarterly</option>
+                    <option value="Bi-annually">Bi-annually</option>
+                    <option value="Annually">Annually</option>
+                    <option value="As needed">As needed</option>
+                </select>
+            </div>
+            
+            <div class="question">
+                <label for="template-select">Plan Template Style</label>
+                <div class="template-gallery">
+                    <div class="template-card" onclick="selectTemplate('basic')" id="template-basic">
+                        <div class="template-icon">📄</div>
+                        <h3>Basic</h3>
+                        <p>Simple, straightforward plan</p>
+                    </div>
+                    <div class="template-card" onclick="selectTemplate('detailed')" id="template-detailed">
+                        <div class="template-icon">📑</div>
+                        <h3>Detailed</h3>
+                        <p>Comprehensive with sections</p>
+                    </div>
+                    <div class="template-card" onclick="selectTemplate('certified')" id="template-certified">
+                        <div class="template-icon">🏆</div>
+                        <h3>Certification-Ready</h3>
+                        <p>Formal documentation</p>
+                    </div>
+                </div>
+                <input type="hidden" id="template" value="basic">
+            </div>
+            
+            <div class="question">
+                <label for="plan-name" class="required">Name for Your Biosecurity Plan</label>
+                <input type="text" id="plan-name" required>
+            </div>
+            
+            <div class="nav-buttons">
+                <button onclick="prevStep()" class="btn-secondary">Previous</button>
+                <button onclick="generatePlan()" class="btn-primary">Generate Plan</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="plan-output">
+        <h2 id="output-title">Biosecurity Plan</h2>
+        <div id="output-content"></div>
+        <div class="share-options">
+            <button onclick="savePDF()" class="btn-primary">Save as PDF</button>
+            <button onclick="sharePlan('email')" class="btn-secondary">Email Plan</button>
+            <button onclick="sharePlan('link')" class="btn-secondary">Get Shareable Link</button>
+            <button onclick="resetForm()" class="btn-danger">Start New Plan</button>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        const totalSteps = 9;
+        let currentStep = 0;
+        let riskChart = null;
+        
+        // Industry-specific configurations
+        const industryConfig = {
+            'natural': {
+                name: 'Natural Area Restoration',
+                activities: ['Native planting', 'Weed control', 'Pest animal control', 'Erosion control', 'Habitat restoration', 'Monitoring'],
+                risks: ['Weed introduction', 'Pathogens/diseases', 'Pest animals', 'Soil contamination', 'Water contamination', 'Cross-contamination between sites'],
+                measures: ['Equipment cleaning station', 'Footwear cleaning', 'Plant material inspection', 'Staff/volunteer training', 'Vehicle washdown', 'Quarantine area']
+            },
+            'agriculture': {
+                name: 'Agriculture',
+                activities: ['Crop production', 'Livestock management', 'Harvesting', 'Processing', 'Equipment maintenance', 'Storage'],
+                risks: ['Pest introduction', 'Disease spread', 'Contaminated equipment', 'Wildlife vectors', 'Soil contamination', 'Water contamination'],
+                measures: ['Vehicle wash stations', 'Personal protective equipment', 'Quarantine areas', 'Pest monitoring', 'Visitor logbooks', 'Biosecurity training']
+            },
+            'aquaculture': {
+                name: 'Aquaculture',
+                activities: ['Fish farming', 'Shellfish production', 'Hatchery operations', 'Processing', 'Water management', 'Equipment maintenance'],
+                risks: ['Pathogen introduction', 'Invasive species', 'Water contamination', 'Equipment contamination', 'Cross-site contamination', 'Wildlife vectors'],
+                measures: ['Water treatment systems', 'Equipment sterilization', 'Species separation', 'Health monitoring', 'Quarantine protocols', 'Staff training']
+            },
+            'healthcare': {
+                name: 'Healthcare',
+                activities: ['Patient care', 'Laboratory work', 'Waste management', 'Facility maintenance', 'Research activities', 'Sterilization'],
+                risks: ['Pathogen transmission', 'Antimicrobial resistance', 'Contaminated surfaces', 'Airborne pathogens', 'Sharps injuries', 'Waste contamination'],
+                measures: ['Hand hygiene stations', 'Personal protective equipment', 'Surface disinfection', 'Air filtration', 'Waste segregation', 'Staff training']
+            },
+            'research': {
+                name: 'Research Facilities',
+                activities: ['Laboratory research', 'Field research', 'Specimen collection', 'Data collection', 'Equipment maintenance', 'Waste disposal'],
+                risks: ['Pathogen release', 'Cross-contamination', 'Equipment contamination', 'Specimen mix-up', 'Data breach', 'Waste mismanagement'],
+                measures: ['Access control', 'Personal protective equipment', 'Decontamination stations', 'Specimen tracking', 'Data security', 'Staff training']
+            },
+            'other': {
+                name: 'Other',
+                activities: [],
+                risks: [],
+                measures: []
             }
-            
-            const groupType = document.getElementById(`otherUnitGroup-${id}`).value;
-            
-            let quarter = null;
-            if (scheduleMode === 'quarterly') {
-              quarter = parseInt(document.getElementById(`otherUnitQuarter-${id}`).value);
-            }
-            
-            let selectedGroup = "imported";
-            if (groupType === "AtoH") selectedGroup = "groupB";
-            else if (groupType === "groupI") selectedGroup = "groupI";
-            
-            selected.push({
-              code: details.split(" ")[0] || "OTHER",
-              name: details,
-              allGroups: [groupType],
-              selectedGroup,
-              duration,
-              quarter,
-              isCustom: true
-            });
-          }
-        }
-      });
-
-      return selected;
-    }
-
-    function generateSchedule(units, startDate) {
-      const scheduleMode = document.querySelector('input[name="scheduleMode"]:checked').value;
-      
-      if (scheduleMode === 'weekly') {
-        return generateWeeklySchedule(units, startDate);
-      } else {
-        return generateQuarterlySchedule(units, startDate);
-      }
-    }
-
-    function generateWeeklySchedule(units, startDate) {
-      const schedule = [];
-      let currentDate = new Date(startDate);
-      
-      for (const unit of units) {
-        const start = new Date(currentDate);
-        const end = new Date(start);
-        end.setDate(end.getDate() + (unit.duration * 7) - 1);
-        
-        schedule.push({
-          ...unit,
-          startDate: formatDate(start),
-          endDate: formatDate(end)
-        });
-        
-        currentDate = new Date(end);
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-      
-      return schedule;
-    }
-
-    function generateQuarterlySchedule(units, startDate) {
-      const schedule = [];
-      const start = new Date(startDate);
-      
-      // Group units by quarter
-      const quarters = {};
-      for (let q = 1; q <= 8; q++) quarters[q] = [];
-      
-      units.forEach(unit => {
-        const quarter = unit.quarter || 1;
-        quarters[quarter].push({
-          ...unit,
-          duration: 12
-        });
-      });
-      
-      // Calculate quarter dates
-      const quarterDates = {};
-      let currentQuarterStart = new Date(start);
-      
-      for (let q = 1; q <= 8; q++) {
-        const quarterEnd = new Date(currentQuarterStart);
-        quarterEnd.setDate(quarterEnd.getDate() + (12 * 7) - 1);
-        
-        quarterDates[q] = {
-          start: new Date(currentQuarterStart),
-          end: new Date(quarterEnd)
         };
         
-        // Set next quarter start date
-        currentQuarterStart = new Date(quarterEnd);
-        currentQuarterStart.setDate(currentQuarterStart.getDate() + 1);
-      }
-      
-      // Assign units to quarters
-      for (const [quarter, quarterUnits] of Object.entries(quarters)) {
-        const qNum = parseInt(quarter);
-        const quarterRange = quarterDates[qNum];
+        // Step indicators for better UX
+        const stepIndicators = [
+            "Select Industry",
+            "Organization Info",
+            "Project Details",
+            "Activities",
+            "Risk Identification",
+            "Risk Assessment",
+            "Current Controls",
+            "Proposed Measures",
+            "Team & Review"
+        ];
         
-        quarterUnits.forEach(unit => {
-          schedule.push({
-            ...unit,
-            quarter: qNum,
-            startDate: formatDate(quarterRange.start),
-            endDate: formatDate(quarterRange.end)
-          });
-        });
-      }
-      
-      return schedule;
-    }
-
-    function validate(selected) {
-      const override = document.getElementById("overrideRules").checked;
-      const groupCounts = { core: 0, groupI: 0, imported: 0, AtoH: 0 };
-      
-      selected.forEach(u => {
-        if (u.selectedGroup === "core-units") groupCounts.core++;
-        if (u.selectedGroup === "groupI") groupCounts.groupI++;
-        if (u.selectedGroup === "imported") groupCounts.imported++;
-        if (["groupB", "groupC", "groupD", "groupG"].includes(u.selectedGroup)) groupCounts.AtoH++;
-      });
-
-      const errors = [];
-      
-      if (selected.length !== 16) {
-        errors.push("Exactly 16 units must be selected.");
-      }
-      
-      if (!override) {
-        if (groupCounts.core !== 2) errors.push("You must include exactly 2 core units.");
-        if (groupCounts.AtoH < 6) errors.push("At least 6 units must be from Groups A-H.");
-        if (groupCounts.groupI > 6) errors.push("Max 6 electives from Group I.");
-        if (groupCounts.imported > 4) errors.push("Max 4 imported electives.");
-      }
-
-      return errors;
-    }
-
-    function renderSchedule(schedule, startDate) {
-      if (!schedule.length) {
-        document.getElementById("results").innerHTML = "<p>No schedule available.</p>";
-        return;
-      }
-
-      const studentName = document.getElementById("studentName").value || "Student";
-      const studentId = document.getElementById("studentId").value || "";
-      const notes = document.getElementById("notes").value;
-      const override = document.getElementById("overrideRules").checked;
-      const scheduleMode = document.querySelector('input[name="scheduleMode"]:checked').value;
-      const [year, month, day] = startDate.split("-");
-      const start = new Date(year, month - 1, day);
-      const endParts = schedule[schedule.length - 1].endDate.split("/");
-      const end = new Date(endParts[2], endParts[1] - 1, endParts[0]);
-      const weeks = Math.round((end - start) / (1000 * 60 * 60 * 24 * 7));
-
-      let out = `
-        <div class="schedule-summary">
-          <h2>📅 Schedule for ${studentName}</h2>
-          ${studentId ? `<p><strong>Student ID:</strong> ${studentId}</p>` : ''}
-          ${override ? '<div class="warning-box"><p>⚠ PACKAGING RULES OVERRIDE ACTIVE</p></div>' : ''}
-          <p><strong>Schedule Mode:</strong> ${scheduleMode === 'quarterly' ? 'Quarterly' : 'Weekly'}</p>
-          <p><strong>Actual Duration:</strong> ${weeks} weeks (${formatDate(start)} to ${formatDate(end)})</p>
-          ${weeks > 96 ? '<p class="status-indicator status-warning">⚠ Course exceeds the 96-week (2 year) limit.</p>' : ''}
-        </div>
-      `;
-      
-      if (notes) {
-        out += `<div class="notes-output"><strong>Notes:</strong><p>${notes.replace(/\n/g, '<br>')}</p></div>`;
-      }
-
-      if (scheduleMode === 'quarterly') {
-        const quarters = {};
-        schedule.forEach(u => {
-          const quarter = u.quarter || 1;
-          if (!quarters[quarter]) quarters[quarter] = [];
-          quarters[quarter].push(u);
-        });
-        
-        for (let q = 1; q <= 8; q++) {
-          const quarterUnits = quarters[q] || [];
-          const quarterStart = quarterUnits[0]?.startDate || "N/A";
-          const quarterEnd = quarterUnits[quarterUnits.length - 1]?.endDate || "N/A";
-          const totalWeeks = quarterUnits.reduce((sum, u) => sum + u.duration, 0);
-          
-          out += `
-            <div class="quarter-section">
-              <div class="quarter-header">Quarter ${q} (${quarterStart} to ${quarterEnd})</div>
-              <div class="quarter-total">Total weeks: ${totalWeeks}</div>
-              <table>
-                <tr><th>Code</th><th>Name</th><th>Group</th><th>Start</th><th>End</th><th>Weeks</th></tr>
-          `;
-          
-          if (quarterUnits.length === 0) {
-            out += `<tr><td colspan="6">No units scheduled this quarter</td></tr>`;
-          } else {
-            quarterUnits.forEach(u => {
-              let group = '';
-              if (u.selectedGroup === "core-units") group = "Core";
-              else if (u.selectedGroup === "groupI") group = "I";
-              else if (["groupB", "groupC", "groupD", "groupG"].includes(u.selectedGroup)) {
-                group = u.selectedGroup.replace("group", "").toUpperCase();
-              } else if (u.selectedGroup === "imported") group = "Imported";
-              
-              if (u.isCustom) group += " (Custom)";
-              
-              out += `<tr>
-                <td>${u.code}</td>
-                <td>${u.name}</td>
-                <td>${group}</td>
-                <td>${u.startDate}</td>
-                <td>${u.endDate}</td>
-                <td>${u.duration}</td>
-              </tr>`;
+        // Initialize the tool
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProgress();
+            updateStepIndicator();
+            
+            // Set up event listeners for dynamic elements
+            document.getElementById('industry-other-text').addEventListener('input', function() {
+                if (this.value) {
+                    document.getElementById('industry').value = this.value;
+                    industryConfig.other.name = this.value;
+                }
             });
-          }
-          
-          out += `</table></div>`;
-        }
-      } else {
-        out += `<table><tr><th>Code</th><th>Name</th><th>Group</th><th>Start</th><th>End</th><th>Weeks</th></tr>`;
-        schedule.forEach(u => {
-          let group = '';
-          if (u.selectedGroup === "core-units") group = "Core";
-          else if (u.selectedGroup === "groupI") group = "I";
-          else if (["groupB", "groupC", "groupD", "groupG"].includes(u.selectedGroup)) {
-            group = u.selectedGroup.replace("group", "").toUpperCase();
-          } else if (u.selectedGroup === "imported") group = "Imported";
-          
-          if (u.isCustom) group += " (Custom)";
-          
-          out += `<tr>
-            <td>${u.code}</td>
-            <td>${u.name}</td>
-            <td>${group}</td>
-            <td>${u.startDate}</td>
-            <td>${u.endDate}</td>
-            <td>${u.duration}</td>
-          </tr>`;
+            
+            document.getElementById('control-other').addEventListener('change', function() {
+                document.getElementById('control-other-text').style.display = 
+                    this.checked ? 'block' : 'none';
+            });
         });
-        out += `</table>`;
-      }
-
-      document.getElementById("results").innerHTML = out;
-    }
-
-    function updateValidationIndicator() {
-      const selected = getSelectedUnits();
-      const errors = validate(selected);
-      const override = document.getElementById("overrideRules").checked;
-      const indicator = document.getElementById("validationIndicator");
-      
-      if (errors.length === 0) {
-        if (override) {
-          indicator.textContent = "⚠ Override active - packaging rules not enforced";
-          indicator.className = "override";
-        } else {
-          indicator.textContent = "✅ Selection meets qualification packaging rules.";
-          indicator.className = "valid";
-        }
-      } else {
-        indicator.textContent = "❌ " + errors.join(" ");
-        indicator.className = "invalid";
-      }
-    }
-
-    function updateQuarterSelectorsVisibility() {
-      const scheduleMode = document.querySelector('input[name="scheduleMode"]:checked').value;
-      const quarterSelectors = document.querySelectorAll('.quarter-selector');
-      const durationInputs = document.querySelectorAll('.duration-input');
-      
-      if (scheduleMode === 'quarterly') {
-        quarterSelectors.forEach(el => el.style.display = 'inline');
-        durationInputs.forEach(el => el.style.display = 'none');
-      } else {
-        quarterSelectors.forEach(el => el.style.display = 'none');
-        durationInputs.forEach(el => el.style.display = 'inline');
-      }
-    }
-
-    document.getElementById("unitForm").addEventListener("submit", e => {
-      e.preventDefault();
-      const studentName = document.getElementById("studentName").value;
-      if (!studentName) return alert("Please enter a student name");
-      
-      const startDate = document.getElementById("startDate").value;
-      if (!startDate) return alert("Please select a start date");
-      
-      let otherUnitsValid = true;
-      document.querySelectorAll("[id^='otherUnitCheckbox-']").forEach(cb => {
-        if (cb.checked) {
-          const id = cb.id.split("-")[1];
-          if (!document.getElementById(`otherUnitDetails-${id}`).value.trim()) {
-            otherUnitsValid = false;
-          }
-        }
-      });
-      
-      if (!otherUnitsValid) return alert("Please provide details for all 'Other' units");
-      
-      const selected = getSelectedUnits();
-      const errors = validate(selected);
-      if (errors.length) return alert(errors.join("\n"));
-      
-      // Parse the start date properly
-      const [year, month, day] = startDate.split('-');
-      const parsedStartDate = new Date(year, month - 1, day);
-      
-      // Generate and render schedule
-      const schedule = generateSchedule(selected, parsedStartDate);
-      renderSchedule(schedule, startDate);
-    });
-
-    document.body.addEventListener("change", e => {
-      if (
-        e.target.matches("input[type=checkbox]") ||
-        e.target.matches("input.duration") ||
-        e.target.matches("[id^='otherUnitDetails-']") ||
-        e.target.matches("#overrideRules") ||
-        e.target.matches("input[name=scheduleMode]") ||
-        e.target.matches("select.quarter-select")
-      ) {
-        updateValidationIndicator();
         
-        if (e.target.matches("input[name=scheduleMode]")) {
-          updateQuarterSelectorsVisibility();
+        // Navigation functions
+        function nextStep() {
+            if (validateStep(currentStep)) {
+                saveProgress();
+                document.getElementById(`step${currentStep}`).classList.remove('active');
+                currentStep++;
+                
+                // Special handling for certain steps
+                if (currentStep === 3) updateActivities();
+                if (currentStep === 4) updateRisks();
+                if (currentStep === 5) generateRiskMatrix();
+                if (currentStep === 7) updateMeasures();
+                
+                document.getElementById(`step${currentStep}`).classList.add('active');
+                updateStepIndicator();
+            }
         }
-      }
-    });
-
-    buildUnitCheckboxes();
-    updateValidationIndicator();
-  </script>
+        
+        function prevStep() {
+            saveProgress();
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            currentStep--;
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            updateStepIndicator();
+        }
+        
+        function updateStepIndicator() {
+            document.getElementById('step-indicator').textContent = stepIndicators[currentStep];
+            document.getElementById('progress-bar').style.width = `${(currentStep / (totalSteps-1)) * 100}%`;
+            document.getElementById('progress-text').textContent = `Step ${currentStep+1} of ${totalSteps}`;
+            
+            // Update review summary if we're on the review step
+            if (currentStep === 8) {
+                updateReviewSummary();
+            }
+        }
+        
+        function validateStep(step) {
+            // Simple validation for required fields
+            let isValid = true;
+            
+            if (step === 0) {
+                if (!document.getElementById('industry').value) {
+                    alert('Please select an industry');
+                    isValid = false;
+                }
+            } else if (step === 1) {
+                if (!document.getElementById('org-name').value) {
+                    alert('Please enter your organization name');
+                    isValid = false;
+                }
+                if (!document.getElementById('primary-contact').value) {
+                    alert('Please enter a primary contact');
+                    isValid = false;
+                }
+                if (!document.getElementById('contact-email').value) {
+                    alert('Please enter a contact email');
+                    isValid = false;
+                } else if (!validateEmail(document.getElementById('contact-email').value)) {
+                    alert('Please enter a valid email address');
+                    isValid = false;
+                }
+            } else if (step === 2) {
+                if (!document.getElementById('project-name').value) {
+                    alert('Please enter a project/site name');
+                    isValid = false;
+                }
+                if (!document.getElementById('project-location').value) {
+                    alert('Please enter a location');
+                    isValid = false;
+                }
+            } else if (step === 3) {
+                const activities = getSelectedCheckboxes('activities');
+                if (activities.length === 0) {
+                    alert('Please select at least one activity');
+                    isValid = false;
+                }
+            } else if (step === 4) {
+                const risks = getSelectedCheckboxes('risks');
+                if (risks.length === 0) {
+                    alert('Please select at least one risk');
+                    isValid = false;
+                }
+                if (!document.getElementById('visitor-frequency').value) {
+                    alert('Please select visitor frequency');
+                    isValid = false;
+                }
+            } else if (step === 7) {
+                const measures = getSelectedCheckboxes('measures');
+                if (measures.length === 0) {
+                    alert('Please select at least one proposed measure');
+                    isValid = false;
+                }
+            } else if (step === 8) {
+                if (!document.getElementById('plan-name').value) {
+                    alert('Please enter a name for your biosecurity plan');
+                    isValid = false;
+                }
+            }
+            
+            return isValid;
+        }
+        
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        // Industry selection functions
+        function selectIndustry(industry) {
+            // Update UI
+            document.querySelectorAll('.industry-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById(`industry-card-${industry}`).classList.add('selected');
+            
+            // Set industry value
+            document.getElementById('industry').value = industryConfig[industry].name;
+            
+            // Show/hide other text field
+            const otherText = document.getElementById('industry-other-text');
+            otherText.style.display = industry === 'other' ? 'block' : 'none';
+            if (industry !== 'other') otherText.value = '';
+        }
+        
+        // Template selection
+        function selectTemplate(template) {
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById(`template-${template}`).classList.add('selected');
+            document.getElementById('template').value = template;
+        }
+        
+        // Dynamic content updates based on industry
+        function updateActivities() {
+            const industry = document.querySelector('input[name="industry"]:checked')?.value || 'natural';
+            const config = industryConfig[industry] || industryConfig.natural;
+            
+            const container = document.getElementById('activities-container');
+            container.innerHTML = config.activities.map(activity => `
+                <div class="checkbox-option">
+                    <input type="checkbox" id="activity-${activity.toLowerCase().replace(/\s+/g, '-')}" 
+                           name="activities" value="${activity}">
+                    <label for="activity-${activity.toLowerCase().replace(/\s+/g, '-')}">${activity}</label>
+                </div>
+            `).join('') + `
+            <div class="checkbox-option">
+                <input type="checkbox" id="activity-other" name="activities" value="Other">
+                <label for="activity-other">Other (please specify)</label>
+                <input type="text" id="activity-other-text" style="margin-top: 5px; display: none;">
+            </div>`;
+            
+            // Add event listener for "Other" checkbox
+            document.getElementById('activity-other').addEventListener('change', function() {
+                document.getElementById('activity-other-text').style.display = 
+                    this.checked ? 'block' : 'none';
+            });
+        }
+        
+        function updateRisks() {
+            const industry = document.querySelector('input[name="industry"]:checked')?.value || 'natural';
+            const config = industryConfig[industry] || industryConfig.natural;
+            
+            const container = document.getElementById('risks-container');
+            container.innerHTML = config.risks.map(risk => `
+                <div class="checkbox-option">
+                    <input type="checkbox" id="risk-${risk.toLowerCase().replace(/\s+/g, '-')}" 
+                           name="risks" value="${risk}">
+                    <label for="risk-${risk.toLowerCase().replace(/\s+/g, '-')}">${risk}</label>
+                </div>
+            `).join('') + `
+            <div class="checkbox-option">
+                <input type="checkbox" id="risk-other" name="risks" value="Other">
+                <label for="risk-other">Other (please specify)</label>
+                <input type="text" id="risk-other-text" style="margin-top: 5px; display: none;">
+            </div>`;
+            
+            // Add event listener for "Other" checkbox
+            document.getElementById('risk-other').addEventListener('change', function() {
+                document.getElementById('risk-other-text').style.display = 
+                    this.checked ? 'block' : 'none';
+            });
+        }
+        
+        function updateMeasures() {
+            const industry = document.querySelector('input[name="industry"]:checked')?.value || 'natural';
+            const config = industryConfig[industry] || industryConfig.natural;
+            
+            const container = document.getElementById('measures-container');
+            container.innerHTML = config.measures.map(measure => `
+                <div class="checkbox-option">
+                    <input type="checkbox" id="measure-${measure.toLowerCase().replace(/\s+/g, '-')}" 
+                           name="measures" value="${measure}">
+                    <label for="measure-${measure.toLowerCase().replace(/\s+/g, '-')}">${measure}</label>
+                </div>
+            `).join('') + `
+            <div class="checkbox-option">
+                <input type="checkbox" id="measure-other" name="measures" value="Other">
+                <label for="measure-other">Other (please specify)</label>
+                <input type="text" id="measure-other-text" style="margin-top: 5px; display: none;">
+            </div>`;
+            
+            // Add event listener for "Other" checkbox
+            document.getElementById('measure-other').addEventListener('change', function() {
+                document.getElementById('measure-other-text').style.display = 
+                    this.checked ? 'block' : 'none';
+            });
+        }
+        
+        // Risk assessment matrix
+        function generateRiskMatrix() {
+            const risks = getSelectedCheckboxes('risks');
+            const matrixBody = document.getElementById('risk-matrix-body');
+            
+            matrixBody.innerHTML = risks.map(risk => `
+                <tr>
+                    <td>${risk}</td>
+                    <td>
+                        <select class="likelihood" onchange="updateRiskScore(this)">
+                            <option value="1">Low</option>
+                            <option value="2">Medium</option>
+                            <option value="3">High</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="impact" onchange="updateRiskScore(this)">
+                            <option value="1">Low</option>
+                            <option value="2">Medium</option>
+                            <option value="3">High</option>
+                        </select>
+                    </td>
+                    <td class="risk-score">1</td>
+                    <td class="risk-priority">Low</td>
+                </tr>
+            `).join('');
+            
+            // Initialize risk chart
+            updateRiskChart();
+        }
+        
+        function updateRiskScore(element) {
+            const row = element.closest('tr');
+            const likelihood = row.querySelector('.likelihood').value;
+            const impact = row.querySelector('.impact').value;
+            const score = likelihood * impact;
+            
+            const scoreCell = row.querySelector('.risk-score');
+            scoreCell.textContent = score;
+            
+            // Update priority
+            const priorityCell = row.querySelector('.risk-priority');
+            let priority = 'Low';
+            let priorityClass = 'low';
+            
+            if (score >= 6) {
+                priority = 'High';
+                priorityClass = 'high';
+                row.classList.add('high-risk');
+            } else if (score >= 3) {
+                priority = 'Medium';
+                priorityClass = 'medium';
+                row.classList.remove('high-risk');
+            } else {
+                priority = 'Low';
+                priorityClass = 'low';
+                row.classList.remove('high-risk');
+            }
+            
+            priorityCell.textContent = priority;
+            scoreCell.className = 'risk-score ' + priorityClass;
+            
+            // Update chart
+            updateRiskChart();
+        }
+        
+        function updateRiskChart() {
+            const risks = Array.from(document.querySelectorAll('#risk-matrix-body tr')).map(row => ({
+                name: row.querySelector('td').textContent,
+                score: parseInt(row.querySelector('.risk-score').textContent),
+                priority: row.querySelector('.risk-priority').textContent
+            }));
+            
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            
+            // Destroy previous chart if it exists
+            if (riskChart) {
+                riskChart.destroy();
+            }
+            
+            riskChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: risks.map(r => r.name),
+                    datasets: [{
+                        label: 'Risk Score',
+                        data: risks.map(r => r.score),
+                        backgroundColor: risks.map(r => 
+                            r.priority === 'High' ? 'rgba(198, 40, 40, 0.7)' :
+                            r.priority === 'Medium' ? 'rgba(255, 143, 0, 0.7)' :
+                            'rgba(46, 125, 50, 0.7)'),
+                        borderColor: risks.map(r => 
+                            r.priority === 'High' ? 'rgba(198, 40, 40, 1)' :
+                            r.priority === 'Medium' ? 'rgba(255, 143, 0, 1)' :
+                            'rgba(46, 125, 50, 1)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 9,
+                            title: {
+                                display: true,
+                                text: 'Risk Score'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Identified Risks'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Score: ${context.raw} (${risks[context.dataIndex].priority} priority)`;
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Team management
+        function addTeamMember() {
+            const container = document.getElementById('team-members');
+            const newMember = document.createElement('div');
+            newMember.className = 'team-member';
+            newMember.innerHTML = `
+                <input type="text" placeholder="Name" class="team-name">
+                <input type="text" placeholder="Role" class="team-role">
+                <button onclick="removeTeamMember(this)" class="btn-danger">Remove</button>
+            `;
+            container.appendChild(newMember);
+        }
+        
+        function removeTeamMember(button) {
+            if (document.querySelectorAll('.team-member').length > 1) {
+                button.closest('.team-member').remove();
+            } else {
+                alert('You need at least one team member');
+            }
+        }
+        
+        function getTeamMembers() {
+            const members = [];
+            document.querySelectorAll('.team-member').forEach(member => {
+                const name = member.querySelector('.team-name').value;
+                const role = member.querySelector('.team-role').value;
+                if (name || role) {
+                    members.push({ name, role });
+                }
+            });
+            return members;
+        }
+        
+        // Data handling functions
+        function saveProgress() {
+            const data = {
+                industry: document.getElementById('industry').value,
+                
+                orgName: document.getElementById('org-name').value,
+                orgType: document.getElementById('org-type').value,
+                orgSize: document.getElementById('org-size').value,
+                primaryContact: document.getElementById('primary-contact').value,
+                contactEmail: document.getElementById('contact-email').value,
+                
+                projectName: document.getElementById('project-name').value,
+                projectLocation: document.getElementById('project-location').value,
+                projectSize: document.getElementById('project-size').value,
+                sizeUnit: document.getElementById('size-unit').value,
+                projectDescription: document.getElementById('project-description').value,
+                
+                activities: getSelectedCheckboxes('activities'),
+                activityOther: document.getElementById('activity-other-text').value,
+                activityFrequency: document.getElementById('activity-frequency').value,
+                activityStaff: document.getElementById('activity-staff').value,
+                
+                risks: getSelectedCheckboxes('risks'),
+                riskOther: document.getElementById('risk-other-text').value,
+                knownIssues: document.getElementById('known-issues').value,
+                visitorFrequency: document.getElementById('visitor-frequency').value,
+                
+                riskScores: getRiskScores(),
+                riskNotes: document.getElementById('risk-notes').value,
+                
+                controls: getSelectedCheckboxes('controls'),
+                controlOther: document.getElementById('control-other-text').value,
+                existingProtocols: document.getElementById('existing-protocols').value,
+                challenges: document.getElementById('challenges').value,
+                
+                measures: getSelectedCheckboxes('measures'),
+                measureOther: document.getElementById('measure-other-text').value,
+                implementation: document.getElementById('implementation').value,
+                monitoring: document.getElementById('monitoring').value,
+                budget: document.getElementById('budget').value,
+                timeline: document.getElementById('timeline').value,
+                
+                teamMembers: getTeamMembers(),
+                reviewFrequency: document.getElementById('review-frequency').value,
+                template: document.getElementById('template').value,
+                planName: document.getElementById('plan-name').value
+            };
+            
+            localStorage.setItem('biosecurityPlanData', JSON.stringify(data));
+        }
+        
+        function getRiskScores() {
+            const risks = [];
+            document.querySelectorAll('#risk-matrix-body tr').forEach(row => {
+                risks.push({
+                    name: row.querySelector('td').textContent,
+                    likelihood: row.querySelector('.likelihood').value,
+                    impact: row.querySelector('.impact').value,
+                    score: row.querySelector('.risk-score').textContent,
+                    priority: row.querySelector('.risk-priority').textContent
+                });
+            });
+            return risks;
+        }
+        
+        function loadProgress() {
+            const savedData = localStorage.getItem('biosecurityPlanData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                
+                // Step 0
+                if (data.industry) {
+                    const industryKey = Object.keys(industryConfig).find(key => 
+                        industryConfig[key].name === data.industry) || 'other';
+                    selectIndustry(industryKey);
+                    if (industryKey === 'other') {
+                        document.getElementById('industry-other-text').value = data.industry;
+                        document.getElementById('industry-other-text').style.display = 'block';
+                    }
+                }
+                
+                // Step 1
+                document.getElementById('org-name').value = data.orgName || '';
+                document.getElementById('org-type').value = data.orgType || '';
+                document.getElementById('org-size').value = data.orgSize || '';
+                document.getElementById('primary-contact').value = data.primaryContact || '';
+                document.getElementById('contact-email').value = data.contactEmail || '';
+                
+                // Step 2
+                document.getElementById('project-name').value = data.projectName || '';
+                document.getElementById('project-location').value = data.projectLocation || '';
+                document.getElementById('project-size').value = data.projectSize || '';
+                document.getElementById('size-unit').value = data.sizeUnit || 'hectares';
+                document.getElementById('project-description').value = data.projectDescription || '';
+                
+                // Step 3 (will be populated when step is activated)
+                if (data.activities) {
+                    setTimeout(() => {
+                        setSelectedCheckboxes('activities', data.activities || []);
+                        document.getElementById('activity-other-text').value = data.activityOther || '';
+                        if (data.activities.includes('Other')) {
+                            document.getElementById('activity-other').checked = true;
+                            document.getElementById('activity-other-text').style.display = 'block';
+                        }
+                        document.getElementById('activity-frequency').value = data.activityFrequency || '';
+                        document.getElementById('activity-staff').value = data.activityStaff || '';
+                    }, 0);
+                }
+                
+                // Step 4 (will be populated when step is activated)
+                if (data.risks) {
+                    setTimeout(() => {
+                        setSelectedCheckboxes('risks', data.risks || []);
+                        document.getElementById('risk-other-text').value = data.riskOther || '';
+                        if (data.risks.includes('Other')) {
+                            document.getElementById('risk-other').checked = true;
+                            document.getElementById('risk-other-text').style.display = 'block';
+                        }
+                        document.getElementById('known-issues').value = data.knownIssues || '';
+                        document.getElementById('visitor-frequency').value = data.visitorFrequency || '';
+                    }, 0);
+                }
+                
+                // Step 5 (will be populated when step is activated)
+                if (data.riskScores) {
+                    setTimeout(() => {
+                        data.riskScores.forEach((risk, i) => {
+                            const row = document.querySelectorAll('#risk-matrix-body tr')[i];
+                            if (row) {
+                                row.querySelector('.likelihood').value = risk.likelihood;
+                                row.querySelector('.impact').value = risk.impact;
+                                updateRiskScore(row.querySelector('.likelihood'));
+                            }
+                        });
+                        document.getElementById('risk-notes').value = data.riskNotes || '';
+                    }, 0);
+                }
+                
+                // Step 6
+                setSelectedCheckboxes('controls', data.controls || []);
+                document.getElementById('control-other-text').value = data.controlOther || '';
+                if (data.controls && data.controls.includes('Other')) {
+                    document.getElementById('control-other').checked = true;
+                    document.getElementById('control-other-text').style.display = 'block';
+                }
+                document.getElementById('existing-protocols').value = data.existingProtocols || '';
+                document.getElementById('challenges').value = data.challenges || '';
+                
+                // Step 7 (will be populated when step is activated)
+                if (data.measures) {
+                    setTimeout(() => {
+                        setSelectedCheckboxes('measures', data.measures || []);
+                        document.getElementById('measure-other-text').value = data.measureOther || '';
+                        if (data.measures.includes('Other')) {
+                            document.getElementById('measure-other').checked = true;
+                            document.getElementById('measure-other-text').style.display = 'block';
+                        }
+                        document.getElementById('implementation').value = data.implementation || '';
+                        document.getElementById('monitoring').value = data.monitoring || '';
+                        document.getElementById('budget').value = data.budget || '';
+                        document.getElementById('timeline').value = data.timeline || '';
+                    }, 0);
+                }
+                
+                // Step 8
+                if (data.teamMembers && data.teamMembers.length > 0) {
+                    const container = document.getElementById('team-members');
+                    container.innerHTML = '';
+                    data.teamMembers.forEach(member => {
+                        const newMember = document.createElement('div');
+                        newMember.className = 'team-member';
+                        newMember.innerHTML = `
+                            <input type="text" placeholder="Name" class="team-name" value="${member.name || ''}">
+                            <input type="text" placeholder="Role" class="team-role" value="${member.role || ''}">
+                            <button onclick="removeTeamMember(this)" class="btn-danger">Remove</button>
+                        `;
+                        container.appendChild(newMember);
+                    });
+                }
+                document.getElementById('review-frequency').value = data.reviewFrequency || '';
+                if (data.template) {
+                    selectTemplate(data.template);
+                }
+                document.getElementById('plan-name').value = data.planName || '';
+            }
+        }
+        
+        function getSelectedCheckboxes(name) {
+            const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
+            return Array.from(checkboxes).map(cb => cb.value);
+        }
+        
+        function setSelectedCheckboxes(name, values) {
+            const checkboxes = document.querySelectorAll(`input[name="${name}"]`);
+            checkboxes.forEach(cb => {
+                cb.checked = values.includes(cb.value);
+            });
+        }
+        
+        function updateReviewSummary() {
+            const data = JSON.parse(localStorage.getItem('biosecurityPlanData'));
+            if (!data) return;
+            
+            let html = `
+                <div class="output-section">
+                    <h3>Organization Details</h3>
+                    <p><strong>Organization:</strong> ${data.orgName}</p>
+                    <p><strong>Type:</strong> ${data.orgType || 'Not specified'}</p>
+                    <p><strong>Size:</strong> ${data.orgSize || 'Not specified'}</p>
+                    <p><strong>Primary Contact:</strong> ${data.primaryContact}</p>
+                    <p><strong>Email:</strong> ${data.contactEmail}</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>Project/Site Details</h3>
+                    <p><strong>Name:</strong> ${data.projectName}</p>
+                    <p><strong>Location:</strong> ${data.projectLocation}</p>
+                    <p><strong>Size:</strong> ${data.projectSize || 'Not specified'} ${data.sizeUnit || 'hectares'}</p>
+                    <p><strong>Description:</strong> ${data.projectDescription || 'Not provided'}</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>Activities</h3>
+                    <p><strong>Primary Activities:</strong> ${data.activities.join(', ')}${data.activityOther ? ' (' + data.activityOther + ')' : ''}</p>
+                    <p><strong>Frequency:</strong> ${data.activityFrequency || 'Not specified'}</p>
+                    <p><strong>Staff/Volunteers:</strong> ${data.activityStaff || 'Not specified'}</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>Risk Assessment</h3>
+                    <p><strong>Identified Risks:</strong> ${data.risks.join(', ')}${data.riskOther ? ' (' + data.riskOther + ')' : ''}</p>
+                    <p><strong>Known Issues:</strong> ${data.knownIssues || 'None specified'}</p>
+                    <p><strong>Visitor Frequency:</strong> ${data.visitorFrequency}</p>
+                    ${data.riskScores && data.riskScores.length > 0 ? `
+                        <p><strong>Risk Scores:</strong></p>
+                        <ul>
+                            ${data.riskScores.map(r => `<li>${r.name}: Score ${r.score} (${r.priority} priority)</li>`).join('')}
+                        </ul>
+                    ` : ''}
+                </div>
+            `;
+            
+            document.getElementById('review-summary').innerHTML = html;
+        }
+        
+        // Plan generation functions
+        function generatePlan() {
+            if (!validateStep(8)) return;
+            
+            saveProgress();
+            const data = JSON.parse(localStorage.getItem('biosecurityPlanData'));
+            
+            // Set the plan title
+            document.getElementById('output-title').textContent = data.planName;
+            
+            // Generate the plan content based on selected template
+            let html = '';
+            
+            if (data.template === 'basic') {
+                html = generateBasicPlan(data);
+            } else if (data.template === 'detailed') {
+                html = generateDetailedPlan(data);
+            } else {
+                html = generateCertifiedPlan(data);
+            }
+            
+            document.getElementById('output-content').innerHTML = html;
+            
+            // Show the output and hide the wizard
+            document.querySelector('.wizard-container').style.display = 'none';
+            document.getElementById('plan-output').style.display = 'block';
+            
+            // Update chart for PDF generation
+            updateRiskChart();
+        }
+        
+        function generateBasicPlan(data) {
+            return `
+                <div class="output-section">
+                    <h3>1. Overview</h3>
+                    <p><strong>Organization:</strong> ${data.orgName}</p>
+                    <p><strong>Project/Site:</strong> ${data.projectName}</p>
+                    <p><strong>Location:</strong> ${data.projectLocation}</p>
+                    <p><strong>Primary Contact:</strong> ${data.primaryContact} (${data.contactEmail})</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>2. Key Risks</h3>
+                    <ul>
+                        ${data.risks.map(r => `<li>${r}${r === 'Other' ? ' (' + data.riskOther + ')' : ''}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="output-section">
+                    <h3>3. Control Measures</h3>
+                    <p><strong>Existing Controls:</strong></p>
+                    <ul>
+                        ${data.controls.length > 0 ? 
+                            data.controls.map(c => `<li>${c}${c === 'Other' ? ' (' + data.controlOther + ')' : ''}</li>`).join('') : 
+                            '<li>None reported</li>'}
+                    </ul>
+                    
+                    <p><strong>Additional Measures:</strong></p>
+                    <ul>
+                        ${data.measures.map(m => `<li>${m}${m === 'Other' ? ' (' + data.measureOther + ')' : ''}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="output-section">
+                    <h3>4. Implementation</h3>
+                    <p>${data.implementation || 'Implementation plan not specified.'}</p>
+                </div>
+                
+                <div class="output-section">
+                    <p><em>Plan generated on ${new Date().toLocaleDateString()}</em></p>
+                </div>
+            `;
+        }
+        
+        function generateDetailedPlan(data) {
+            return `
+                <div class="output-section">
+                    <h3>1. Introduction</h3>
+                    <p><strong>Purpose:</strong> This biosecurity plan outlines the measures to prevent, control, and manage biosecurity risks at ${data.projectName}.</p>
+                    <p><strong>Scope:</strong> This plan applies to all activities conducted at ${data.projectLocation} by ${data.orgName} staff, volunteers, and visitors.</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>2. Site Details</h3>
+                    <p><strong>Site Name:</strong> ${data.projectName}</p>
+                    <p><strong>Location:</strong> ${data.projectLocation}</p>
+                    <p><strong>Size:</strong> ${data.projectSize || 'Not specified'} ${data.sizeUnit || 'hectares'}</p>
+                    <p><strong>Description:</strong> ${data.projectDescription || 'Not provided'}</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>3. Activities</h3>
+                    <p>Primary activities conducted at the site:</p>
+                    <ul>
+                        ${data.activities.map(a => `<li>${a}${a === 'Other' ? ' (' + data.activityOther + ')' : ''}</li>`).join('')}
+                    </ul>
+                    <p><strong>Frequency:</strong> ${data.activityFrequency || 'Not specified'}</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>4. Risk Assessment</h3>
+                    <p>Identified biosecurity risks:</p>
+                    <ul>
+                        ${data.risks.map(r => `<li>${r}${r === 'Other' ? ' (' + data.riskOther + ')' : ''}</li>`).join('')}
+                    </ul>
+                    
+                    ${data.riskScores && data.riskScores.length > 0 ? `
+                        <p><strong>Risk Prioritization:</strong></p>
+                        <table class="risk-matrix" style="margin: 15px 0;">
+                            <thead>
+                                <tr>
+                                    <th>Risk</th>
+                                    <th>Score</th>
+                                    <th>Priority</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.riskScores.map(r => `
+                                    <tr class="${r.priority === 'High' ? 'high-risk' : ''}">
+                                        <td>${r.name}</td>
+                                        <td class="risk-score ${r.priority.toLowerCase()}">${r.score}</td>
+                                        <td>${r.priority}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    ` : ''}
+                    
+                    <p><strong>Known Issues:</strong> ${data.knownIssues || 'None reported'}</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>5. Current Controls</h3>
+                    <p>Existing biosecurity measures in place:</p>
+                    <ul>
+                        ${data.controls.length > 0 ? 
+                            data.controls.map(c => `<li>${c}${c === 'Other' ? ' (' + data.controlOther + ')' : ''}</li>`).join('') : 
+                            '<li>No existing controls reported</li>'}
+                    </ul>
+                    
+                    <p><strong>Challenges:</strong> ${data.challenges || 'None reported'}</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>6. Proposed Measures</h3>
+                    <p>Additional biosecurity measures to be implemented:</p>
+                    <ul>
+                        ${data.measures.map(m => `<li>${m}${m === 'Other' ? ' (' + data.measureOther + ')' : ''}</li>`).join('')}
+                    </ul>
+                    
+                    <p><strong>Implementation Plan:</strong></p>
+                    <p>${data.implementation || 'Not specified'}</p>
+                    
+                    <p><strong>Monitoring Approach:</strong></p>
+                    <p>${data.monitoring || 'Not specified'}</p>
+                    
+                    <p><strong>Budget:</strong> ${data.budget || 'Not specified'}</p>
+                    <p><strong>Timeline:</strong> ${data.timeline || 'Not specified'}</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>7. Responsibilities</h3>
+                    <p>Team members responsible for biosecurity:</p>
+                    <ul>
+                        ${data.teamMembers && data.teamMembers.length > 0 ? 
+                            data.teamMembers.map(m => `<li>${m.name}${m.role ? ` (${m.role})` : ''}</li>`).join('') : 
+                            '<li>No team members specified</li>'}
+                    </ul>
+                </div>
+                
+                <div class="output-section">
+                    <h3>8. Review Process</h3>
+                    <p>This plan will be reviewed: ${data.reviewFrequency || 'Not specified'}</p>
+                </div>
+                
+                <div class="output-section">
+                    <p><em>Plan generated by ${data.primaryContact} on ${new Date().toLocaleDateString()}</em></p>
+                </div>
+            `;
+        }
+        
+        function generateCertifiedPlan(data) {
+            return `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2>${data.orgName}</h2>
+                    <h1>${data.planName}</h1>
+                    <p>Biosecurity Management Plan</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>Document Control</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; width: 30%;"><strong>Document Title:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${data.planName}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Prepared By:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${data.primaryContact}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Date Prepared:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${new Date().toLocaleDateString()}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Review Frequency:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${data.reviewFrequency || 'Not specified'}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Version:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">1.0</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="output-section">
+                    <h3>1. Introduction</h3>
+                    <p>This Biosecurity Management Plan has been developed to identify, assess, and manage biosecurity risks associated with operations at ${data.projectName}. The plan outlines the procedures and controls to prevent the introduction and spread of pests, diseases, and other biological threats.</p>
+                    
+                    <h4>1.1 Scope</h4>
+                    <p>This plan applies to all activities conducted by ${data.orgName} at ${data.projectLocation}, including but not limited to:</p>
+                    <ul>
+                        ${data.activities.map(a => `<li>${a}${a === 'Other' ? ' (' + data.activityOther + ')' : ''}</li>`).join('')}
+                    </ul>
+                    
+                    <h4>1.2 Objectives</h4>
+                    <ul>
+                        <li>Identify potential biosecurity risks</li>
+                        <li>Implement appropriate control measures</li>
+                        <li>Monitor and review biosecurity effectiveness</li>
+                        <li>Ensure compliance with relevant regulations</li>
+                    </ul>
+                </div>
+                
+                <div class="output-section">
+                    <h3>2. Site Description</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; width: 30%;"><strong>Site Name:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${data.projectName}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Location:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${data.projectLocation}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Size:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">${data.projectSize || 'Not specified'} ${data.sizeUnit || 'hectares'}</td>
+                        </tr>
+                    </table>
+                    <p><strong>Description:</strong> ${data.projectDescription || 'Not provided'}</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>3. Risk Assessment</h3>
+                    <h4>3.1 Identified Risks</h4>
+                    <p>The following biosecurity risks have been identified:</p>
+                    <ul>
+                        ${data.risks.map(r => `<li>${r}${r === 'Other' ? ' (' + data.riskOther + ')' : ''}</li>`).join('')}
+                    </ul>
+                    
+                    ${data.riskScores && data.riskScores.length > 0 ? `
+                        <h4>3.2 Risk Evaluation</h4>
+                        <p>Risks have been evaluated based on likelihood and potential impact:</p>
+                        <table class="risk-matrix" style="margin: 15px 0;">
+                            <thead>
+                                <tr>
+                                    <th>Risk</th>
+                                    <th>Likelihood</th>
+                                    <th>Impact</th>
+                                    <th>Score</th>
+                                    <th>Priority</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.riskScores.map(r => `
+                                    <tr class="${r.priority === 'High' ? 'high-risk' : ''}">
+                                        <td>${r.name}</td>
+                                        <td>${getLikelihoodText(r.likelihood)}</td>
+                                        <td>${getImpactText(r.impact)}</td>
+                                        <td class="risk-score ${r.priority.toLowerCase()}">${r.score}</td>
+                                        <td>${r.priority}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <div class="chart-container" style="height: 400px;">
+                            <canvas id="pdfRiskChart"></canvas>
+                        </div>
+                    ` : ''}
+                    
+                    <h4>3.3 Known Issues</h4>
+                    <p>${data.knownIssues || 'No known biosecurity issues reported in the area.'}</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>4. Control Measures</h3>
+                    <h4>4.1 Existing Controls</h4>
+                    <p>The following biosecurity measures are currently in place:</p>
+                    <ul>
+                        ${data.controls.length > 0 ? 
+                            data.controls.map(c => `<li>${c}${c === 'Other' ? ' (' + data.controlOther + ')' : ''}</li>`).join('') : 
+                            '<li>No existing controls reported</li>'}
+                    </ul>
+                    
+                    <h4>4.2 Additional Measures</h4>
+                    <p>The following additional biosecurity measures will be implemented:</p>
+                    <ul>
+                        ${data.measures.map(m => `<li>${m}${m === 'Other' ? ' (' + data.measureOther + ')' : ''}</li>`).join('')}
+                    </ul>
+                    
+                    <h4>4.3 Implementation Plan</h4>
+                    <p>${data.implementation || 'Implementation details to be determined.'}</p>
+                    
+                    <h4>4.4 Monitoring Procedures</h4>
+                    <p>${data.monitoring || 'Monitoring procedures to be determined.'}</p>
+                </div>
+                
+                <div class="output-section">
+                    <h3>5. Responsibilities</h3>
+                    <p>The following personnel are responsible for implementing and maintaining biosecurity measures:</p>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 8px; border: 1px solid #ddd;">Name</th>
+                                <th style="padding: 8px; border: 1px solid #ddd;">Role</th>
+                                <th style="padding: 8px; border: 1px solid #ddd;">Responsibilities</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.teamMembers && data.teamMembers.length > 0 ? 
+                                data.teamMembers.map(m => `
+                                    <tr>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.name}</td>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">${m.role || '-'}</td>
+                                        <td style="padding: 8px; border: 1px solid #ddd;">Implementation and monitoring of biosecurity measures</td>
+                                    </tr>
+                                `).join('') : `
+                                <tr>
+                                    <td colspan="3" style="padding: 8px; border: 1px solid #ddd; text-align: center;">No team members specified</td>
+                                </tr>
+                                `}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="output-section">
+                    <h3>6. Review Process</h3>
+                    <p>This biosecurity plan will be reviewed ${data.reviewFrequency || 'periodically'} to ensure its continued effectiveness. The review will consider:</p>
+                    <ul>
+                        <li>Any biosecurity incidents that have occurred</li>
+                        <li>Changes to operations or activities</li>
+                        <li>Newly identified risks</li>
+                        <li>Effectiveness of current controls</li>
+                    </ul>
+                </div>
+                
+                <div class="output-section">
+                    <h3>7. Approval</h3>
+                    <p>This biosecurity plan has been approved by:</p>
+                    <div style="margin-top: 50px;">
+                        <p>___________________________</p>
+                        <p>Name: ${data.primaryContact}</p>
+                        <p>Position: </p>
+                        <p>Date: ${new Date().toLocaleDateString()}</p>
+                    </div>
+                </div>
+                
+                <script>
+                    // This script will be executed when the PDF is generated
+                    function generatePDFChart() {
+                        const ctx = document.getElementById('pdfRiskChart').getContext('2d');
+                        const risks = ${JSON.stringify(data.riskScores)};
+                        
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: risks.map(r => r.name),
+                                datasets: [{
+                                    label: 'Risk Score',
+                                    data: risks.map(r => r.score),
+                                    backgroundColor: risks.map(r => 
+                                        r.priority === 'High' ? 'rgba(198, 40, 40, 0.7)' :
+                                        r.priority === 'Medium' ? 'rgba(255, 143, 0, 0.7)' :
+                                        'rgba(46, 125, 50, 0.7)'),
+                                    borderColor: risks.map(r => 
+                                        r.priority === 'High' ? 'rgba(198, 40, 40, 1)' :
+                                        r.priority === 'Medium' ? 'rgba(255, 143, 0, 1)' :
+                                        'rgba(46, 125, 50, 1)'),
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        max: 9,
+                                        title: {
+                                            display: true,
+                                            text: 'Risk Score'
+                                        }
+                                    },
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Identified Risks'
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return \`Score: \${context.raw} (\${risks[context.dataIndex].priority} priority)\`;
+                                            }
+                                        }
+                                    },
+                                    legend: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Generate the chart when the page loads
+                    window.addEventListener('load', generatePDFChart);
+                <\/script>
+            `;
+        }
+        
+        function getLikelihoodText(value) {
+            switch(value) {
+                case '1': return 'Low';
+                case '2': return 'Medium';
+                case '3': return 'High';
+                default: return 'Unknown';
+            }
+        }
+        
+        function getImpactText(value) {
+            switch(value) {
+                case '1': return 'Low';
+                case '2': return 'Medium';
+                case '3': return 'High';
+                default: return 'Unknown';
+            }
+        }
+        
+        function savePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+            
+            // Add title
+            doc.setFontSize(16);
+            doc.setTextColor(46, 125, 50);
+            doc.text(document.getElementById('output-title').textContent, 105, 20, { align: 'center' });
+            
+            // Add organization name if available
+            const orgName = document.getElementById('org-name').value;
+            if (orgName) {
+                doc.setFontSize(12);
+                doc.setTextColor(0, 0, 0);
+                doc.text(orgName, 105, 27, { align: 'center' });
+            }
+            
+            // Add date
+            doc.setFontSize(10);
+            doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 34, { align: 'center' });
+            
+            // Add content
+            const content = document.getElementById('output-content');
+            
+            // Special handling for certification-ready template
+            const template = document.getElementById('template').value;
+            if (template === 'certified') {
+                // Add page numbers
+                const pageCount = doc.internal.getNumberOfPages();
+                for(let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(150);
+                    doc.text(`Page ${i} of ${pageCount}`, 105, 287, { align: 'center' });
+                }
+            }
+            
+            html2canvas(content, {
+                scale: 2,
+                logging: false,
+                useCORS: true,
+                allowTaint: true,
+                scrollY: -window.scrollY
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = doc.internal.pageSize.getWidth() - 20;
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 40;
+                
+                doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    doc.addPage();
+                    doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                doc.save(`${document.getElementById('output-title').textContent}.pdf`);
+            });
+        }
+        
+        function sharePlan(method) {
+            switch(method) {
+                case 'email':
+                    const email = document.getElementById('contact-email').value || '';
+                    const subject = encodeURIComponent(document.getElementById('plan-name').value);
+                    const body = encodeURIComponent(`Please find attached the biosecurity plan for ${document.getElementById('project-name').value}.`);
+                    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+                    break;
+                    
+                case 'link':
+                    saveProgress();
+                    const data = localStorage.getItem('biosecurityPlanData');
+                    const planName = encodeURIComponent(document.getElementById('plan-name').value);
+                    // In a real implementation, you would upload to a server and get a shareable URL
+                    alert('In a complete implementation, this would generate a shareable link to your plan. For now, you can save the PDF to share.');
+                    break;
+            }
+        }
+        
+        function resetForm() {
+            if (confirm('Are you sure you want to start a new plan? Your current data will be cleared.')) {
+                localStorage.removeItem('biosecurityPlanData');
+                document.querySelectorAll('input, textarea, select').forEach(el => {
+                    if (el.type !== 'button' && el.type !== 'submit') {
+                        el.value = '';
+                    }
+                    if (el.type === 'checkbox' || el.type === 'radio') {
+                        el.checked = false;
+                    }
+                });
+                
+                // Reset industry selection
+                document.querySelectorAll('.industry-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                document.getElementById('industry-card-natural').classList.add('selected');
+                document.getElementById('industry').value = 'Natural Area Restoration';
+                document.getElementById('industry-other-text').style.display = 'none';
+                
+                // Reset template selection
+                document.querySelectorAll('.template-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                document.getElementById('template-basic').classList.add('selected');
+                document.getElementById('template').value = 'basic';
+                
+                // Reset team members
+                document.getElementById('team-members').innerHTML = `
+                    <div class="team-member">
+                        <input type="text" placeholder="Name" class="team-name">
+                        <input type="text" placeholder="Role" class="team-role">
+                        <button onclick="removeTeamMember(this)" class="btn-danger">Remove</button>
+                    </div>
+                `;
+                
+                document.getElementById('plan-output').style.display = 'none';
+                document.querySelector('.wizard-container').style.display = 'block';
+                currentStep = 0;
+                document.querySelectorAll('.step').forEach((step, index) => {
+                    step.classList.toggle('active', index === 0);
+                });
+                updateStepIndicator();
+            }
+        }
+    </script>
 </body>
 </html>
