@@ -509,7 +509,7 @@
             
             <div class="nav-buttons">
                 <button disabled class="btn-secondary">Previous</button>
-                <button onclick="nextStep()" class="btn-primary">Continue</button>
+                <button onclick="validateAndContinue()" class="btn-primary">Continue</button>
             </div>
         </div>
         
@@ -1082,6 +1082,24 @@
             } else {
                 industryConfig.other.name = 'Other';
             }
+        }
+        
+        // New validation function for industry selection
+        function validateAndContinue() {
+            const industry = document.getElementById('industry').value;
+            const otherText = document.getElementById('industry-other-text');
+            
+            // Validation checks
+            if (!industry) {
+                alert('Please select an industry');
+                return;
+            }
+            if (industry === 'other' && !otherText.value.trim()) {
+                alert('Please specify your industry');
+                return;
+            }
+            
+            nextStep(); // Only proceed if valid
         }
         
         // Template selection
