@@ -455,7 +455,7 @@
             <div class="question">
                 <label class="required">Primary Industry</label>
                 <div class="industry-selection">
-                    <div class="industry-card" onclick="selectIndustry('natural')" id="industry-card-natural">
+                    <div class="industry-card" onclick="return selectIndustry('natural')" id="industry-card-natural">
                         <div class="industry-icon">🌱</div>
                         <div>
                             <h3>Natural Area Restoration</h3>
@@ -463,7 +463,7 @@
                         </div>
                     </div>
                     
-                    <div class="industry-card" onclick="selectIndustry('agriculture')" id="industry-card-agriculture">
+                    <div class="industry-card" onclick="return selectIndustry('agriculture')" id="industry-card-agriculture">
                         <div class="industry-icon">🚜</div>
                         <div>
                             <h3>Agriculture</h3>
@@ -471,7 +471,7 @@
                         </div>
                     </div>
                     
-                    <div class="industry-card" onclick="selectIndustry('aquaculture')" id="industry-card-aquaculture">
+                    <div class="industry-card" onclick="return selectIndustry('aquaculture')" id="industry-card-aquaculture">
                         <div class="industry-icon">🐟</div>
                         <div>
                             <h3>Aquaculture</h3>
@@ -479,7 +479,7 @@
                         </div>
                     </div>
                     
-                    <div class="industry-card" onclick="selectIndustry('healthcare')" id="industry-card-healthcare">
+                    <div class="industry-card" onclick="return selectIndustry('healthcare')" id="industry-card-healthcare">
                         <div class="industry-icon">🏥</div>
                         <div>
                             <h3>Healthcare</h3>
@@ -487,7 +487,7 @@
                         </div>
                     </div>
                     
-                    <div class="industry-card" onclick="selectIndustry('research')" id="industry-card-research">
+                    <div class="industry-card" onclick="return selectIndustry('research')" id="industry-card-research">
                         <div class="industry-icon">🔬</div>
                         <div>
                             <h3>Research Facilities</h3>
@@ -495,7 +495,7 @@
                         </div>
                     </div>
                     
-                    <div class="industry-card" onclick="selectIndustry('other')" id="industry-card-other">
+                    <div class="industry-card" onclick="return selectIndustry('other')" id="industry-card-other">
                         <div class="industry-icon">❓</div>
                         <div>
                             <h3>Other Industry</h3>
@@ -508,8 +508,8 @@
             </div>
             
             <div class="nav-buttons">
-                <button disabled class="btn-secondary">Previous</button>
-                <button onclick="validateAndContinue()" class="btn-primary">Continue</button>
+                <button type="button" disabled class="btn-secondary">Previous</button>
+                <button type="button" onclick="return validateAndContinue()" class="btn-primary">Continue</button>
             </div>
         </div>
         
@@ -556,8 +556,8 @@
             </div>
             
             <div class="nav-buttons">
-                <button onclick="prevStep()" class="btn-secondary">Previous</button>
-                <button onclick="nextStep()" class="btn-primary">Next</button>
+                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
+                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
             </div>
         </div>
         
@@ -594,8 +594,8 @@
             </div>
             
             <div class="nav-buttons">
-                <button onclick="prevStep()" class="btn-secondary">Previous</button>
-                <button onclick="nextStep()" class="btn-primary">Next</button>
+                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
+                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
             </div>
         </div>
         
@@ -630,8 +630,8 @@
             </div>
             
             <div class="nav-buttons">
-                <button onclick="prevStep()" class="btn-secondary">Previous</button>
-                <button onclick="nextStep()" class="btn-primary">Next</button>
+                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
+                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
             </div>
         </div>
         
@@ -665,8 +665,8 @@
             </div>
             
             <div class="nav-buttons">
-                <button onclick="prevStep()" class="btn-secondary">Previous</button>
-                <button onclick="nextStep()" class="btn-primary">Next</button>
+                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
+                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
             </div>
         </div>
         
@@ -702,8 +702,8 @@
             </div>
             
             <div class="nav-buttons">
-                <button onclick="prevStep()" class="btn-secondary">Previous</button>
-                <button onclick="nextStep()" class="btn-primary">Next</button>
+                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
+                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
             </div>
         </div>
         
@@ -757,8 +757,8 @@
             </div>
             
             <div class="nav-buttons">
-                <button onclick="prevStep()" class="btn-secondary">Previous</button>
-                <button onclick="nextStep()" class="btn-primary">Next</button>
+                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
+                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
             </div>
         </div>
         
@@ -794,8 +794,8 @@
             </div>
             
             <div class="nav-buttons">
-                <button onclick="prevStep()" class="btn-secondary">Previous</button>
-                <button onclick="nextStep()" class="btn-primary">Next</button>
+                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
+                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
             </div>
         </div>
         
@@ -809,10 +809,10 @@
                     <div class="team-member">
                         <input type="text" placeholder="Name" class="team-name">
                         <input type="text" placeholder="Role" class="team-role">
-                        <button onclick="removeTeamMember(this)" class="btn-danger">Remove</button>
+                        <button type="button" onclick="return removeTeamMember(this)" class="btn-danger">Remove</button>
                     </div>
                 </div>
-                <button onclick="addTeamMember()" class="btn-secondary" style="margin-top: 10px;">Add Team Member</button>
+                <button type="button" onclick="return addTeamMember()" class="btn-secondary" style="margin-top: 10px;">Add Team Member</button>
             </div>
             
             <div class="question">
@@ -830,17 +830,17 @@
             <div class="question">
                 <label for="template-select">Plan Template Style</label>
                 <div class="template-gallery">
-                    <div class="template-card" onclick="selectTemplate('basic')" id="template-basic">
+                    <div class="template-card" onclick="return selectTemplate('basic')" id="template-basic">
                         <div class="template-icon">📄</div>
                         <h3>Basic</h3>
                         <p>Simple, straightforward plan</p>
                     </div>
-                    <div class="template-card" onclick="selectTemplate('detailed')" id="template-detailed">
+                    <div class="template-card" onclick="return selectTemplate('detailed')" id="template-detailed">
                         <div class="template-icon">📑</div>
                         <h3>Detailed</h3>
                         <p>Comprehensive with sections</p>
                     </div>
-                    <div class="template-card" onclick="selectTemplate('certified')" id="template-certified">
+                    <div class="template-card" onclick="return selectTemplate('certified')" id="template-certified">
                         <div class="template-icon">🏆</div>
                         <h3>Certification-Ready</h3>
                         <p>Formal documentation</p>
@@ -855,8 +855,8 @@
             </div>
             
             <div class="nav-buttons">
-                <button onclick="prevStep()" class="btn-secondary">Previous</button>
-                <button onclick="generatePlan()" class="btn-primary">Generate Plan</button>
+                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
+                <button type="button" onclick="return generatePlan()" class="btn-primary">Generate Plan</button>
             </div>
         </div>
     </div>
@@ -865,10 +865,10 @@
         <h2 id="output-title">Biosecurity Plan</h2>
         <div id="output-content"></div>
         <div class="share-options">
-            <button onclick="savePDF()" class="btn-primary">Save as PDF</button>
-            <button onclick="sharePlan('email')" class="btn-secondary">Email Plan</button>
-            <button onclick="sharePlan('link')" class="btn-secondary">Get Shareable Link</button>
-            <button onclick="resetForm()" class="btn-danger">Start New Plan</button>
+            <button type="button" onclick="return savePDF()" class="btn-primary">Save as PDF</button>
+            <button type="button" onclick="return sharePlan('email')" class="btn-secondary">Email Plan</button>
+            <button type="button" onclick="return sharePlan('link')" class="btn-secondary">Get Shareable Link</button>
+            <button type="button" onclick="return resetForm()" class="btn-danger">Start New Plan</button>
         </div>
     </div>
     
@@ -954,31 +954,39 @@
         });
         
         // Navigation functions
-        function nextStep() {
-            if (validateStep(currentStep)) {
-                saveProgress();
-                document.getElementById(`step${currentStep}`).classList.remove('active');
-                currentStep++;
-                
-                // Special handling for certain steps
-                if (currentStep === 3) updateActivities();
-                if (currentStep === 4) updateRisks();
-                if (currentStep === 5) generateRiskMatrix();
-                if (currentStep === 7) updateMeasures();
-                
-                document.getElementById(`step${currentStep}`).classList.add('active');
-                updateStepIndicator();
+        function goToStep(stepNumber) {
+            // Validate current step before leaving
+            if (stepNumber > currentStep && !validateStep(currentStep)) {
+                return false;
             }
-        }
-        
-        function prevStep() {
-            saveProgress();
-            document.getElementById(`step${currentStep}`).classList.remove('active');
-            currentStep--;
-            document.getElementById(`step${currentStep}`).classList.add('active');
+
+            // Hide all steps
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+            
+            // Show the requested step
+            document.getElementById(`step${stepNumber}`).classList.add('active');
+            currentStep = stepNumber;
             updateStepIndicator();
+            
+            // Special handling for certain steps
+            if (currentStep === 3) updateActivities();
+            if (currentStep === 4) updateRisks();
+            if (currentStep === 5) generateRiskMatrix();
+            if (currentStep === 7) updateMeasures();
+            
+            return false;
         }
-        
+
+        function nextStep() {
+            return goToStep(currentStep + 1);
+        }
+
+        function prevStep() {
+            return goToStep(currentStep - 1);
+        }
+
         function updateStepIndicator() {
             document.getElementById('step-indicator').textContent = stepIndicators[currentStep];
             document.getElementById('progress-bar').style.width = `${(currentStep / (totalSteps-1)) * 100}%`;
@@ -1068,38 +1076,37 @@
             });
             document.getElementById(`industry-card-${industry}`).classList.add('selected');
             
-            // Set industry value - this is what the validation checks for
+            // Set the hidden input value
             document.getElementById('industry').value = industry;
             
-            // Show/hide other text field
+            // Handle "Other" case
             const otherText = document.getElementById('industry-other-text');
-            otherText.style.display = industry === 'other' ? 'block' : 'none';
-            if (industry !== 'other') otherText.value = '';
-            
-            // Update industry name in config if "other" is selected
-            if (industry === 'other' && otherText.value) {
-                industryConfig.other.name = otherText.value;
+            if (industry === 'other') {
+                otherText.style.display = 'block';
             } else {
-                industryConfig.other.name = 'Other';
+                otherText.style.display = 'none';
             }
+            
+            return false;
         }
-        
-        // New validation function for industry selection
+
         function validateAndContinue() {
             const industry = document.getElementById('industry').value;
             const otherText = document.getElementById('industry-other-text');
             
-            // Validation checks
             if (!industry) {
                 alert('Please select an industry');
-                return;
-            }
-            if (industry === 'other' && !otherText.value.trim()) {
-                alert('Please specify your industry');
-                return;
+                return false;
             }
             
-            nextStep(); // Only proceed if valid
+            if (industry === 'other' && !otherText.value.trim()) {
+                alert('Please specify your industry');
+                otherText.focus();
+                return false;
+            }
+            
+            // If validation passes, proceed to next step
+            return goToStep(1);
         }
         
         // Template selection
@@ -1109,6 +1116,7 @@
             });
             document.getElementById(`template-${template}`).classList.add('selected');
             document.getElementById('template').value = template;
+            return false;
         }
         
         // Dynamic content updates based on industry
@@ -1397,9 +1405,10 @@
             newMember.innerHTML = `
                 <input type="text" placeholder="Name" class="team-name">
                 <input type="text" placeholder="Role" class="team-role">
-                <button onclick="removeTeamMember(this)" class="btn-danger">Remove</button>
+                <button type="button" onclick="return removeTeamMember(this)" class="btn-danger">Remove</button>
             `;
             container.appendChild(newMember);
+            return false;
         }
         
         function removeTeamMember(button) {
@@ -1408,6 +1417,7 @@
             } else {
                 alert('You need at least one team member');
             }
+            return false;
         }
         
         function getTeamMembers() {
@@ -1545,7 +1555,7 @@
                         newMember.innerHTML = `
                             <input type="text" placeholder="Name" class="team-name" value="${member.name || ''}">
                             <input type="text" placeholder="Role" class="team-role" value="${member.role || ''}">
-                            <button onclick="removeTeamMember(this)" class="btn-danger">Remove</button>
+                            <button type="button" onclick="return removeTeamMember(this)" class="btn-danger">Remove</button>
                         `;
                         container.appendChild(newMember);
                     });
@@ -1572,7 +1582,7 @@
         
         // Plan generation functions
         function generatePlan() {
-            if (!validateStep(8)) return;
+            if (!validateStep(8)) return false;
             
             saveProgress();
             const data = JSON.parse(localStorage.getItem('biosecurityPlanData'));
@@ -1599,6 +1609,7 @@
             
             // Update chart for PDF generation
             updateRiskChart();
+            return false;
         }
         
         function generateBasicPlan(data) {
@@ -2091,6 +2102,7 @@
                 
                 doc.save(`${document.getElementById('output-title').textContent}.pdf`);
             });
+            return false;
         }
         
         function sharePlan(method) {
@@ -2110,6 +2122,7 @@
                     alert('In a complete implementation, this would generate a shareable link to your plan. For now, you can save the PDF to share.');
                     break;
             }
+            return false;
         }
         
         function resetForm() {
@@ -2145,7 +2158,7 @@
                     <div class="team-member">
                         <input type="text" placeholder="Name" class="team-name">
                         <input type="text" placeholder="Role" class="team-role">
-                        <button onclick="removeTeamMember(this)" class="btn-danger">Remove</button>
+                        <button type="button" onclick="return removeTeamMember(this)" class="btn-danger">Remove</button>
                     </div>
                 `;
                 
@@ -2157,6 +2170,7 @@
                 });
                 updateStepIndicator();
             }
+            return false;
         }
     </script>
 </body>
