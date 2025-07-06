@@ -3083,3 +3083,189 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+// Industry selection functions
+function selectIndustry(industry) {
+    // Update UI
+    document.querySelectorAll('.industry-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    document.getElementById(`industry-card-${industry}`).classList.add('selected');
+    
+    // Set the hidden input value
+    document.getElementById('industry').value = industry;
+    
+    // Handle "Other" case
+    const otherText = document.getElementById('industry-other-text');
+    if (industry === 'other') {
+        otherText.style.display = 'block';
+    } else {
+        otherText.style.display = 'none';
+        // Update the other industry name in config
+        industryConfig.other.name = industryConfig[industry].name;
+    }
+    
+    return false;
+}
+
+// Dynamic content updates based on industry
+function updateActivities() {
+    const industry = document.getElementById('industry').value || 'conservation';
+    let config = industryConfig[industry];
+    
+    if (industry === 'other') {
+        config = {
+            activities: [],
+            risks: [],
+            measures: [],
+            riskFactors: {}
+        };
+    } else {
+        config = config || industryConfig.conservation;
+    }
+    
+    const container = document.getElementById('activities-container');
+    
+    // Standard activities
+    let html = config.activities.map(activity => `
+        <div class="activity-item">
+            <input type="checkbox" id="activity-${activity.toLowerCase().replace(/\s+/g, '-')}" 
+                   name="activities" value="${activity}">
+            <label for="activity-${activity.toLowerCase().replace(/\s+/g, '-')}">${activity}</label>
+        </div>
+    `).join('');
+    
+    // Add custom activities
+    customActivities.forEach((activity, index) => {
+        const id = `activity-custom-${index}`;
+        html += `
+            <div class="activity-item">
+                <input type="checkbox" id="${id}" name="activities" value="${activity}">
+                <label for="${id}">${activity}</label>
+                <button type="button" onclick="removeCustomActivity('${activity}')" class="btn-danger">Remove</button>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+    
+    // Load saved activities if they exist
+    const savedData = localStorage.getItem('biosecurityPlanData');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        setSelectedCheckboxes('activities', data.activities || []);
+        document.getElementById('activity-frequency').value = data.activityFrequency || '';
+        document.getElementById('activity-staff').value = data.activityStaff || '';
+    }
+}
+
+function updateRisks() {
+    const industry = document.getElementById('industry').value || 'conservation';
+    let config = industryConfig[industry];
+    
+    if (industry === 'other') {
+        config = {
+            activities: [],
+            risks: [],
+            measures: [],
+            riskFactors: {}
+        };
+    } else {
+        config = config || industryConfig.conservation;
+    }
+    
+    const container = document.getElementById('risks-container');
+    
+    // Standard risks
+    let html = config.risks.map(risk => `
+        <div class="risk-item">
+            <input type="checkbox" id="risk-${risk.toLowerCase().replace(/\s+/g, '-')}" 
+                   name="risks" value="${risk}">
+            <label for="risk-${risk.toLowerCase().replace(/\s+/g, '-')}">${risk}</label>
+        </div>
+    `).join('');
+    
+    // Add custom risks
+    customRisks.forEach((risk, index) => {
+        const id = `risk-custom-${index}`;
+        html += `
+            <div class="risk-item">
+                <input type="checkbox" id="${id}" name="risks" value="${risk}">
+                <label for="${id}">${risk}</label>
+                <button type="button" onclick="removeCustomRisk('${risk}')" class="btn-danger">Remove</button>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+    
+    // Load saved risks if they exist
+    const savedData = localStorage.getItem('biosecurityPlanData');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        setSelectedCheckboxes('risks', data.risks || []);
+        document.getElementById('known-issues').value = data.knownIssues || '';
+        document.getElementById('visitor-frequency').value = data.visitorFrequency || '';
+    }
+}
+
+function updateMeasures() {
+    const industry = document.getElementById('industry').value || 'conservation';
+    let config = industryConfig[industry];
+    
+    if (industry === 'other') {
+        config = {
+            activities: [],
+            risks: [],
+            measures: [],
+            riskFactors: {}
+        };
+    } else {
+        config = config || industryConfig.conservation;
+    }
+    
+    const container = document.getElementById('measures-container');
+    
+    // Standard measures
+    let html = config.measures.map(measure => `
+        <div class="measure-item">
+            <input type="checkbox" id="measure-${measure.toLowerCase().replace(/\s+/g, '-')}" 
+                   name="measures" value="${measure}">
+            <label for="measure-${measure.toLowerCase().replace(/\s+/g, '-')}">${measure}</label>
+        </div>
+    `).join('');
+    
+    // Add custom measures
+    customMeasures.forEach((measure, index) => {
+        const id = `measure-custom-${index}`;
+        html += `
+            <div class="measure-item">
+                <input type="checkbox" id="${id}" name="measures" value="${measure}">
+                <label for="${id}">${measure}</label>
+                <button type="button" onclick="removeCustomMeasure('${measure}')" class="btn-danger">Remove</button>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+    
+    // Load saved measures if they exist
+    const savedData = localStorage.getItem('biosecurityPlanData');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        setSelectedCheckboxes('measures', data.measures || []);
+        document.getElementById('implementation').value = data.implementation || '';
+        document.getElementById('monitoring').value = data.monitoring || '';
+        document.getElementById('budget').value = data.budget || '';
+        document.getElementById('timeline').value = data.timeline || '';
+    }
+}
