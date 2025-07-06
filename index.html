@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Biosecurity Plan Generator</title>
+    <title>Premium Biosecurity Plan Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/autocompleter@6.1.0/dist/autocompleter.min.js"></script>
     <style>
         :root {
             --primary: #2e7d32;
@@ -25,6 +26,7 @@
             --table-header-bg: #f1f8e9;
             --table-row-even: #f9f9f9;
             --high-risk-bg: #ffebee;
+            --sidebar-width: 250px;
         }
         
         /* Dark mode variables */
@@ -49,18 +51,98 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: var(--text-color);
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
             background-color: var(--bg-color);
             transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar Navigation */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--dark);
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s;
+            z-index: 100;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-nav li {
+            margin: 0;
+        }
+        
+        .sidebar-nav a {
+            display: block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar-nav a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-nav a.active {
+            background-color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .sidebar-nav a.completed {
+            position: relative;
+        }
+        
+        .sidebar-nav a.completed:after {
+            content: "✓";
+            position: absolute;
+            right: 20px;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            max-width: 1000px;
+        }
+        
+        /* Mobile sidebar toggle */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
         }
         
         header {
             background-color: var(--primary);
             color: white;
             padding: 25px;
-            border-radius: 8px 8px 0 0;
+            border-radius: 8px;
             margin-bottom: 20px;
             text-align: center;
         }
@@ -72,7 +154,7 @@
         
         .wizard-container {
             background-color: var(--card-bg);
-            border-radius: 0 0 8px 8px;
+            border-radius: 8px;
             box-shadow: 0 2px 15px var(--shadow-color);
             padding: 25px;
             margin-bottom: 20px;
@@ -190,6 +272,15 @@
         .btn-danger:hover {
             background-color: #8e0000;
             transform: translateY(-1px);
+        }
+        
+        .btn-success {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: var(--dark);
         }
         
         .progress-container {
@@ -449,6 +540,40 @@
             margin-top: 20px;
         }
         
+        .custom-field-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .custom-field-container input {
+            flex-grow: 1;
+        }
+        
+        .custom-field-container button {
+            padding: 8px 12px;
+        }
+        
+        .activity-item, .risk-item, .measure-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .activity-item input, 
+        .risk-item input,
+        .measure-item input {
+            margin-right: 10px;
+        }
+        
+        .activity-item button, 
+        .risk-item button,
+        .measure-item button {
+            margin-left: 10px;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        
         /* Dark mode toggle */
         .theme-toggle {
             position: fixed;
@@ -473,6 +598,89 @@
             font-weight: 600;
         }
         
+        /* Autocomplete */
+        .autocomplete-suggestions {
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            overflow: auto;
+            z-index: 1000;
+        }
+        
+        .autocomplete-suggestion {
+            padding: 10px;
+            cursor: pointer;
+        }
+        
+        .autocomplete-suggestion:hover {
+            background-color: var(--light);
+        }
+        
+        /* Version history */
+        .version-history {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .version-history-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px var(--shadow-color);
+        }
+        
+        .version-history-panel {
+            position: absolute;
+            bottom: 50px;
+            right: 0;
+            width: 300px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 15px var(--shadow-color);
+            padding: 15px;
+            display: none;
+        }
+        
+        .version-history-panel.show {
+            display: block;
+        }
+        
+        .version-item {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        
+        .version-item:hover {
+            background-color: var(--light);
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding-top: 70px;
+            }
+            
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+        
         @media (max-width: 768px) {
             .industry-selection {
                 grid-template-columns: 1fr;
@@ -493,463 +701,505 @@
                 padding: 6px 10px;
                 font-size: 14px;
             }
+            
+            .version-history-panel {
+                width: 250px;
+            }
         }
     </style>
     <!-- Font Awesome for theme toggle icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Dark mode toggle button -->
-    <div class="theme-toggle" id="themeToggle">
-        <i class="fas fa-moon"></i>
-        <span>Dark Mode</span>
-    </div>
+    <!-- Mobile sidebar toggle button -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
     
-    <header>
-        <h1>Advanced Biosecurity Plan Generator</h1>
-        <p>Create customized biosecurity plans for your organization and industry</p>
-    </header>
-    
-    <div class="progress-container">
-        <div class="progress-bar">
-            <div class="progress" id="progress-bar"></div>
-        </div>
-        <div class="progress-text" id="progress-text">Step 1 of 9</div>
-    </div>
-    
-    <div class="wizard-container">
-        <div class="step-indicator" id="step-indicator">Getting Started</div>
-        
-        <!-- Step 0: Industry Selection -->
-        <div class="step active" id="step0">
-            <h2>Select Your Industry</h2>
-            <p>Choose the industry that best matches your organization to get a customized biosecurity plan.</p>
-            
-            <div class="question">
-                <label class="required">Primary Industry</label>
-                <div class="industry-selection">
-                    <div class="industry-card" onclick="return selectIndustry('restoration')" id="industry-card-restoration">
-                        <div class="industry-icon">🌱</div>
-                        <div>
-                            <h3>Natural Area Restoration</h3>
-                            <p>Ecological restoration, habitat rehabilitation</p>
-                        </div>
-                    </div>
-                    
-                    <div class="industry-card" onclick="return selectIndustry('ecosystem')" id="industry-card-ecosystem">
-                        <div class="industry-icon">🌍</div>
-                        <div>
-                            <h3>Ecosystem Maintenance</h3>
-                            <p>Conservation, biodiversity management</p>
-                        </div>
-                    </div>
-                    
-                    <div class="industry-card" onclick="return selectIndustry('agriculture')" id="industry-card-agriculture">
-                        <div class="industry-icon">🚜</div>
-                        <div>
-                            <h3>Agriculture</h3>
-                            <p>Crop production, livestock farming</p>
-                        </div>
-                    </div>
-                    
-                    <div class="industry-card" onclick="return selectIndustry('horticulture')" id="industry-card-horticulture">
-                        <div class="industry-icon">🌷</div>
-                        <div>
-                            <h3>Horticulture</h3>
-                            <p>Gardening, landscaping, plant cultivation</p>
-                        </div>
-                    </div>
-                    
-                    <div class="industry-card" onclick="return selectIndustry('forestry')" id="industry-card-forestry">
-                        <div class="industry-icon">🌲</div>
-                        <div>
-                            <h3>Forestry Operations</h3>
-                            <p>Timber production, forest management</p>
-                        </div>
-                    </div>
-                    
-                    <div class="industry-card" onclick="return selectIndustry('nursery')" id="industry-card-nursery">
-                        <div class="industry-icon">🪴</div>
-                        <div>
-                            <h3>Plant Nursery</h3>
-                            <p>Plant propagation, seedling production</p>
-                        </div>
-                    </div>
-                    
-                    <div class="industry-card" onclick="return selectIndustry('other')" id="industry-card-other">
-                        <div class="industry-icon">❓</div>
-                        <div>
-                            <h3>Other Industry</h3>
-                            <p>Specify your industry below</p>
-                            <input type="text" id="industry-other-text" placeholder="Enter your industry" style="margin-top: 10px; display: none;">
-                        </div>
-                    </div>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Biosecurity Plan</h2>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="sidebar-progress-bar"></div>
                 </div>
-                <input type="hidden" id="industry" value="">
+                <div class="progress-text" id="sidebar-progress-text">0%</div>
             </div>
-            
-            <div class="nav-buttons">
-                <button type="button" disabled class="btn-secondary">Previous</button>
-                <button type="button" onclick="return validateAndContinue()" class="btn-primary">Continue</button>
+        </div>
+        <ul class="sidebar-nav" id="sidebarNav">
+            <li><a href="#step0" class="active">1. Industry</a></li>
+            <li><a href="#step1">2. Organization</a></li>
+            <li><a href="#step2">3. Project</a></li>
+            <li><a href="#step3">4. Activities</a></li>
+            <li><a href="#step4">5. Risks</a></li>
+            <li><a href="#step5">6. Risk Assessment</a></li>
+            <li><a href="#step6">7. Controls</a></li>
+            <li><a href="#step7">8. Measures</a></li>
+            <li><a href="#step8">9. Team & Review</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dark mode toggle button -->
+        <div class="theme-toggle" id="themeToggle">
+            <i class="fas fa-moon"></i>
+            <span>Dark Mode</span>
+        </div>
+        
+        <!-- Version history button -->
+        <div class="version-history">
+            <button class="version-history-btn" id="versionHistoryBtn">
+                <i class="fas fa-history"></i>
+            </button>
+            <div class="version-history-panel" id="versionHistoryPanel">
+                <h3>Version History</h3>
+                <div id="versionHistoryList"></div>
             </div>
         </div>
         
-        <!-- Step 1: Organization Information -->
-        <div class="step" id="step1">
-            <h2>Organization Information</h2>
-            
-            <div class="question">
-                <label for="org-name" class="required">Organization Name</label>
-                <input type="text" id="org-name" required>
-            </div>
-            
-            <div class="question">
-                <label for="org-type">Organization Type</label>
-                <select id="org-type">
-                    <option value="">Select type...</option>
-                    <option value="Government">Government</option>
-                    <option value="Non-profit">Non-profit</option>
-                    <option value="Private Company">Private Company</option>
-                    <option value="Educational">Educational</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            
-            <div class="question">
-                <label for="org-size">Organization Size</label>
-                <select id="org-size">
-                    <option value="">Select size...</option>
-                    <option value="Small (1-10 employees)">Small (1-10 employees)</option>
-                    <option value="Medium (11-50 employees)">Medium (11-50 employees)</option>
-                    <option value="Large (51-200 employees)">Large (51-200 employees)</option>
-                    <option value="Enterprise (200+ employees)">Enterprise (200+ employees)</option>
-                </select>
-            </div>
-            
-            <div class="question">
-                <label for="primary-contact" class="required">Primary Contact</label>
-                <input type="text" id="primary-contact" required>
-            </div>
-            
-            <div class="question">
-                <label for="contact-email" class="required">Contact Email</label>
-                <input type="email" id="contact-email" required>
-            </div>
-            
-            <div class="nav-buttons">
-                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
-                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
-            </div>
-        </div>
+        <header>
+            <h1>Premium Biosecurity Plan Generator</h1>
+            <p>Create customized biosecurity plans for your organization and industry</p>
+        </header>
         
-        <!-- Step 2: Project Information -->
-        <div class="step" id="step2">
-            <h2>Project/Site Information</h2>
-            
-            <div class="question">
-                <label for="project-name" class="required">Project/Site Name</label>
-                <input type="text" id="project-name" required>
+        <div class="wizard-container">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="progress-bar"></div>
+                </div>
+                <div class="progress-text" id="progress-text">Step 1 of 9</div>
             </div>
             
-            <div class="question">
-                <label for="project-location" class="required">Location (address or coordinates)</label>
-                <input type="text" id="project-location" required>
+            <div class="step-indicator" id="step-indicator">Getting Started</div>
+            
+            <!-- Step 0: Industry Selection -->
+            <div class="step active" id="step0">
+                <h2>Select Your Industry</h2>
+                <p>Choose the industry that best matches your organization to get a customized biosecurity plan.</p>
+                
+                <div class="question">
+                    <label class="required">Primary Industry</label>
+                    <div class="industry-selection">
+                        <div class="industry-card" onclick="selectIndustry('conservation')" id="industry-card-conservation">
+                            <div class="industry-icon">🌿</div>
+                            <div>
+                                <h3>Conservation and Ecosystem Management</h3>
+                                <p>Ecological restoration, habitat rehabilitation, biodiversity management</p>
+                            </div>
+                        </div>
+                        
+                        <div class="industry-card" onclick="selectIndustry('horticulture')" id="industry-card-horticulture">
+                            <div class="industry-icon">🌷</div>
+                            <div>
+                                <h3>Horticulture</h3>
+                                <p>Plant cultivation, landscaping, nursery operations</p>
+                            </div>
+                        </div>
+                        
+                        <div class="industry-card" onclick="selectIndustry('agriculture')" id="industry-card-agriculture">
+                            <div class="industry-icon">🚜</div>
+                            <div>
+                                <h3>Agriculture</h3>
+                                <p>Crop production, livestock farming, agribusiness</p>
+                            </div>
+                        </div>
+                        
+                        <div class="industry-card" onclick="selectIndustry('other')" id="industry-card-other">
+                            <div class="industry-icon">❓</div>
+                            <div>
+                                <h3>Other Industry</h3>
+                                <p>Specify your industry below</p>
+                                <input type="text" id="industry-other-text" placeholder="Enter your industry" style="margin-top: 10px; display: none;">
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="industry" value="">
+                </div>
+                
+                <div class="nav-buttons">
+                    <button type="button" disabled class="btn-secondary">Previous</button>
+                    <button type="button" onclick="validateAndContinue()" class="btn-primary">Continue</button>
+                </div>
             </div>
             
-            <div class="question">
-                <label for="project-size">Site Size</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="number" id="project-size" min="0" step="0.1" style="flex: 1;">
-                    <select id="size-unit" style="width: 100px;">
-                        <option value="hectares">hectares</option>
-                        <option value="acres">acres</option>
-                        <option value="sq meters">sq meters</option>
-                        <option value="sq feet">sq feet</option>
+            <!-- Step 1: Organization Information -->
+            <div class="step" id="step1">
+                <h2>Organization Information</h2>
+                
+                <div class="question">
+                    <label for="org-name" class="required">Organization Name</label>
+                    <input type="text" id="org-name" required>
+                </div>
+                
+                <div class="question">
+                    <label for="org-type">Organization Type</label>
+                    <select id="org-type">
+                        <option value="">Select type...</option>
+                        <option value="Government">Government</option>
+                        <option value="Non-profit">Non-profit</option>
+                        <option value="Private Company">Private Company</option>
+                        <option value="Educational">Educational</option>
+                        <option value="Other">Other</option>
                     </select>
                 </div>
-            </div>
-            
-            <div class="question">
-                <label for="project-description">Project Description</label>
-                <textarea id="project-description" placeholder="Briefly describe your project or site"></textarea>
-            </div>
-            
-            <div class="nav-buttons">
-                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
-                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
-            </div>
-        </div>
-        
-        <!-- Step 3: Activities -->
-        <div class="step" id="step3">
-            <h2>Activities</h2>
-            <p>Select all activities that apply to your project/site.</p>
-            
-            <div class="question">
-                <label class="required">Primary Activities</label>
-                <div class="checkbox-group" id="activities-container">
-                    <!-- Will be populated dynamically based on industry -->
+                
+                <div class="question">
+                    <label for="org-size">Organization Size</label>
+                    <select id="org-size">
+                        <option value="">Select size...</option>
+                        <option value="Small (1-10 employees)">Small (1-10 employees)</option>
+                        <option value="Medium (11-50 employees)">Medium (11-50 employees)</option>
+                        <option value="Large (51-200 employees)">Large (51-200 employees)</option>
+                        <option value="Enterprise (200+ employees)">Enterprise (200+ employees)</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label for="primary-contact" class="required">Primary Contact</label>
+                    <input type="text" id="primary-contact" required>
+                </div>
+                
+                <div class="question">
+                    <label for="contact-email" class="required">Contact Email</label>
+                    <input type="email" id="contact-email" required>
+                </div>
+                
+                <div class="nav-buttons">
+                    <button type="button" onclick="prevStep()" class="btn-secondary">Previous</button>
+                    <button type="button" onclick="nextStep()" class="btn-primary">Next</button>
                 </div>
             </div>
             
-            <div class="question">
-                <label for="activity-frequency">How frequently are these activities conducted?</label>
-                <select id="activity-frequency">
-                    <option value="">Select frequency...</option>
-                    <option value="Daily">Daily</option>
-                    <option value="Weekly">Weekly</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Seasonally">Seasonally</option>
-                    <option value="Yearly">Yearly</option>
-                    <option value="As needed">As needed</option>
-                </select>
-            </div>
-            
-            <div class="question">
-                <label for="activity-staff">How many staff/volunteers typically participate?</label>
-                <input type="number" id="activity-staff" min="0">
-            </div>
-            
-            <div class="nav-buttons">
-                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
-                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
-            </div>
-        </div>
-        
-        <!-- Step 4: Biosecurity Risks -->
-        <div class="step" id="step4">
-            <h2>Biosecurity Risks</h2>
-            <p>Identify potential biosecurity risks relevant to your activities.</p>
-            
-            <div class="question">
-                <label class="required">Potential Risks</label>
-                <div class="checkbox-group" id="risks-container">
-                    <!-- Will be populated dynamically based on industry -->
+            <!-- Step 2: Project Information -->
+            <div class="step" id="step2">
+                <h2>Project/Site Information</h2>
+                
+                <div class="question">
+                    <label for="project-name" class="required">Project/Site Name</label>
+                    <input type="text" id="project-name" required>
+                </div>
+                
+                <div class="question">
+                    <label for="project-location" class="required">Location (address or coordinates)</label>
+                    <input type="text" id="project-location" required>
+                </div>
+                
+                <div class="question">
+                    <label for="project-size">Site Size</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="project-size" min="0" step="0.1" style="flex: 1;">
+                        <select id="size-unit" style="width: 100px;">
+                            <option value="hectares">hectares</option>
+                            <option value="acres">acres</option>
+                            <option value="sq meters">sq meters</option>
+                            <option value="sq feet">sq feet</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label for="project-description">Project Description</label>
+                    <textarea id="project-description" placeholder="Briefly describe your project or site"></textarea>
+                </div>
+                
+                <div class="nav-buttons">
+                    <button type="button" onclick="prevStep()" class="btn-secondary">Previous</button>
+                    <button type="button" onclick="nextStep()" class="btn-primary">Next</button>
                 </div>
             </div>
             
-            <div class="question">
-                <label for="known-issues">Known biosecurity issues in the area</label>
-                <textarea id="known-issues" placeholder="List any known problem species, pathogens, or contamination issues in or near your site"></textarea>
-            </div>
-            
-            <div class="question">
-                <label for="visitor-frequency" class="required">How frequently do visitors access the site?</label>
-                <select id="visitor-frequency" required>
-                    <option value="">Select frequency...</option>
-                    <option value="Daily">Daily</option>
-                    <option value="Weekly">Weekly</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Seasonally">Seasonally</option>
-                    <option value="Rarely">Rarely</option>
-                </select>
-            </div>
-            
-            <div class="nav-buttons">
-                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
-                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
-            </div>
-        </div>
-        
-        <!-- Step 5: Risk Assessment Matrix -->
-        <div class="step" id="step5">
-            <h2>Risk Assessment</h2>
-            <p>Assess the likelihood and impact of each identified risk.</p>
-            
-            <div class="question">
-                <table class="risk-matrix">
-                    <thead>
-                        <tr>
-                            <th>Risk</th>
-                            <th>Likelihood</th>
-                            <th>Impact</th>
-                            <th>Risk Score</th>
-                            <th>Priority</th>
-                        </tr>
-                    </thead>
-                    <tbody id="risk-matrix-body">
-                        <!-- Will be populated dynamically -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="question">
-                <label for="risk-notes">Additional Risk Notes</label>
-                <textarea id="risk-notes" placeholder="Add any additional notes about risk assessment"></textarea>
-            </div>
-            
-            <div class="chart-container">
-                <canvas id="riskChart"></canvas>
-            </div>
-            
-            <div class="nav-buttons">
-                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
-                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
-            </div>
-        </div>
-        
-        <!-- Step 6: Current Controls -->
-        <div class="step" id="step6">
-            <h2>Current Biosecurity Measures</h2>
-            
-            <div class="question">
-                <label>Existing Biosecurity Controls</label>
-                <div class="checkbox-group" id="controls-container">
-                    <div class="checkbox-option">
-                        <input type="checkbox" id="control-cleaning" name="controls" value="Equipment cleaning protocols">
-                        <label for="control-cleaning">Equipment cleaning protocols</label>
+            <!-- Step 3: Activities -->
+            <div class="step" id="step3">
+                <h2>Activities</h2>
+                <p>Select all activities that apply to your project/site.</p>
+                
+                <div class="question">
+                    <label class="required">Primary Activities</label>
+                    <div id="activities-container">
+                        <!-- Will be populated dynamically based on industry -->
                     </div>
-                    <div class="checkbox-option">
-                        <input type="checkbox" id="control-quarantine" name="controls" value="Quarantine areas">
-                        <label for="control-quarantine">Quarantine areas</label>
+                    <div class="custom-field-container">
+                        <input type="text" id="new-activity" placeholder="Add custom activity">
+                        <button type="button" onclick="addCustomActivity()" class="btn-success">Add Activity</button>
                     </div>
-                    <div class="checkbox-option">
-                        <input type="checkbox" id="control-monitoring" name="controls" value="Regular monitoring">
-                        <label for="control-monitoring">Regular monitoring</label>
-                    </div>
-                    <div class="checkbox-option">
-                        <input type="checkbox" id="control-signage" name="controls" value="Biosecurity signage">
-                        <label for="control-signage">Biosecurity signage</label>
-                    </div>
-                    <div class="checkbox-option">
-                        <input type="checkbox" id="control-training" name="controls" value="Staff training">
-                        <label for="control-training">Staff training</label>
-                    </div>
-                    <div class="checkbox-option">
-                        <input type="checkbox" id="control-ppe" name="controls" value="Personal protective equipment">
-                        <label for="control-ppe">Personal protective equipment</label>
-                    </div>
-                    <div class="checkbox-option">
-                        <input type="checkbox" id="control-other" name="controls" value="Other">
-                        <label for="control-other">Other (please specify)</label>
-                        <input type="text" id="control-other-text" style="margin-top: 5px; display: none;">
-                    </div>
+                </div>
+                
+                <div class="question">
+                    <label for="activity-frequency">How frequently are these activities conducted?</label>
+                    <select id="activity-frequency">
+                        <option value="">Select frequency...</option>
+                        <option value="Daily">Daily</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="Seasonally">Seasonally</option>
+                        <option value="Yearly">Yearly</option>
+                        <option value="As needed">As needed</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label for="activity-staff">How many staff/volunteers typically participate?</label>
+                    <input type="number" id="activity-staff" min="0">
+                </div>
+                
+                <div class="nav-buttons">
+                    <button type="button" onclick="prevStep()" class="btn-secondary">Previous</button>
+                    <button type="button" onclick="nextStep()" class="btn-primary">Next</button>
                 </div>
             </div>
             
-            <div class="question">
-                <label for="existing-protocols">Describe existing biosecurity protocols:</label>
-                <textarea id="existing-protocols"></textarea>
+            <!-- Step 4: Biosecurity Risks -->
+            <div class="step" id="step4">
+                <h2>Biosecurity Risks</h2>
+                <p>Identify potential biosecurity risks relevant to your activities.</p>
+                
+                <div class="question">
+                    <label class="required">Potential Risks</label>
+                    <div id="risks-container">
+                        <!-- Will be populated dynamically based on industry -->
+                    </div>
+                    <div class="custom-field-container">
+                        <input type="text" id="new-risk" placeholder="Add custom risk">
+                        <button type="button" onclick="addCustomRisk()" class="btn-success">Add Risk</button>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label for="known-issues">Known biosecurity issues in the area</label>
+                    <textarea id="known-issues" placeholder="List any known problem species, pathogens, or contamination issues in or near your site"></textarea>
+                </div>
+                
+                <div class="question">
+                    <label for="visitor-frequency" class="required">How frequently do visitors access the site?</label>
+                    <select id="visitor-frequency" required>
+                        <option value="">Select frequency...</option>
+                        <option value="Daily">Daily</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="Seasonally">Seasonally</option>
+                        <option value="Rarely">Rarely</option>
+                    </select>
+                </div>
+                
+                <div class="nav-buttons">
+                    <button type="button" onclick="prevStep()" class="btn-secondary">Previous</button>
+                    <button type="button" onclick="nextStep()" class="btn-primary">Next</button>
+                </div>
             </div>
             
-            <div class="question">
-                <label for="challenges">What are your biggest biosecurity challenges?</label>
-                <textarea id="challenges"></textarea>
+            <!-- Step 5: Risk Assessment Matrix -->
+            <div class="step" id="step5">
+                <h2>Risk Assessment</h2>
+                <p>Assess the likelihood and impact of each identified risk.</p>
+                
+                <div class="question">
+                    <table class="risk-matrix">
+                        <thead>
+                            <tr>
+                                <th>Risk</th>
+                                <th>Likelihood</th>
+                                <th>Impact</th>
+                                <th>Risk Score</th>
+                                <th>Priority</th>
+                            </tr>
+                        </thead>
+                        <tbody id="risk-matrix-body">
+                            <!-- Will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="question">
+                    <label for="risk-notes">Additional Risk Notes</label>
+                    <textarea id="risk-notes" placeholder="Add any additional notes about risk assessment"></textarea>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="riskChart"></canvas>
+                </div>
+                
+                <div class="nav-buttons">
+                    <button type="button" onclick="prevStep()" class="btn-secondary">Previous</button>
+                    <button type="button" onclick="nextStep()" class="btn-primary">Next</button>
+                </div>
             </div>
             
-            <div class="nav-buttons">
-                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
-                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
+            <!-- Step 6: Current Controls -->
+            <div class="step" id="step6">
+                <h2>Current Biosecurity Measures</h2>
+                
+                <div class="question">
+                    <label>Existing Biosecurity Controls</label>
+                    <div id="controls-container">
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="control-cleaning" name="controls" value="Equipment cleaning protocols">
+                            <label for="control-cleaning">Equipment cleaning protocols</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="control-quarantine" name="controls" value="Quarantine areas">
+                            <label for="control-quarantine">Quarantine areas</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="control-monitoring" name="controls" value="Regular monitoring">
+                            <label for="control-monitoring">Regular monitoring</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="control-signage" name="controls" value="Biosecurity signage">
+                            <label for="control-signage">Biosecurity signage</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="control-training" name="controls" value="Staff training">
+                            <label for="control-training">Staff training</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="control-ppe" name="controls" value="Personal protective equipment">
+                            <label for="control-ppe">Personal protective equipment</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="control-visitor" name="controls" value="Visitor management systems">
+                            <label for="control-visitor">Visitor management systems</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="control-waste" name="controls" value="Waste management protocols">
+                            <label for="control-waste">Waste management protocols</label>
+                        </div>
+                    </div>
+                    <div class="custom-field-container">
+                        <input type="text" id="new-control" placeholder="Add custom control">
+                        <button type="button" onclick="addCustomControl()" class="btn-success">Add Control</button>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label for="existing-protocols">Describe existing biosecurity protocols:</label>
+                    <textarea id="existing-protocols"></textarea>
+                </div>
+                
+                <div class="question">
+                    <label for="challenges">What are your biggest biosecurity challenges?</label>
+                    <textarea id="challenges"></textarea>
+                </div>
+                
+                <div class="nav-buttons">
+                    <button type="button" onclick="prevStep()" class="btn-secondary">Previous</button>
+                    <button type="button" onclick="nextStep()" class="btn-primary">Next</button>
+                </div>
+            </div>
+            
+            <!-- Step 7: Proposed Measures -->
+            <div class="step" id="step7">
+                <h2>Proposed Biosecurity Measures</h2>
+                
+                <div class="question">
+                    <label class="required">Additional Measures to Implement</label>
+                    <div id="measures-container">
+                        <!-- Will be populated dynamically based on industry -->
+                    </div>
+                    <div class="custom-field-container">
+                        <input type="text" id="new-measure" placeholder="Add custom measure">
+                        <button type="button" onclick="addCustomMeasure()" class="btn-success">Add Measure</button>
+                    </div>
+                </div>
+                
+                <div class="question">
+                    <label for="implementation">Implementation Plan</label>
+                    <textarea id="implementation" placeholder="Describe how you will implement these measures"></textarea>
+                </div>
+                
+                <div class="question">
+                    <label for="monitoring">Monitoring Approach</label>
+                    <textarea id="monitoring" placeholder="Describe how you will monitor biosecurity effectiveness"></textarea>
+                </div>
+                
+                <div class="question">
+                    <label for="budget">Estimated Budget for Biosecurity Measures</label>
+                    <input type="text" id="budget" placeholder="Enter amount and currency (e.g., $5,000)">
+                </div>
+                
+                <div class="question">
+                    <label for="timeline">Implementation Timeline</label>
+                    <textarea id="timeline" placeholder="Describe the timeline for implementing these measures"></textarea>
+                </div>
+                
+                <div class="nav-buttons">
+                    <button type="button" onclick="prevStep()" class="btn-secondary">Previous</button>
+                    <button type="button" onclick="nextStep()" class="btn-primary">Next</button>
+                </div>
+            </div>
+            
+            <!-- Step 8: Team & Review -->
+            <div class="step" id="step8">
+                <h2>Team & Review</h2>
+                
+                <div class="question">
+                    <label>Team Members Responsible</label>
+                    <div id="team-members">
+                        <div class="team-member">
+                            <input type="text" placeholder="Name" class="team-name">
+                            <input type="text" placeholder="Role" class="team-role">
+                            <button type="button" onclick="removeTeamMember(this)" class="btn-danger">Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addTeamMember()" class="btn-secondary" style="margin-top: 10px;">Add Team Member</button>
+                </div>
+                
+                <div class="question">
+                    <label for="review-frequency">Plan Review Frequency</label>
+                    <select id="review-frequency">
+                        <option value="">Select frequency...</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="Quarterly">Quarterly</option>
+                        <option value="Bi-annually">Bi-annually</option>
+                        <option value="Annually">Annually</option>
+                        <option value="As needed">As needed</option>
+                    </select>
+                </div>
+                
+                <div class="question">
+                    <label for="template-select">Plan Template Style</label>
+                    <div class="template-gallery">
+                        <div class="template-card" onclick="selectTemplate('basic')" id="template-basic">
+                            <div class="template-icon">📄</div>
+                            <h3>Basic</h3>
+                            <p>Simple, straightforward plan</p>
+                        </div>
+                        <div class="template-card" onclick="selectTemplate('detailed')" id="template-detailed">
+                            <div class="template-icon">📑</div>
+                            <h3>Detailed</h3>
+                            <p>Comprehensive with sections</p>
+                        </div>
+                        <div class="template-card" onclick="selectTemplate('certified')" id="template-certified">
+                            <div class="template-icon">🏆</div>
+                            <h3>Certification-Ready</h3>
+                            <p>Formal documentation</p>
+                        </div>
+                    </div>
+                    <input type="hidden" id="template" value="basic">
+                </div>
+                
+                <div class="question">
+                    <label for="plan-name" class="required">Name for Your Biosecurity Plan</label>
+                    <input type="text" id="plan-name" required>
+                </div>
+                
+                <div class="nav-buttons">
+                    <button type="button" onclick="prevStep()" class="btn-secondary">Previous</button>
+                    <button type="button" onclick="generatePlan()" class="btn-primary">Generate Plan</button>
+                </div>
             </div>
         </div>
         
-        <!-- Step 7: Proposed Measures -->
-        <div class="step" id="step7">
-            <h2>Proposed Biosecurity Measures</h2>
-            
-            <div class="question">
-                <label class="required">Additional Measures to Implement</label>
-                <div class="checkbox-group" id="measures-container">
-                    <!-- Will be populated dynamically based on industry -->
-                </div>
+        <div id="plan-output">
+            <h2 id="output-title">Biosecurity Plan</h2>
+            <div id="output-content"></div>
+            <div class="share-options">
+                <button type="button" onclick="savePDF()" class="btn-primary">Save as PDF</button>
+                <button type="button" onclick="sharePlan('email')" class="btn-secondary">Email Plan</button>
+                <button type="button" onclick="sharePlan('link')" class="btn-secondary">Get Shareable Link</button>
+                <button type="button" onclick="resetForm()" class="btn-danger">Start New Plan</button>
             </div>
-            
-            <div class="question">
-                <label for="implementation">Implementation Plan</label>
-                <textarea id="implementation" placeholder="Describe how you will implement these measures"></textarea>
-            </div>
-            
-            <div class="question">
-                <label for="monitoring">Monitoring Approach</label>
-                <textarea id="monitoring" placeholder="Describe how you will monitor biosecurity effectiveness"></textarea>
-            </div>
-            
-            <div class="question">
-                <label for="budget">Estimated Budget for Biosecurity Measures</label>
-                <input type="text" id="budget" placeholder="Enter amount and currency (e.g., $5,000)">
-            </div>
-            
-            <div class="question">
-                <label for="timeline">Implementation Timeline</label>
-                <textarea id="timeline" placeholder="Describe the timeline for implementing these measures"></textarea>
-            </div>
-            
-            <div class="nav-buttons">
-                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
-                <button type="button" onclick="return nextStep()" class="btn-primary">Next</button>
-            </div>
-        </div>
-        
-        <!-- Step 8: Team & Review -->
-        <div class="step" id="step8">
-            <h2>Team & Review</h2>
-            
-            <div class="question">
-                <label>Team Members Responsible</label>
-                <div id="team-members">
-                    <div class="team-member">
-                        <input type="text" placeholder="Name" class="team-name">
-                        <input type="text" placeholder="Role" class="team-role">
-                        <button type="button" onclick="return removeTeamMember(this)" class="btn-danger">Remove</button>
-                    </div>
-                </div>
-                <button type="button" onclick="return addTeamMember()" class="btn-secondary" style="margin-top: 10px;">Add Team Member</button>
-            </div>
-            
-            <div class="question">
-                <label for="review-frequency">Plan Review Frequency</label>
-                <select id="review-frequency">
-                    <option value="">Select frequency...</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Quarterly">Quarterly</option>
-                    <option value="Bi-annually">Bi-annually</option>
-                    <option value="Annually">Annually</option>
-                    <option value="As needed">As needed</option>
-                </select>
-            </div>
-            
-            <div class="question">
-                <label for="template-select">Plan Template Style</label>
-                <div class="template-gallery">
-                    <div class="template-card" onclick="return selectTemplate('basic')" id="template-basic">
-                        <div class="template-icon">📄</div>
-                        <h3>Basic</h3>
-                        <p>Simple, straightforward plan</p>
-                    </div>
-                    <div class="template-card" onclick="return selectTemplate('detailed')" id="template-detailed">
-                        <div class="template-icon">📑</div>
-                        <h3>Detailed</h3>
-                        <p>Comprehensive with sections</p>
-                    </div>
-                    <div class="template-card" onclick="return selectTemplate('certified')" id="template-certified">
-                        <div class="template-icon">🏆</div>
-                        <h3>Certification-Ready</h3>
-                        <p>Formal documentation</p>
-                    </div>
-                </div>
-                <input type="hidden" id="template" value="basic">
-            </div>
-            
-            <div class="question">
-                <label for="plan-name" class="required">Name for Your Biosecurity Plan</label>
-                <input type="text" id="plan-name" required>
-            </div>
-            
-            <div class="nav-buttons">
-                <button type="button" onclick="return prevStep()" class="btn-secondary">Previous</button>
-                <button type="button" onclick="return generatePlan()" class="btn-primary">Generate Plan</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="plan-output">
-        <h2 id="output-title">Biosecurity Plan</h2>
-        <div id="output-content"></div>
-        <div class="share-options">
-            <button type="button" onclick="return savePDF()" class="btn-primary">Save as PDF</button>
-            <button type="button" onclick="return sharePlan('email')" class="btn-secondary">Email Plan</button>
-            <button type="button" onclick="return sharePlan('link')" class="btn-secondary">Get Shareable Link</button>
-            <button type="button" onclick="return resetForm()" class="btn-danger">Start New Plan</button>
         </div>
     </div>
     
@@ -958,68 +1208,100 @@
         const totalSteps = 9;
         let currentStep = 0;
         let riskChart = null;
+        let customActivities = [];
+        let customRisks = [];
+        let customControls = [];
+        let customMeasures = [];
         
-        // Industry-specific configurations
+        // Enhanced industry configurations with more detailed data
         const industryConfig = {
-            'restoration': {
-                name: 'Natural Area Restoration',
+            'conservation': {
+                name: 'Conservation and Ecosystem Management',
                 activities: [
-                    'Native plant revegetation',
-                    'Weed control and eradication',
-                    'Pest animal management',
-                    'Erosion control works',
-                    'Habitat reconstruction',
-                    'Ecological monitoring',
-                    'Seed collection and propagation'
+                    'Habitat restoration',
+                    'Weed and pest control',
+                    'Native species reintroduction',
+                    'Erosion control',
+                    'Biodiversity monitoring',
+                    'Fire management',
+                    'Visitor management',
+                    'Waterway restoration',
+                    'Seed collection and propagation',
+                    'Ecological surveys'
                 ],
                 risks: [
-                    'Introduction of weed species',
+                    'Introduction of invasive species',
                     'Spread of plant pathogens',
-                    'Soil contamination from equipment',
+                    'Soil and water contamination',
                     'Cross-contamination between sites',
-                    'Introduction of invasive animals',
-                    'Waterway contamination',
-                    'Loss of genetic integrity'
+                    'Introduction of pest animals',
+                    'Loss of genetic integrity',
+                    'Unauthorized species release',
+                    'Equipment-mediated contamination',
+                    'Visitor-mediated contamination',
+                    'Climate change impacts'
                 ],
                 measures: [
+                    'Site-specific hygiene protocols',
                     'Equipment cleaning stations',
                     'Footwear and clothing decontamination',
-                    'Plant material quarantine protocols',
-                    'Staff and volunteer training programs',
+                    'Plant material quarantine procedures',
+                    'Comprehensive staff training programs',
                     'Vehicle washdown facilities',
-                    'Site-specific hygiene protocols',
-                    'Pre-activity risk assessments'
-                ]
+                    'Pre-activity risk assessments',
+                    'Visitor biosecurity briefings',
+                    'Pathogen screening protocols',
+                    'Wildlife health monitoring'
+                ],
+                riskFactors: {
+                    'Introduction of invasive species': { likelihood: 3, impact: 3 },
+                    'Spread of plant pathogens': { likelihood: 2, impact: 3 },
+                    'Soil and water contamination': { likelihood: 2, impact: 2 }
+                }
             },
-            'ecosystem': {
-                name: 'Ecosystem Maintenance',
+            'horticulture': {
+                name: 'Horticulture',
                 activities: [
-                    'Biodiversity monitoring',
-                    'Pest and disease surveillance',
-                    'Habitat protection works',
-                    'Visitor management',
-                    'Water quality testing',
-                    'Species reintroduction',
-                    'Fire management'
+                    'Plant propagation',
+                    'Landscape construction',
+                    'Garden maintenance',
+                    'Irrigation system management',
+                    'Pest and disease control',
+                    'Soil and media preparation',
+                    'Plant sales and distribution',
+                    'Greenhouse operations',
+                    'Turf management',
+                    'Arboriculture'
                 ],
                 risks: [
-                    'Pathogen transmission',
-                    'Invasive species establishment',
-                    'Habitat fragmentation',
-                    'Soil and water contamination',
-                    'Disease vectors',
-                    'Genetic pollution',
-                    'Unauthorized species release'
+                    'Plant pathogen outbreaks',
+                    'Pest infestations',
+                    'Contaminated growing media',
+                    'Water system contamination',
+                    'Equipment cross-contamination',
+                    'Introduction of invasive species',
+                    'Pesticide resistance',
+                    'Worker exposure to hazards',
+                    'Unauthorized plant movement',
+                    'Genetic contamination'
                 ],
                 measures: [
-                    'Access control systems',
-                    'Visitor biosecurity briefings',
-                    'Monitoring protocols',
-                    'Quarantine procedures',
-                    'Emergency response plans',
-                    'Pathogen screening',
-                    'Wildlife health assessments'
-                ]
+                    'Plant health certification',
+                    'Growing media sterilization',
+                    'Tool and equipment sanitation',
+                    'Pest exclusion systems',
+                    'Worker hygiene stations',
+                    'Visitor management protocols',
+                    'Waste management systems',
+                    'Quarantine areas for new plants',
+                    'Integrated pest management',
+                    'Water treatment systems'
+                ],
+                riskFactors: {
+                    'Plant pathogen outbreaks': { likelihood: 3, impact: 3 },
+                    'Pest infestations': { likelihood: 3, impact: 2 },
+                    'Contaminated growing media': { likelihood: 2, impact: 3 }
+                }
             },
             'agriculture': {
                 name: 'Agriculture',
@@ -1030,7 +1312,10 @@
                     'Pest and disease control',
                     'Soil management',
                     'Equipment operations',
-                    'Produce handling and storage'
+                    'Produce handling and storage',
+                    'Feed management',
+                    'Pasture management',
+                    'Agrochemical application'
                 ],
                 risks: [
                     'Crop disease outbreaks',
@@ -1039,7 +1324,10 @@
                     'Soil contamination',
                     'Water contamination',
                     'Equipment cross-contamination',
-                    'Worker health risks'
+                    'Worker health risks',
+                    'Introduction of invasive species',
+                    'Feed contamination',
+                    'Zoonotic disease transmission'
                 ],
                 measures: [
                     'Farm biosecurity plan',
@@ -1048,104 +1336,23 @@
                     'Quarantine areas for new stock',
                     'Pest monitoring systems',
                     'Visitor logbooks',
-                    'Staff training programs'
-                ]
-            },
-            'horticulture': {
-                name: 'Horticulture',
-                activities: [
-                    'Plant propagation',
-                    'Garden maintenance',
-                    'Landscape construction',
-                    'Pest and disease management',
-                    'Irrigation system maintenance',
-                    'Plant sales and distribution',
-                    'Soil and media preparation'
+                    'Staff training programs',
+                    'Feed storage protocols',
+                    'Water treatment systems',
+                    'Vaccination programs'
                 ],
-                risks: [
-                    'Plant pathogen spread',
-                    'Invasive plant establishment',
-                    'Contaminated growing media',
-                    'Pesticide misuse',
-                    'Water system contamination',
-                    'Equipment cross-contamination',
-                    'Worker exposure to hazards'
-                ],
-                measures: [
-                    'Plant health certification',
-                    'Growing media sterilization',
-                    'Tool and equipment sanitation',
-                    'Pest exclusion systems',
-                    'Worker hygiene stations',
-                    'Waste management protocols',
-                    'Visitor management systems'
-                ]
-            },
-            'forestry': {
-                name: 'Forestry Operations',
-                activities: [
-                    'Timber harvesting',
-                    'Plantation management',
-                    'Pest and disease control',
-                    'Road and track maintenance',
-                    'Revegetation works',
-                    'Fire management',
-                    'Wildlife monitoring'
-                ],
-                risks: [
-                    'Forest pathogen introduction',
-                    'Invasive plant spread',
-                    'Soil erosion and contamination',
-                    'Equipment cross-contamination',
-                    'Waterway pollution',
-                    'Worker health hazards',
-                    'Unauthorized species movement'
-                ],
-                measures: [
-                    'Vehicle washdown facilities',
-                    'Equipment cleaning protocols',
-                    'Worker hygiene training',
-                    'Pest monitoring systems',
-                    'Quarantine procedures',
-                    'Site access controls',
-                    'Emergency response plans'
-                ]
-            },
-            'nursery': {
-                name: 'Plant Nursery',
-                activities: [
-                    'Plant propagation',
-                    'Potting and repotting',
-                    'Irrigation system maintenance',
-                    'Pest and disease control',
-                    'Plant sales and distribution',
-                    'Growing media preparation',
-                    'Facility maintenance'
-                ],
-                risks: [
-                    'Plant pathogen outbreaks',
-                    'Pest infestations',
-                    'Contaminated growing media',
-                    'Water system contamination',
-                    'Equipment cross-contamination',
-                    'Worker exposure to hazards',
-                    'Unauthorized plant movement'
-                ],
-                measures: [
-                    'Plant quarantine protocols',
-                    'Growing media sterilization',
-                    'Tool and equipment sanitation',
-                    'Pest exclusion systems',
-                    'Worker hygiene stations',
-                    'Visitor management systems',
-                    'Waste management protocols'
-                ]
+                riskFactors: {
+                    'Crop disease outbreaks': { likelihood: 3, impact: 3 },
+                    'Livestock infections': { likelihood: 2, impact: 3 },
+                    'Pesticide resistance': { likelihood: 2, impact: 2 }
+                }
             },
             'other': {
                 name: 'Other',
                 activities: [],
                 risks: [],
-                measures: []
+                measures: [],
+                riskFactors: {}
             }
         };
         
@@ -1165,7 +1372,7 @@
         // Initialize the tool
         document.addEventListener('DOMContentLoaded', function() {
             // Set default industry selection
-            selectIndustry('restoration');
+            selectIndustry('conservation');
             
             // Check for saved theme preference
             const savedTheme = localStorage.getItem('theme');
@@ -1177,6 +1384,41 @@
             // Set up theme toggle
             document.getElementById('themeToggle').addEventListener('click', toggleTheme);
             
+            // Set up sidebar toggle for mobile
+            document.getElementById('sidebarToggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('show');
+            });
+            
+            // Set up version history
+            document.getElementById('versionHistoryBtn').addEventListener('click', function() {
+                document.getElementById('versionHistoryPanel').classList.toggle('show');
+                if (document.getElementById('versionHistoryPanel').classList.contains('show')) {
+                    loadVersionHistory();
+                }
+            });
+            
+            // Close version history when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.version-history')) {
+                    document.getElementById('versionHistoryPanel').classList.remove('show');
+                }
+                if (!e.target.closest('.sidebar') && !e.target.closest('.sidebar-toggle')) {
+                    document.getElementById('sidebar').classList.remove('show');
+                }
+            });
+            
+            // Set up sidebar navigation
+            document.querySelectorAll('.sidebar-nav a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const step = parseInt(this.getAttribute('href').replace('#step', ''));
+                    if (step <= currentStep || validateStep(currentStep)) {
+                        goToStep(step);
+                    }
+                });
+            });
+            
+            // Load saved progress
             loadProgress();
             updateStepIndicator();
             
@@ -1188,11 +1430,133 @@
                 }
             });
             
-            document.getElementById('control-other').addEventListener('change', function() {
-                document.getElementById('control-other-text').style.display = 
-                    this.checked ? 'block' : 'none';
-            });
+            // Initialize custom arrays from localStorage if they exist
+            const savedData = localStorage.getItem('biosecurityPlanData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                customActivities = data.customActivities || [];
+                customRisks = data.customRisks || [];
+                customControls = data.customControls || [];
+                customMeasures = data.customMeasures || [];
+            }
+            
+            // Set up autocomplete for organization names
+            setupAutocomplete();
+            
+            // Auto-save when fields change
+            setupAutoSave();
         });
+        
+        // Setup autocomplete for organization names
+        function setupAutocomplete() {
+            const orgNames = [
+                "Department of Conservation",
+                "National Parks Service",
+                "Wildlife Conservation Society",
+                "Nature Conservancy",
+                "Local Landcare Group",
+                "Regional Environmental Agency",
+                "Biodiversity Foundation",
+                "Ecosystem Restoration Network",
+                "Sustainable Agriculture Initiative",
+                "Organic Farmers Cooperative"
+            ];
+            
+            if (typeof autocomplete === 'function') {
+                autocomplete({
+                    input: document.getElementById("org-name"),
+                    minLength: 1,
+                    onSelect: function(item) {
+                        saveProgress();
+                    },
+                    fetch: function(text, callback) {
+                        const matches = orgNames.filter(name => 
+                            name.toLowerCase().includes(text.toLowerCase())
+                        );
+                        callback(matches);
+                    }
+                });
+            }
+        }
+        
+        // Set up auto-save functionality
+        function setupAutoSave() {
+            const inputs = document.querySelectorAll('input, textarea, select');
+            inputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    saveProgress();
+                    updateSidebarProgress();
+                });
+                
+                // For text fields, save after a delay to avoid too many saves
+                if (input.type === 'text' || input.type === 'textarea') {
+                    let timeout;
+                    input.addEventListener('input', function() {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => {
+                            saveProgress();
+                            updateSidebarProgress();
+                        }, 1000);
+                    });
+                }
+            });
+        }
+        
+        // Load version history
+        function loadVersionHistory() {
+            const history = JSON.parse(localStorage.getItem('biosecurityPlanHistory') || '[]');
+            const container = document.getElementById('versionHistoryList');
+            container.innerHTML = '';
+            
+            if (history.length === 0) {
+                container.innerHTML = '<p>No previous versions found</p>';
+                return;
+            }
+            
+            history.forEach((version, index) => {
+                const item = document.createElement('div');
+                item.className = 'version-item';
+                item.innerHTML = `
+                    <strong>Version ${history.length - index}</strong>
+                    <div>${new Date(version.timestamp).toLocaleString()}</div>
+                    <small>${version.planName || 'Unnamed plan'}</small>
+                `;
+                item.addEventListener('click', function() {
+                    restoreVersion(version.data);
+                });
+                container.appendChild(item);
+            });
+        }
+        
+        // Restore a previous version
+        function restoreVersion(data) {
+            if (confirm('Are you sure you want to restore this version? Current changes will be lost.')) {
+                localStorage.setItem('biosecurityPlanData', JSON.stringify(data));
+                location.reload();
+            }
+        }
+        
+        // Save a version to history
+        function saveVersionToHistory() {
+            const currentData = localStorage.getItem('biosecurityPlanData');
+            if (!currentData) return;
+            
+            const history = JSON.parse(localStorage.getItem('biosecurityPlanHistory') || '[]');
+            const planName = JSON.parse(currentData).planName || 'Unnamed plan';
+            
+            // Keep only the last 5 versions
+            if (history.length >= 5) {
+                history.shift();
+            }
+            
+            history.push({
+                timestamp: new Date().toISOString(),
+                data: JSON.parse(currentData),
+                planName: planName
+            });
+            
+            localStorage.setItem('biosecurityPlanHistory', JSON.stringify(history));
+        }
         
         // Theme toggle functions
         function toggleTheme() {
@@ -1233,12 +1597,16 @@
             document.getElementById(`step${stepNumber}`).classList.add('active');
             currentStep = stepNumber;
             updateStepIndicator();
+            updateSidebarNavigation();
             
             // Special handling for certain steps
             if (currentStep === 3) updateActivities();
             if (currentStep === 4) updateRisks();
             if (currentStep === 5) generateRiskMatrix();
             if (currentStep === 7) updateMeasures();
+            
+            // Scroll to top of step
+            window.scrollTo(0, 0);
             
             return false;
         }
@@ -1255,6 +1623,89 @@
             document.getElementById('step-indicator').textContent = stepIndicators[currentStep];
             document.getElementById('progress-bar').style.width = `${(currentStep / (totalSteps-1)) * 100}%`;
             document.getElementById('progress-text').textContent = `Step ${currentStep+1} of ${totalSteps}`;
+            updateSidebarProgress();
+        }
+        
+        function updateSidebarNavigation() {
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            navLinks.forEach((link, index) => {
+                link.classList.remove('active', 'completed');
+                if (index === currentStep) {
+                    link.classList.add('active');
+                } else if (index < currentStep) {
+                    link.classList.add('completed');
+                }
+            });
+        }
+        
+        function updateSidebarProgress() {
+            const progress = calculateCompletionPercentage();
+            document.getElementById('sidebar-progress-bar').style.width = `${progress}%`;
+            document.getElementById('sidebar-progress-text').textContent = `${progress}%`;
+        }
+        
+        function calculateCompletionPercentage() {
+            const data = JSON.parse(localStorage.getItem('biosecurityPlanData') || '{}');
+            let completedFields = 0;
+            let totalFields = 0;
+            
+            // Step 0: Industry
+            totalFields += 1;
+            if (data.industry) completedFields += 1;
+            
+            // Step 1: Organization Info
+            totalFields += 5;
+            if (data.orgName) completedFields += 1;
+            if (data.orgType) completedFields += 1;
+            if (data.orgSize) completedFields += 1;
+            if (data.primaryContact) completedFields += 1;
+            if (data.contactEmail) completedFields += 1;
+            
+            // Step 2: Project Info
+            totalFields += 4;
+            if (data.projectName) completedFields += 1;
+            if (data.projectLocation) completedFields += 1;
+            if (data.projectSize) completedFields += 1;
+            if (data.projectDescription) completedFields += 1;
+            
+            // Step 3: Activities
+            totalFields += 3;
+            if (data.activities && data.activities.length > 0) completedFields += 1;
+            if (data.activityFrequency) completedFields += 1;
+            if (data.activityStaff) completedFields += 1;
+            
+            // Step 4: Risks
+            totalFields += 3;
+            if (data.risks && data.risks.length > 0) completedFields += 1;
+            if (data.knownIssues) completedFields += 1;
+            if (data.visitorFrequency) completedFields += 1;
+            
+            // Step 5: Risk Assessment
+            totalFields += 2;
+            if (data.riskScores && data.riskScores.length > 0) completedFields += 1;
+            if (data.riskNotes) completedFields += 1;
+            
+            // Step 6: Controls
+            totalFields += 3;
+            if (data.controls && data.controls.length > 0) completedFields += 1;
+            if (data.existingProtocols) completedFields += 1;
+            if (data.challenges) completedFields += 1;
+            
+            // Step 7: Measures
+            totalFields += 5;
+            if (data.measures && data.measures.length > 0) completedFields += 1;
+            if (data.implementation) completedFields += 1;
+            if (data.monitoring) completedFields += 1;
+            if (data.budget) completedFields += 1;
+            if (data.timeline) completedFields += 1;
+            
+            // Step 8: Team & Review
+            totalFields += 3;
+            if (data.teamMembers && data.teamMembers.length > 0) completedFields += 1;
+            if (data.reviewFrequency) completedFields += 1;
+            if (data.planName) completedFields += 1;
+            
+            return Math.round((completedFields / totalFields) * 100);
         }
         
         function validateStep(step) {
@@ -1383,125 +1834,261 @@
             return false;
         }
         
+        // Custom field management
+        function addCustomActivity() {
+            const activityInput = document.getElementById('new-activity');
+            const activity = activityInput.value.trim();
+            
+            if (activity) {
+                customActivities.push(activity);
+                updateActivities();
+                activityInput.value = '';
+                saveProgress();
+            }
+        }
+        
+        function removeCustomActivity(activity) {
+            customActivities = customActivities.filter(a => a !== activity);
+            updateActivities();
+            saveProgress();
+        }
+        
+        function addCustomRisk() {
+            const riskInput = document.getElementById('new-risk');
+            const risk = riskInput.value.trim();
+            
+            if (risk) {
+                customRisks.push(risk);
+                updateRisks();
+                riskInput.value = '';
+                saveProgress();
+            }
+        }
+        
+        function removeCustomRisk(risk) {
+            customRisks = customRisks.filter(r => r !== risk);
+            updateRisks();
+            saveProgress();
+        }
+        
+        function addCustomControl() {
+            const controlInput = document.getElementById('new-control');
+            const control = controlInput.value.trim();
+            
+            if (control) {
+                customControls.push(control);
+                updateControls();
+                controlInput.value = '';
+                saveProgress();
+            }
+        }
+        
+        function removeCustomControl(control) {
+            customControls = customControls.filter(c => c !== control);
+            updateControls();
+            saveProgress();
+        }
+        
+        function addCustomMeasure() {
+            const measureInput = document.getElementById('new-measure');
+            const measure = measureInput.value.trim();
+            
+            if (measure) {
+                customMeasures.push(measure);
+                updateMeasures();
+                measureInput.value = '';
+                saveProgress();
+            }
+        }
+        
+        function removeCustomMeasure(measure) {
+            customMeasures = customMeasures.filter(m => m !== measure);
+            updateMeasures();
+            saveProgress();
+        }
+        
+        function updateControls() {
+            const container = document.getElementById('controls-container');
+            
+            // Standard controls
+            let html = `
+                <div class="checkbox-option">
+                    <input type="checkbox" id="control-cleaning" name="controls" value="Equipment cleaning protocols">
+                    <label for="control-cleaning">Equipment cleaning protocols</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="control-quarantine" name="controls" value="Quarantine areas">
+                    <label for="control-quarantine">Quarantine areas</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="control-monitoring" name="controls" value="Regular monitoring">
+                    <label for="control-monitoring">Regular monitoring</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="control-signage" name="controls" value="Biosecurity signage">
+                    <label for="control-signage">Biosecurity signage</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="control-training" name="controls" value="Staff training">
+                    <label for="control-training">Staff training</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="control-ppe" name="controls" value="Personal protective equipment">
+                    <label for="control-ppe">Personal protective equipment</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="control-visitor" name="controls" value="Visitor management systems">
+                    <label for="control-visitor">Visitor management systems</label>
+                </div>
+                <div class="checkbox-option">
+                    <input type="checkbox" id="control-waste" name="controls" value="Waste management protocols">
+                    <label for="control-waste">Waste management protocols</label>
+                </div>
+            `;
+            
+            // Add custom controls
+            customControls.forEach((control, index) => {
+                const id = `control-custom-${index}`;
+                html += `
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="${id}" name="controls" value="${control}">
+                        <label for="${id}">${control}</label>
+                        <button type="button" onclick="removeCustomControl('${control}')" class="btn-danger">Remove</button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            
+            // Load saved controls if they exist
+            const savedData = localStorage.getItem('biosecurityPlanData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                setSelectedCheckboxes('controls', data.controls || []);
+                document.getElementById('existing-protocols').value = data.existingProtocols || '';
+                document.getElementById('challenges').value = data.challenges || '';
+            }
+        }
+        
         // Dynamic content updates based on industry
         function updateActivities() {
-            const industry = document.getElementById('industry').value || 'restoration';
+            const industry = document.getElementById('industry').value || 'conservation';
             const industryKey = Object.keys(industryConfig).find(key => 
-                industryConfig[key].name === industry) || 'restoration';
-            const config = industryConfig[industryKey] || industryConfig.restoration;
+                industryConfig[key].name === industry) || 'conservation';
+            const config = industryConfig[industryKey] || industryConfig.conservation;
             
             const container = document.getElementById('activities-container');
-            container.innerHTML = config.activities.map(activity => `
-                <div class="checkbox-option">
+            
+            // Standard activities
+            let html = config.activities.map(activity => `
+                <div class="activity-item">
                     <input type="checkbox" id="activity-${activity.toLowerCase().replace(/\s+/g, '-')}" 
                            name="activities" value="${activity}">
                     <label for="activity-${activity.toLowerCase().replace(/\s+/g, '-')}">${activity}</label>
                 </div>
-            `).join('') + `
-            <div class="checkbox-option">
-                <input type="checkbox" id="activity-other" name="activities" value="Other">
-                <label for="activity-other">Other (please specify)</label>
-                <input type="text" id="activity-other-text" style="margin-top: 5px; display: none;">
-            </div>`;
+            `).join('');
             
-            // Add event listener for "Other" checkbox
-            document.getElementById('activity-other').addEventListener('change', function() {
-                document.getElementById('activity-other-text').style.display = 
-                    this.checked ? 'block' : 'none';
+            // Add custom activities
+            customActivities.forEach((activity, index) => {
+                const id = `activity-custom-${index}`;
+                html += `
+                    <div class="activity-item">
+                        <input type="checkbox" id="${id}" name="activities" value="${activity}">
+                        <label for="${id}">${activity}</label>
+                        <button type="button" onclick="removeCustomActivity('${activity}')" class="btn-danger">Remove</button>
+                    </div>
+                `;
             });
+            
+            container.innerHTML = html;
             
             // Load saved activities if they exist
             const savedData = localStorage.getItem('biosecurityPlanData');
             if (savedData) {
                 const data = JSON.parse(savedData);
                 setSelectedCheckboxes('activities', data.activities || []);
-                document.getElementById('activity-other-text').value = data.activityOther || '';
-                if (data.activities && data.activities.includes('Other')) {
-                    document.getElementById('activity-other').checked = true;
-                    document.getElementById('activity-other-text').style.display = 'block';
-                }
                 document.getElementById('activity-frequency').value = data.activityFrequency || '';
                 document.getElementById('activity-staff').value = data.activityStaff || '';
             }
         }
         
         function updateRisks() {
-            const industry = document.getElementById('industry').value || 'restoration';
+            const industry = document.getElementById('industry').value || 'conservation';
             const industryKey = Object.keys(industryConfig).find(key => 
-                industryConfig[key].name === industry) || 'restoration';
-            const config = industryConfig[industryKey] || industryConfig.restoration;
+                industryConfig[key].name === industry) || 'conservation';
+            const config = industryConfig[industryKey] || industryConfig.conservation;
             
             const container = document.getElementById('risks-container');
-            container.innerHTML = config.risks.map(risk => `
-                <div class="checkbox-option">
+            
+            // Standard risks
+            let html = config.risks.map(risk => `
+                <div class="risk-item">
                     <input type="checkbox" id="risk-${risk.toLowerCase().replace(/\s+/g, '-')}" 
                            name="risks" value="${risk}">
                     <label for="risk-${risk.toLowerCase().replace(/\s+/g, '-')}">${risk}</label>
                 </div>
-            `).join('') + `
-            <div class="checkbox-option">
-                <input type="checkbox" id="risk-other" name="risks" value="Other">
-                <label for="risk-other">Other (please specify)</label>
-                <input type="text" id="risk-other-text" style="margin-top: 5px; display: none;">
-            </div>`;
+            `).join('');
             
-            // Add event listener for "Other" checkbox
-            document.getElementById('risk-other').addEventListener('change', function() {
-                document.getElementById('risk-other-text').style.display = 
-                    this.checked ? 'block' : 'none';
+            // Add custom risks
+            customRisks.forEach((risk, index) => {
+                const id = `risk-custom-${index}`;
+                html += `
+                    <div class="risk-item">
+                        <input type="checkbox" id="${id}" name="risks" value="${risk}">
+                        <label for="${id}">${risk}</label>
+                        <button type="button" onclick="removeCustomRisk('${risk}')" class="btn-danger">Remove</button>
+                    </div>
+                `;
             });
+            
+            container.innerHTML = html;
             
             // Load saved risks if they exist
             const savedData = localStorage.getItem('biosecurityPlanData');
             if (savedData) {
                 const data = JSON.parse(savedData);
                 setSelectedCheckboxes('risks', data.risks || []);
-                document.getElementById('risk-other-text').value = data.riskOther || '';
-                if (data.risks && data.risks.includes('Other')) {
-                    document.getElementById('risk-other').checked = true;
-                    document.getElementById('risk-other-text').style.display = 'block';
-                }
                 document.getElementById('known-issues').value = data.knownIssues || '';
                 document.getElementById('visitor-frequency').value = data.visitorFrequency || '';
             }
         }
         
         function updateMeasures() {
-            const industry = document.getElementById('industry').value || 'restoration';
+            const industry = document.getElementById('industry').value || 'conservation';
             const industryKey = Object.keys(industryConfig).find(key => 
-                industryConfig[key].name === industry) || 'restoration';
-            const config = industryConfig[industryKey] || industryConfig.restoration;
+                industryConfig[key].name === industry) || 'conservation';
+            const config = industryConfig[industryKey] || industryConfig.conservation;
             
             const container = document.getElementById('measures-container');
-            container.innerHTML = config.measures.map(measure => `
-                <div class="checkbox-option">
+            
+            // Standard measures
+            let html = config.measures.map(measure => `
+                <div class="measure-item">
                     <input type="checkbox" id="measure-${measure.toLowerCase().replace(/\s+/g, '-')}" 
                            name="measures" value="${measure}">
                     <label for="measure-${measure.toLowerCase().replace(/\s+/g, '-')}">${measure}</label>
                 </div>
-            `).join('') + `
-            <div class="checkbox-option">
-                <input type="checkbox" id="measure-other" name="measures" value="Other">
-                <label for="measure-other">Other (please specify)</label>
-                <input type="text" id="measure-other-text" style="margin-top: 5px; display: none;">
-            </div>`;
+            `).join('');
             
-            // Add event listener for "Other" checkbox
-            document.getElementById('measure-other').addEventListener('change', function() {
-                document.getElementById('measure-other-text').style.display = 
-                    this.checked ? 'block' : 'none';
+            // Add custom measures
+            customMeasures.forEach((measure, index) => {
+                const id = `measure-custom-${index}`;
+                html += `
+                    <div class="measure-item">
+                        <input type="checkbox" id="${id}" name="measures" value="${measure}">
+                        <label for="${id}">${measure}</label>
+                        <button type="button" onclick="removeCustomMeasure('${measure}')" class="btn-danger">Remove</button>
+                    </div>
+                `;
             });
+            
+            container.innerHTML = html;
             
             // Load saved measures if they exist
             const savedData = localStorage.getItem('biosecurityPlanData');
             if (savedData) {
                 const data = JSON.parse(savedData);
                 setSelectedCheckboxes('measures', data.measures || []);
-                document.getElementById('measure-other-text').value = data.measureOther || '';
-                if (data.measures && data.measures.includes('Other')) {
-                    document.getElementById('measure-other').checked = true;
-                    document.getElementById('measure-other-text').style.display = 'block';
-                }
                 document.getElementById('implementation').value = data.implementation || '';
                 document.getElementById('monitoring').value = data.monitoring || '';
                 document.getElementById('budget').value = data.budget || '';
@@ -1513,28 +2100,57 @@
         function generateRiskMatrix() {
             const risks = getSelectedCheckboxes('risks');
             const matrixBody = document.getElementById('risk-matrix-body');
+            const industry = document.getElementById('industry').value || 'conservation';
+            const industryKey = Object.keys(industryConfig).find(key => 
+                industryConfig[key].name === industry) || 'conservation';
+            const config = industryConfig[industryKey] || industryConfig.conservation;
             
-            matrixBody.innerHTML = risks.map(risk => `
-                <tr>
-                    <td>${risk}</td>
-                    <td>
-                        <select class="likelihood" onchange="updateRiskScore(this)">
-                            <option value="1">Low</option>
-                            <option value="2">Medium</option>
-                            <option value="3">High</option>
-                        </select>
-                    </td>
-                    <td>
-                        <select class="impact" onchange="updateRiskScore(this)">
-                            <option value="1">Low</option>
-                            <option value="2">Medium</option>
-                            <option value="3">High</option>
-                        </select>
-                    </td>
-                    <td class="risk-score">1</td>
-                    <td class="risk-priority">Low</td>
-                </tr>
-            `).join('');
+            matrixBody.innerHTML = risks.map(risk => {
+                // Get default likelihood and impact if they exist for this risk
+                const defaultLikelihood = config.riskFactors[risk]?.likelihood || 1;
+                const defaultImpact = config.riskFactors[risk]?.impact || 1;
+                
+                return `
+                    <tr>
+                        <td>${risk}</td>
+                        <td>
+                            <select class="likelihood" onchange="updateRiskScore(this)" value="${defaultLikelihood}">
+                                <option value="1" ${defaultLikelihood == 1 ? 'selected' : ''}>Low</option>
+                                <option value="2" ${defaultLikelihood == 2 ? 'selected' : ''}>Medium</option>
+                                <option value="3" ${defaultLikelihood == 3 ? 'selected' : ''}>High</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="impact" onchange="updateRiskScore(this)" value="${defaultImpact}">
+                                <option value="1" ${defaultImpact == 1 ? 'selected' : ''}>Low</option>
+                                <option value="2" ${defaultImpact == 2 ? 'selected' : ''}>Medium</option>
+                                <option value="3" ${defaultImpact == 3 ? 'selected' : ''}>High</option>
+                            </select>
+                        </td>
+                        <td class="risk-score">${defaultLikelihood * defaultImpact}</td>
+                        <td class="risk-priority">
+                            ${defaultLikelihood * defaultImpact >= 6 ? 'High' : 
+                              defaultLikelihood * defaultImpact >= 3 ? 'Medium' : 'Low'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Apply styling based on initial scores
+            document.querySelectorAll('#risk-matrix-body tr').forEach(row => {
+                const score = parseInt(row.querySelector('.risk-score').textContent);
+                const scoreCell = row.querySelector('.risk-score');
+                const priorityCell = row.querySelector('.risk-priority');
+                
+                if (score >= 6) {
+                    row.classList.add('high-risk');
+                    scoreCell.className = 'risk-score high';
+                } else if (score >= 3) {
+                    scoreCell.className = 'risk-score medium';
+                } else {
+                    scoreCell.className = 'risk-score low';
+                }
+            });
             
             // Load saved risk scores if they exist
             const savedData = localStorage.getItem('biosecurityPlanData');
@@ -1590,6 +2206,9 @@
             
             // Update chart
             updateRiskChart();
+            
+            // Save progress
+            saveProgress();
         }
         
         function updateRiskChart() {
@@ -1669,15 +2288,24 @@
             newMember.innerHTML = `
                 <input type="text" placeholder="Name" class="team-name">
                 <input type="text" placeholder="Role" class="team-role">
-                <button type="button" onclick="return removeTeamMember(this)" class="btn-danger">Remove</button>
+                <button type="button" onclick="removeTeamMember(this)" class="btn-danger">Remove</button>
             `;
             container.appendChild(newMember);
+            
+            // Set up event listeners for the new inputs
+            newMember.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', function() {
+                    saveProgress();
+                });
+            });
+            
             return false;
         }
         
         function removeTeamMember(button) {
             if (document.querySelectorAll('.team-member').length > 1) {
                 button.closest('.team-member').remove();
+                saveProgress();
             } else {
                 alert('You need at least one team member');
             }
@@ -1714,12 +2342,10 @@
                 projectDescription: document.getElementById('project-description').value,
                 
                 activities: getSelectedCheckboxes('activities'),
-                activityOther: document.getElementById('activity-other-text').value,
                 activityFrequency: document.getElementById('activity-frequency').value,
                 activityStaff: document.getElementById('activity-staff').value,
                 
                 risks: getSelectedCheckboxes('risks'),
-                riskOther: document.getElementById('risk-other-text').value,
                 knownIssues: document.getElementById('known-issues').value,
                 visitorFrequency: document.getElementById('visitor-frequency').value,
                 
@@ -1727,12 +2353,10 @@
                 riskNotes: document.getElementById('risk-notes').value,
                 
                 controls: getSelectedCheckboxes('controls'),
-                controlOther: document.getElementById('control-other-text').value,
                 existingProtocols: document.getElementById('existing-protocols').value,
                 challenges: document.getElementById('challenges').value,
                 
                 measures: getSelectedCheckboxes('measures'),
-                measureOther: document.getElementById('measure-other-text').value,
                 implementation: document.getElementById('implementation').value,
                 monitoring: document.getElementById('monitoring').value,
                 budget: document.getElementById('budget').value,
@@ -1741,10 +2365,20 @@
                 teamMembers: getTeamMembers(),
                 reviewFrequency: document.getElementById('review-frequency').value,
                 template: document.getElementById('template').value,
-                planName: document.getElementById('plan-name').value
+                planName: document.getElementById('plan-name').value,
+                
+                // Save custom fields
+                customActivities: customActivities,
+                customRisks: customRisks,
+                customControls: customControls,
+                customMeasures: customMeasures,
+                
+                // Save timestamp
+                lastSaved: new Date().toISOString()
             };
             
             localStorage.setItem('biosecurityPlanData', JSON.stringify(data));
+            updateSidebarProgress();
         }
         
         function getRiskScores() {
@@ -1797,15 +2431,7 @@
                 
                 // Step 5 (will be populated when step is activated)
                 
-                // Step 6
-                setSelectedCheckboxes('controls', data.controls || []);
-                document.getElementById('control-other-text').value = data.controlOther || '';
-                if (data.controls && data.controls.includes('Other')) {
-                    document.getElementById('control-other').checked = true;
-                    document.getElementById('control-other-text').style.display = 'block';
-                }
-                document.getElementById('existing-protocols').value = data.existingProtocols || '';
-                document.getElementById('challenges').value = data.challenges || '';
+                // Step 6 (will be populated when step is activated)
                 
                 // Step 7 (will be populated when step is activated)
                 
@@ -1819,7 +2445,7 @@
                         newMember.innerHTML = `
                             <input type="text" placeholder="Name" class="team-name" value="${member.name || ''}">
                             <input type="text" placeholder="Role" class="team-role" value="${member.role || ''}">
-                            <button type="button" onclick="return removeTeamMember(this)" class="btn-danger">Remove</button>
+                            <button type="button" onclick="removeTeamMember(this)" class="btn-danger">Remove</button>
                         `;
                         container.appendChild(newMember);
                     });
@@ -1829,6 +2455,15 @@
                     selectTemplate(data.template);
                 }
                 document.getElementById('plan-name').value = data.planName || '';
+                
+                // Load custom fields
+                customActivities = data.customActivities || [];
+                customRisks = data.customRisks || [];
+                customControls = data.customControls || [];
+                customMeasures = data.customMeasures || [];
+                
+                // Update sidebar progress
+                updateSidebarProgress();
             }
         }
         
@@ -1849,6 +2484,7 @@
             if (!validateStep(8)) return false;
             
             saveProgress();
+            saveVersionToHistory();
             const data = JSON.parse(localStorage.getItem('biosecurityPlanData'));
             
             // Set the plan title
@@ -1889,7 +2525,7 @@
                 <div class="output-section">
                     <h3>2. Key Risks</h3>
                     <ul>
-                        ${data.risks.map(r => `<li>${r}${r === 'Other' ? ' (' + data.riskOther + ')' : ''}</li>`).join('')}
+                        ${data.risks.map(r => `<li>${r}</li>`).join('')}
                     </ul>
                 </div>
                 
@@ -1898,13 +2534,13 @@
                     <p><strong>Existing Controls:</strong></p>
                     <ul>
                         ${data.controls.length > 0 ? 
-                            data.controls.map(c => `<li>${c}${c === 'Other' ? ' (' + data.controlOther + ')' : ''}</li>`).join('') : 
+                            data.controls.map(c => `<li>${c}</li>`).join('') : 
                             '<li>None reported</li>'}
                     </ul>
                     
                     <p><strong>Additional Measures:</strong></p>
                     <ul>
-                        ${data.measures.map(m => `<li>${m}${m === 'Other' ? ' (' + data.measureOther + ')' : ''}</li>`).join('')}
+                        ${data.measures.map(m => `<li>${m}</li>`).join('')}
                     </ul>
                 </div>
                 
@@ -1939,7 +2575,7 @@
                     <h3>3. Activities</h3>
                     <p>Primary activities conducted at the site:</p>
                     <ul>
-                        ${data.activities.map(a => `<li>${a}${a === 'Other' ? ' (' + data.activityOther + ')' : ''}</li>`).join('')}
+                        ${data.activities.map(a => `<li>${a}</li>`).join('')}
                     </ul>
                     <p><strong>Frequency:</strong> ${data.activityFrequency || 'Not specified'}</p>
                 </div>
@@ -1948,7 +2584,7 @@
                     <h3>4. Risk Assessment</h3>
                     <p>Identified biosecurity risks:</p>
                     <ul>
-                        ${data.risks.map(r => `<li>${r}${r === 'Other' ? ' (' + data.riskOther + ')' : ''}</li>`).join('')}
+                        ${data.risks.map(r => `<li>${r}</li>`).join('')}
                     </ul>
                     
                     ${data.riskScores && data.riskScores.length > 0 ? `
@@ -1981,7 +2617,7 @@
                     <p>Existing biosecurity measures in place:</p>
                     <ul>
                         ${data.controls.length > 0 ? 
-                            data.controls.map(c => `<li>${c}${c === 'Other' ? ' (' + data.controlOther + ')' : ''}</li>`).join('') : 
+                            data.controls.map(c => `<li>${c}</li>`).join('') : 
                             '<li>No existing controls reported</li>'}
                     </ul>
                     
@@ -1992,7 +2628,7 @@
                     <h3>6. Proposed Measures</h3>
                     <p>Additional biosecurity measures to be implemented:</p>
                     <ul>
-                        ${data.measures.map(m => `<li>${m}${m === 'Other' ? ' (' + data.measureOther + ')' : ''}</li>`).join('')}
+                        ${data.measures.map(m => `<li>${m}</li>`).join('')}
                     </ul>
                     
                     <p><strong>Implementation Plan:</strong></p>
@@ -2067,7 +2703,7 @@
                     <h4>1.1 Scope</h4>
                     <p>This plan applies to all activities conducted by ${data.orgName} at ${data.projectLocation}, including but not limited to:</p>
                     <ul>
-                        ${data.activities.map(a => `<li>${a}${a === 'Other' ? ' (' + data.activityOther + ')' : ''}</li>`).join('')}
+                        ${data.activities.map(a => `<li>${a}</li>`).join('')}
                     </ul>
                     
                     <h4>1.2 Objectives</h4>
@@ -2103,7 +2739,7 @@
                     <h4>3.1 Identified Risks</h4>
                     <p>The following biosecurity risks have been identified:</p>
                     <ul>
-                        ${data.risks.map(r => `<li>${r}${r === 'Other' ? ' (' + data.riskOther + ')' : ''}</li>`).join('')}
+                        ${data.risks.map(r => `<li>${r}</li>`).join('')}
                     </ul>
                     
                     ${data.riskScores && data.riskScores.length > 0 ? `
@@ -2147,14 +2783,14 @@
                     <p>The following biosecurity measures are currently in place:</p>
                     <ul>
                         ${data.controls.length > 0 ? 
-                            data.controls.map(c => `<li>${c}${c === 'Other' ? ' (' + data.controlOther + ')' : ''}</li>`).join('') : 
+                            data.controls.map(c => `<li>${c}</li>`).join('') : 
                             '<li>No existing controls reported</li>'}
                     </ul>
                     
                     <h4>4.2 Additional Measures</h4>
                     <p>The following additional biosecurity measures will be implemented:</p>
                     <ul>
-                        ${data.measures.map(m => `<li>${m}${m === 'Other' ? ' (' + data.measureOther + ')' : ''}</li>`).join('')}
+                        ${data.measures.map(m => `<li>${m}</li>`).join('')}
                     </ul>
                     
                     <h4>4.3 Implementation Plan</h4>
@@ -2405,8 +3041,8 @@
                 document.querySelectorAll('.industry-card').forEach(card => {
                     card.classList.remove('selected');
                 });
-                document.getElementById('industry-card-restoration').classList.add('selected');
-                document.getElementById('industry').value = 'restoration';
+                document.getElementById('industry-card-conservation').classList.add('selected');
+                document.getElementById('industry').value = 'conservation';
                 document.getElementById('industry-other-text').style.display = 'none';
                 document.getElementById('industry-other-text').value = '';
                 
@@ -2422,9 +3058,15 @@
                     <div class="team-member">
                         <input type="text" placeholder="Name" class="team-name">
                         <input type="text" placeholder="Role" class="team-role">
-                        <button type="button" onclick="return removeTeamMember(this)" class="btn-danger">Remove</button>
+                        <button type="button" onclick="removeTeamMember(this)" class="btn-danger">Remove</button>
                     </div>
                 `;
+                
+                // Reset custom fields
+                customActivities = [];
+                customRisks = [];
+                customControls = [];
+                customMeasures = [];
                 
                 document.getElementById('plan-output').style.display = 'none';
                 document.querySelector('.wizard-container').style.display = 'block';
@@ -2433,6 +3075,8 @@
                     step.classList.toggle('active', index === 0);
                 });
                 updateStepIndicator();
+                updateSidebarNavigation();
+                updateSidebarProgress();
             }
             return false;
         }
