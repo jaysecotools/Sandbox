@@ -2976,108 +2976,23 @@ function updateMeasures() {
 
 
 
-Here's the complete corrected JavaScript section with all fixes implemented for the template selection functionality:
+    The issue with not being able to select different plan templates (detailed or certification-ready) likely stems from a few potential problems in the JavaScript code. Let me analyze the relevant parts and provide a solution:
 
+### Problem Areas Identified:
+
+1. **Template Selection Function**:
+   - The `selectTemplate()` function may not be properly updating the hidden input value
+   - The template cards might not have the correct event handlers
+
+2. **Template Generation**:
+   - The `generatePlan()` function might not be properly using the selected template value
+
+### Solution:
+
+Here are the fixes you should implement:
+
+1. **Add the missing `selectTemplate()` function**:
 ```javascript
-// Global variables
-const totalSteps = 9;
-let currentStep = 0;
-let riskChart = null;
-let customActivities = [];
-let customRisks = [];
-let customControls = [];
-let customMeasures = [];
-
-// Initialize the tool
-document.addEventListener('DOMContentLoaded', function() {
-    // Set default industry selection
-    selectIndustry('conservation');
-    
-    // Initialize template selection
-    selectTemplate('basic');
-    
-    // Set up template card click handlers
-    document.querySelectorAll('.template-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const template = this.id.replace('template-', '');
-            selectTemplate(template);
-        });
-    });
-
-    // Check for saved theme preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        updateThemeToggle('dark');
-    }
-    
-    // Set up theme toggle
-    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-    
-    // Set up sidebar toggle for mobile
-    document.getElementById('sidebarToggle').addEventListener('click', function() {
-        document.getElementById('sidebar').classList.toggle('show');
-    });
-    
-    // Set up version history
-    document.getElementById('versionHistoryBtn').addEventListener('click', function() {
-        document.getElementById('versionHistoryPanel').classList.toggle('show');
-        if (document.getElementById('versionHistoryPanel').classList.contains('show')) {
-            loadVersionHistory();
-        }
-    });
-    
-    // Close version history when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.version-history')) {
-            document.getElementById('versionHistoryPanel').classList.remove('show');
-        }
-        if (!e.target.closest('.sidebar') && !e.target.closest('.sidebar-toggle')) {
-            document.getElementById('sidebar').classList.remove('show');
-        }
-    });
-    
-    // Set up sidebar navigation
-    document.querySelectorAll('.sidebar-nav a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const step = parseInt(this.getAttribute('href').replace('#step', ''));
-            if (step <= currentStep || validateStep(currentStep)) {
-                goToStep(step);
-            }
-        });
-    });
-    
-    // Load saved progress
-    loadProgress();
-    updateStepIndicator();
-    
-    // Set up event listeners for dynamic elements
-    document.getElementById('industry-other-text').addEventListener('input', function() {
-        if (this.value) {
-            document.getElementById('industry').value = this.value;
-            industryConfig.other.name = this.value;
-        }
-    });
-    
-    // Initialize custom arrays from localStorage if they exist
-    const savedData = localStorage.getItem('biosecurityPlanData');
-    if (savedData) {
-        const data = JSON.parse(savedData);
-        customActivities = data.customActivities || [];
-        customRisks = data.customRisks || [];
-        customControls = data.customControls || [];
-        customMeasures = data.customMeasures || [];
-    }
-    
-    // Set up autocomplete for organization names
-    setupAutocomplete();
-    
-    // Auto-save when fields change
-    setupAutoSave();
-});
-
-// Template selection function
 function selectTemplate(template) {
     // Update UI
     document.querySelectorAll('.template-card').forEach(card => {
@@ -3090,8 +3005,30 @@ function selectTemplate(template) {
     
     return false;
 }
+```
 
-// Plan generation function with template support
+2. **Initialize template selection in DOMContentLoaded**:
+```javascript
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+    
+    // Initialize template selection
+    selectTemplate('basic');
+    
+    // Set up template card click handlers
+    document.querySelectorAll('.template-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const template = this.id.replace('template-', '');
+            selectTemplate(template);
+        });
+    });
+    
+    // ... rest of existing code ...
+});
+```
+
+3. **Ensure the template value is used in generatePlan()**:
+```javascript
 function generatePlan() {
     if (!validateStep(8)) return false;
     
@@ -3104,7 +3041,7 @@ function generatePlan() {
     
     // Generate the plan content based on selected template
     let html = '';
-    const template = document.getElementById('template').value;
+    const template = document.getElementById('template').value; // Get current selection
     
     if (template === 'basic') {
         html = generateBasicPlan(data);
@@ -3114,46 +3051,44 @@ function generatePlan() {
         html = generateCertifiedPlan(data);
     }
     
-    document.getElementById('output-content').innerHTML = html;
-    
-    // Show the output and hide the wizard
-    document.querySelector('.wizard-container').style.display = 'none';
-    document.getElementById('plan-output').style.display = 'block';
-    
-    // Update chart for PDF generation
-    updateRiskChart();
-    return false;
+    // ... rest of the function ...
 }
-
-// ... [Keep all other existing JavaScript functions exactly as they were] ...
 ```
 
-### Key Changes Made:
+### Additional Checks:
 
-1. **Added the `selectTemplate()` function** - This handles the template selection UI and stores the selected value.
+1. **Verify the HTML structure**:
+   - Make sure you have the template cards with correct IDs:
+   ```html
+   <div class="template-card" id="template-basic">...</div>
+   <div class="template-card" id="template-detailed">...</div>
+   <div class="template-card" id="template-certified">...</div>
+   ```
 
-2. **Initialized template selection on page load** - Added to the DOMContentLoaded event handler.
-
-3. **Added click handlers for template cards** - Now properly responds to template selection clicks.
-
-4. **Modified `generatePlan()`** - Now explicitly checks the current template selection before generating the plan.
-
-### Implementation Instructions:
-
-1. Replace your existing JavaScript section with this complete version.
-2. Make sure your HTML has the template cards with these exact IDs:
-   - `template-basic`
-   - `template-detailed`
-   - `template-certified`
-3. Ensure you have the hidden input field:
+2. **Check the hidden input field**:
    ```html
    <input type="hidden" id="template" value="basic">
    ```
 
-This should now give you full template selection functionality where:
-- Clicking a template card highlights it
-- The selection is stored properly
-- The correct template format is used when generating the plan
-- The selection persists if you navigate away and come back
+3. **Verify CSS styles**:
+   - Ensure the `.selected` class is properly styled to show which template is selected:
+   ```css
+   .template-card.selected {
+       border-color: var(--primary);
+       background-color: var(--light);
+   }
+   ```
 
-The rest of your existing JavaScript functions (like `generateBasicPlan()`, `generateDetailedPlan()`, etc.) can remain exactly as they were, as they're already template-aware.
+### Testing:
+
+After implementing these changes:
+1. Try clicking on different template cards - they should highlight when selected
+2. Generate the plan - it should now use the selected template format
+3. Check the hidden input value (`#template`) changes when selecting different templates
+
+If you're still experiencing issues, you might want to:
+1. Check the browser console for JavaScript errors
+2. Verify that the click events are being properly registered on the template cards
+3. Confirm that the `selectTemplate()` function is being called when clicking the cards
+
+Would you like me to provide any of these components in more detail?
