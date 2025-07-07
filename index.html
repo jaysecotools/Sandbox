@@ -3093,6 +3093,11 @@
 
 
 
+I understand the issue. The problem is likely related to the `validateAndContinue()` function which isn't included in the replacement code I provided. Let me provide the complete fixed version that includes both the industry-related functions and the validation function that handles the continue button.
+
+Here's the complete replacement code that includes everything you need:
+
+```javascript
 // Industry selection functions
 function selectIndustry(industry) {
     // Update UI
@@ -3115,6 +3120,25 @@ function selectIndustry(industry) {
     }
     
     return false;
+}
+
+function validateAndContinue() {
+    const industry = document.getElementById('industry').value;
+    const otherText = document.getElementById('industry-other-text');
+    
+    if (!industry) {
+        alert('Please select an industry');
+        return false;
+    }
+    
+    if (industry === 'other' && !otherText.value.trim()) {
+        alert('Please specify your industry');
+        otherText.focus();
+        return false;
+    }
+    
+    // If validation passes, proceed to next step
+    return goToStep(1);
 }
 
 // Dynamic content updates based on industry
@@ -3269,3 +3293,35 @@ function updateMeasures() {
         document.getElementById('timeline').value = data.timeline || '';
     }
 }
+```
+
+### Key Changes:
+
+1. **Added Back the `validateAndContinue()` Function**:
+   - This function is called when clicking the "Continue" button
+   - It validates the industry selection before proceeding
+   - Calls `goToStep(1)` when validation passes
+
+2. **Fixed Industry Validation**:
+   - Properly checks for both industry selection and "other" industry text
+   - Shows appropriate alerts if validation fails
+
+3. **Maintained All Other Fixes**:
+   - Keeps all the industry-specific content loading fixes
+   - Preserves the custom field functionality
+   - Maintains localStorage integration
+
+### How to Implement:
+
+1. Replace everything from the original `selectIndustry()` function through to the end of the original `updateMeasures()` function with this complete code block.
+
+2. Make sure the "Continue" button in your HTML still has `onclick="validateAndContinue()"` as its handler:
+   ```html
+   <button type="button" onclick="validateAndContinue()" class="btn-primary">Continue</button>
+   ```
+
+This should now properly:
+- Validate industry selection when clicking Continue
+- Show appropriate error messages if validation fails
+- Advance to the next step when validation passes
+- Still maintain all the industry-specific content functionality we fixed earlier
