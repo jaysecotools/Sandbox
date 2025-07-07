@@ -815,7 +815,7 @@
                             </div>
                         </div>
                     </div>
-                    <input type="hidden" id="industry" value="">
+                    <input type="hidden" id="industry" value="basic">
                 </div>
                 
                 <div class="nav-buttons">
@@ -2377,6 +2377,7 @@ function updateMeasures() {
             
             // Generate the plan content based on selected template
             let html = '';
+const template = document.getElementById('template').value; // Get current selection
             
             if (data.template === 'basic') {
                 html = generateBasicPlan(data);
@@ -2968,127 +2969,3 @@ function updateMeasures() {
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-    The issue with not being able to select different plan templates (detailed or certification-ready) likely stems from a few potential problems in the JavaScript code. Let me analyze the relevant parts and provide a solution:
-
-### Problem Areas Identified:
-
-1. **Template Selection Function**:
-   - The `selectTemplate()` function may not be properly updating the hidden input value
-   - The template cards might not have the correct event handlers
-
-2. **Template Generation**:
-   - The `generatePlan()` function might not be properly using the selected template value
-
-### Solution:
-
-Here are the fixes you should implement:
-
-1. **Add the missing `selectTemplate()` function**:
-```javascript
-function selectTemplate(template) {
-    // Update UI
-    document.querySelectorAll('.template-card').forEach(card => {
-        card.classList.remove('selected');
-    });
-    document.getElementById(`template-${template}`).classList.add('selected');
-    
-    // Set the hidden input value
-    document.getElementById('template').value = template;
-    
-    return false;
-}
-```
-
-2. **Initialize template selection in DOMContentLoaded**:
-```javascript
-document.addEventListener('DOMContentLoaded', function() {
-    // ... existing code ...
-    
-    // Initialize template selection
-    selectTemplate('basic');
-    
-    // Set up template card click handlers
-    document.querySelectorAll('.template-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const template = this.id.replace('template-', '');
-            selectTemplate(template);
-        });
-    });
-    
-    // ... rest of existing code ...
-});
-```
-
-3. **Ensure the template value is used in generatePlan()**:
-```javascript
-function generatePlan() {
-    if (!validateStep(8)) return false;
-    
-    saveProgress();
-    saveVersionToHistory();
-    const data = JSON.parse(localStorage.getItem('biosecurityPlanData'));
-    
-    // Set the plan title
-    document.getElementById('output-title').textContent = data.planName;
-    
-    // Generate the plan content based on selected template
-    let html = '';
-    const template = document.getElementById('template').value; // Get current selection
-    
-    if (template === 'basic') {
-        html = generateBasicPlan(data);
-    } else if (template === 'detailed') {
-        html = generateDetailedPlan(data);
-    } else {
-        html = generateCertifiedPlan(data);
-    }
-    
-    // ... rest of the function ...
-}
-```
-
-### Additional Checks:
-
-1. **Verify the HTML structure**:
-   - Make sure you have the template cards with correct IDs:
-   ```html
-   <div class="template-card" id="template-basic">...</div>
-   <div class="template-card" id="template-detailed">...</div>
-   <div class="template-card" id="template-certified">...</div>
-   ```
-
-2. **Check the hidden input field**:
-   ```html
-   <input type="hidden" id="template" value="basic">
-   ```
-
-3. **Verify CSS styles**:
-   - Ensure the `.selected` class is properly styled to show which template is selected:
-   ```css
-   .template-card.selected {
-       border-color: var(--primary);
-       background-color: var(--light);
-   }
-   ```
-
-### Testing:
-
-After implementing these changes:
-1. Try clicking on different template cards - they should highlight when selected
-2. Generate the plan - it should now use the selected template format
-3. Check the hidden input value (`#template`) changes when selecting different templates
-
-If you're still experiencing issues, you might want to:
-1. Check the browser console for JavaScript errors
-2. Verify that the click events are being properly registered on the template cards
-3. Confirm that the `selectTemplate()` function is being called when clicking the cards
-
-Would you like me to provide any of these components in more detail?
