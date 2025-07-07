@@ -1783,318 +1783,203 @@
             return re.test(email);
         }
         
-        // Industry selection functions
-        function selectIndustry(industry) {
-            // Update UI
-            document.querySelectorAll('.industry-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            document.getElementById(`industry-card-${industry}`).classList.add('selected');
-            
-            // Set the hidden input value
-            document.getElementById('industry').value = industry;
-            
-            // Handle "Other" case
-            const otherText = document.getElementById('industry-other-text');
-            if (industry === 'other') {
-                otherText.style.display = 'block';
-            } else {
-                otherText.style.display = 'none';
-            }
-            
-            return false;
-        }
+// Industry selection functions
+function selectIndustry(industry) {
+    // Update UI
+    document.querySelectorAll('.industry-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    document.getElementById(`industry-card-${industry}`).classList.add('selected');
+    
+    // Set the hidden input value
+    document.getElementById('industry').value = industry;
+    
+    // Handle "Other" case
+    const otherText = document.getElementById('industry-other-text');
+    if (industry === 'other') {
+        otherText.style.display = 'block';
+    } else {
+        otherText.style.display = 'none';
+        // Update the other industry name in config
+        industryConfig.other.name = industryConfig[industry].name;
+    }
+    
+    return false;
+}
 
-        function validateAndContinue() {
-            const industry = document.getElementById('industry').value;
-            const otherText = document.getElementById('industry-other-text');
-            
-            if (!industry) {
-                alert('Please select an industry');
-                return false;
-            }
-            
-            if (industry === 'other' && !otherText.value.trim()) {
-                alert('Please specify your industry');
-                otherText.focus();
-                return false;
-            }
-            
-            // If validation passes, proceed to next step
-            return goToStep(1);
-        }
-        
-        // Template selection
-        function selectTemplate(template) {
-            document.querySelectorAll('.template-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            document.getElementById(`template-${template}`).classList.add('selected');
-            document.getElementById('template').value = template;
-            return false;
-        }
-        
-        // Custom field management
-        function addCustomActivity() {
-            const activityInput = document.getElementById('new-activity');
-            const activity = activityInput.value.trim();
-            
-            if (activity) {
-                customActivities.push(activity);
-                updateActivities();
-                activityInput.value = '';
-                saveProgress();
-            }
-        }
-        
-        function removeCustomActivity(activity) {
-            customActivities = customActivities.filter(a => a !== activity);
-            updateActivities();
-            saveProgress();
-        }
-        
-        function addCustomRisk() {
-            const riskInput = document.getElementById('new-risk');
-            const risk = riskInput.value.trim();
-            
-            if (risk) {
-                customRisks.push(risk);
-                updateRisks();
-                riskInput.value = '';
-                saveProgress();
-            }
-        }
-        
-        function removeCustomRisk(risk) {
-            customRisks = customRisks.filter(r => r !== risk);
-            updateRisks();
-            saveProgress();
-        }
-        
-        function addCustomControl() {
-            const controlInput = document.getElementById('new-control');
-            const control = controlInput.value.trim();
-            
-            if (control) {
-                customControls.push(control);
-                updateControls();
-                controlInput.value = '';
-                saveProgress();
-            }
-        }
-        
-        function removeCustomControl(control) {
-            customControls = customControls.filter(c => c !== control);
-            updateControls();
-            saveProgress();
-        }
-        
-        function addCustomMeasure() {
-            const measureInput = document.getElementById('new-measure');
-            const measure = measureInput.value.trim();
-            
-            if (measure) {
-                customMeasures.push(measure);
-                updateMeasures();
-                measureInput.value = '';
-                saveProgress();
-            }
-        }
-        
-        function removeCustomMeasure(measure) {
-            customMeasures = customMeasures.filter(m => m !== measure);
-            updateMeasures();
-            saveProgress();
-        }
-        
-        function updateControls() {
-            const container = document.getElementById('controls-container');
-            
-            // Standard controls
-            let html = `
-                <div class="checkbox-option">
-                    <input type="checkbox" id="control-cleaning" name="controls" value="Equipment cleaning protocols">
-                    <label for="control-cleaning">Equipment cleaning protocols</label>
-                </div>
-                <div class="checkbox-option">
-                    <input type="checkbox" id="control-quarantine" name="controls" value="Quarantine areas">
-                    <label for="control-quarantine">Quarantine areas</label>
-                </div>
-                <div class="checkbox-option">
-                    <input type="checkbox" id="control-monitoring" name="controls" value="Regular monitoring">
-                    <label for="control-monitoring">Regular monitoring</label>
-                </div>
-                <div class="checkbox-option">
-                    <input type="checkbox" id="control-signage" name="controls" value="Biosecurity signage">
-                    <label for="control-signage">Biosecurity signage</label>
-                </div>
-                <div class="checkbox-option">
-                    <input type="checkbox" id="control-training" name="controls" value="Staff training">
-                    <label for="control-training">Staff training</label>
-                </div>
-                <div class="checkbox-option">
-                    <input type="checkbox" id="control-ppe" name="controls" value="Personal protective equipment">
-                    <label for="control-ppe">Personal protective equipment</label>
-                </div>
-                <div class="checkbox-option">
-                    <input type="checkbox" id="control-visitor" name="controls" value="Visitor management systems">
-                    <label for="control-visitor">Visitor management systems</label>
-                </div>
-                <div class="checkbox-option">
-                    <input type="checkbox" id="control-waste" name="controls" value="Waste management protocols">
-                    <label for="control-waste">Waste management protocols</label>
-                </div>
-            `;
-            
-            // Add custom controls
-            customControls.forEach((control, index) => {
-                const id = `control-custom-${index}`;
-                html += `
-                    <div class="checkbox-option">
-                        <input type="checkbox" id="${id}" name="controls" value="${control}">
-                        <label for="${id}">${control}</label>
-                        <button type="button" onclick="removeCustomControl('${control}')" class="btn-danger">Remove</button>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-            
-            // Load saved controls if they exist
-            const savedData = localStorage.getItem('biosecurityPlanData');
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                setSelectedCheckboxes('controls', data.controls || []);
-                document.getElementById('existing-protocols').value = data.existingProtocols || '';
-                document.getElementById('challenges').value = data.challenges || '';
-            }
-        }
-        
-        // Dynamic content updates based on industry
-        function updateActivities() {
-            const industry = document.getElementById('industry').value || 'conservation';
-            const industryKey = Object.keys(industryConfig).find(key => 
-                industryConfig[key].name === industry) || 'conservation';
-            const config = industryConfig[industryKey] || industryConfig.conservation;
-            
-            const container = document.getElementById('activities-container');
-            
-            // Standard activities
-            let html = config.activities.map(activity => `
-                <div class="activity-item">
-                    <input type="checkbox" id="activity-${activity.toLowerCase().replace(/\s+/g, '-')}" 
-                           name="activities" value="${activity}">
-                    <label for="activity-${activity.toLowerCase().replace(/\s+/g, '-')}">${activity}</label>
-                </div>
-            `).join('');
-            
-            // Add custom activities
-            customActivities.forEach((activity, index) => {
-                const id = `activity-custom-${index}`;
-                html += `
-                    <div class="activity-item">
-                        <input type="checkbox" id="${id}" name="activities" value="${activity}">
-                        <label for="${id}">${activity}</label>
-                        <button type="button" onclick="removeCustomActivity('${activity}')" class="btn-danger">Remove</button>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-            
-            // Load saved activities if they exist
-            const savedData = localStorage.getItem('biosecurityPlanData');
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                setSelectedCheckboxes('activities', data.activities || []);
-                document.getElementById('activity-frequency').value = data.activityFrequency || '';
-                document.getElementById('activity-staff').value = data.activityStaff || '';
-            }
-        }
-        
-        function updateRisks() {
-            const industry = document.getElementById('industry').value || 'conservation';
-            const industryKey = Object.keys(industryConfig).find(key => 
-                industryConfig[key].name === industry) || 'conservation';
-            const config = industryConfig[industryKey] || industryConfig.conservation;
-            
-            const container = document.getElementById('risks-container');
-            
-            // Standard risks
-            let html = config.risks.map(risk => `
-                <div class="risk-item">
-                    <input type="checkbox" id="risk-${risk.toLowerCase().replace(/\s+/g, '-')}" 
-                           name="risks" value="${risk}">
-                    <label for="risk-${risk.toLowerCase().replace(/\s+/g, '-')}">${risk}</label>
-                </div>
-            `).join('');
-            
-            // Add custom risks
-            customRisks.forEach((risk, index) => {
-                const id = `risk-custom-${index}`;
-                html += `
-                    <div class="risk-item">
-                        <input type="checkbox" id="${id}" name="risks" value="${risk}">
-                        <label for="${id}">${risk}</label>
-                        <button type="button" onclick="removeCustomRisk('${risk}')" class="btn-danger">Remove</button>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-            
-            // Load saved risks if they exist
-            const savedData = localStorage.getItem('biosecurityPlanData');
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                setSelectedCheckboxes('risks', data.risks || []);
-                document.getElementById('known-issues').value = data.knownIssues || '';
-                document.getElementById('visitor-frequency').value = data.visitorFrequency || '';
-            }
-        }
-        
-        function updateMeasures() {
-            const industry = document.getElementById('industry').value || 'conservation';
-            const industryKey = Object.keys(industryConfig).find(key => 
-                industryConfig[key].name === industry) || 'conservation';
-            const config = industryConfig[industryKey] || industryConfig.conservation;
-            
-            const container = document.getElementById('measures-container');
-            
-            // Standard measures
-            let html = config.measures.map(measure => `
-                <div class="measure-item">
-                    <input type="checkbox" id="measure-${measure.toLowerCase().replace(/\s+/g, '-')}" 
-                           name="measures" value="${measure}">
-                    <label for="measure-${measure.toLowerCase().replace(/\s+/g, '-')}">${measure}</label>
-                </div>
-            `).join('');
-            
-            // Add custom measures
-            customMeasures.forEach((measure, index) => {
-                const id = `measure-custom-${index}`;
-                html += `
-                    <div class="measure-item">
-                        <input type="checkbox" id="${id}" name="measures" value="${measure}">
-                        <label for="${id}">${measure}</label>
-                        <button type="button" onclick="removeCustomMeasure('${measure}')" class="btn-danger">Remove</button>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-            
-            // Load saved measures if they exist
-            const savedData = localStorage.getItem('biosecurityPlanData');
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                setSelectedCheckboxes('measures', data.measures || []);
-                document.getElementById('implementation').value = data.implementation || '';
-                document.getElementById('monitoring').value = data.monitoring || '';
-                document.getElementById('budget').value = data.budget || '';
-                document.getElementById('timeline').value = data.timeline || '';
-            }
-        }
+function validateAndContinue() {
+    const industry = document.getElementById('industry').value;
+    const otherText = document.getElementById('industry-other-text');
+    
+    if (!industry) {
+        alert('Please select an industry');
+        return false;
+    }
+    
+    if (industry === 'other' && !otherText.value.trim()) {
+        alert('Please specify your industry');
+        otherText.focus();
+        return false;
+    }
+    
+    // If validation passes, proceed to next step
+    return goToStep(1);
+}
+
+// Dynamic content updates based on industry
+function updateActivities() {
+    const industry = document.getElementById('industry').value || 'conservation';
+    let config = industryConfig[industry];
+    
+    if (industry === 'other') {
+        config = {
+            activities: [],
+            risks: [],
+            measures: [],
+            riskFactors: {}
+        };
+    } else {
+        config = config || industryConfig.conservation;
+    }
+    
+    const container = document.getElementById('activities-container');
+    
+    // Standard activities
+    let html = config.activities.map(activity => `
+        <div class="activity-item">
+            <input type="checkbox" id="activity-${activity.toLowerCase().replace(/\s+/g, '-')}" 
+                   name="activities" value="${activity}">
+            <label for="activity-${activity.toLowerCase().replace(/\s+/g, '-')}">${activity}</label>
+        </div>
+    `).join('');
+    
+    // Add custom activities
+    customActivities.forEach((activity, index) => {
+        const id = `activity-custom-${index}`;
+        html += `
+            <div class="activity-item">
+                <input type="checkbox" id="${id}" name="activities" value="${activity}">
+                <label for="${id}">${activity}</label>
+                <button type="button" onclick="removeCustomActivity('${activity}')" class="btn-danger">Remove</button>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+    
+    // Load saved activities if they exist
+    const savedData = localStorage.getItem('biosecurityPlanData');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        setSelectedCheckboxes('activities', data.activities || []);
+        document.getElementById('activity-frequency').value = data.activityFrequency || '';
+        document.getElementById('activity-staff').value = data.activityStaff || '';
+    }
+}
+
+function updateRisks() {
+    const industry = document.getElementById('industry').value || 'conservation';
+    let config = industryConfig[industry];
+    
+    if (industry === 'other') {
+        config = {
+            activities: [],
+            risks: [],
+            measures: [],
+            riskFactors: {}
+        };
+    } else {
+        config = config || industryConfig.conservation;
+    }
+    
+    const container = document.getElementById('risks-container');
+    
+    // Standard risks
+    let html = config.risks.map(risk => `
+        <div class="risk-item">
+            <input type="checkbox" id="risk-${risk.toLowerCase().replace(/\s+/g, '-')}" 
+                   name="risks" value="${risk}">
+            <label for="risk-${risk.toLowerCase().replace(/\s+/g, '-')}">${risk}</label>
+        </div>
+    `).join('');
+    
+    // Add custom risks
+    customRisks.forEach((risk, index) => {
+        const id = `risk-custom-${index}`;
+        html += `
+            <div class="risk-item">
+                <input type="checkbox" id="${id}" name="risks" value="${risk}">
+                <label for="${id}">${risk}</label>
+                <button type="button" onclick="removeCustomRisk('${risk}')" class="btn-danger">Remove</button>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+    
+    // Load saved risks if they exist
+    const savedData = localStorage.getItem('biosecurityPlanData');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        setSelectedCheckboxes('risks', data.risks || []);
+        document.getElementById('known-issues').value = data.knownIssues || '';
+        document.getElementById('visitor-frequency').value = data.visitorFrequency || '';
+    }
+}
+
+function updateMeasures() {
+    const industry = document.getElementById('industry').value || 'conservation';
+    let config = industryConfig[industry];
+    
+    if (industry === 'other') {
+        config = {
+            activities: [],
+            risks: [],
+            measures: [],
+            riskFactors: {}
+        };
+    } else {
+        config = config || industryConfig.conservation;
+    }
+    
+    const container = document.getElementById('measures-container');
+    
+    // Standard measures
+    let html = config.measures.map(measure => `
+        <div class="measure-item">
+            <input type="checkbox" id="measure-${measure.toLowerCase().replace(/\s+/g, '-')}" 
+                   name="measures" value="${measure}">
+            <label for="measure-${measure.toLowerCase().replace(/\s+/g, '-')}">${measure}</label>
+        </div>
+    `).join('');
+    
+    // Add custom measures
+    customMeasures.forEach((measure, index) => {
+        const id = `measure-custom-${index}`;
+        html += `
+            <div class="measure-item">
+                <input type="checkbox" id="${id}" name="measures" value="${measure}">
+                <label for="${id}">${measure}</label>
+                <button type="button" onclick="removeCustomMeasure('${measure}')" class="btn-danger">Remove</button>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+    
+    // Load saved measures if they exist
+    const savedData = localStorage.getItem('biosecurityPlanData');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        setSelectedCheckboxes('measures', data.measures || []);
+        document.getElementById('implementation').value = data.implementation || '';
+        document.getElementById('monitoring').value = data.monitoring || '';
+        document.getElementById('budget').value = data.budget || '';
+        document.getElementById('timeline').value = data.timeline || '';
+    }
+}
+
+
         
         // Risk assessment matrix
         function generateRiskMatrix() {
@@ -3083,245 +2968,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-I understand the issue. The problem is likely related to the `validateAndContinue()` function which isn't included in the replacement code I provided. Let me provide the complete fixed version that includes both the industry-related functions and the validation function that handles the continue button.
-
-Here's the complete replacement code that includes everything you need:
-
-```javascript
-// Industry selection functions
-function selectIndustry(industry) {
-    // Update UI
-    document.querySelectorAll('.industry-card').forEach(card => {
-        card.classList.remove('selected');
-    });
-    document.getElementById(`industry-card-${industry}`).classList.add('selected');
-    
-    // Set the hidden input value
-    document.getElementById('industry').value = industry;
-    
-    // Handle "Other" case
-    const otherText = document.getElementById('industry-other-text');
-    if (industry === 'other') {
-        otherText.style.display = 'block';
-    } else {
-        otherText.style.display = 'none';
-        // Update the other industry name in config
-        industryConfig.other.name = industryConfig[industry].name;
-    }
-    
-    return false;
-}
-
-function validateAndContinue() {
-    const industry = document.getElementById('industry').value;
-    const otherText = document.getElementById('industry-other-text');
-    
-    if (!industry) {
-        alert('Please select an industry');
-        return false;
-    }
-    
-    if (industry === 'other' && !otherText.value.trim()) {
-        alert('Please specify your industry');
-        otherText.focus();
-        return false;
-    }
-    
-    // If validation passes, proceed to next step
-    return goToStep(1);
-}
-
-// Dynamic content updates based on industry
-function updateActivities() {
-    const industry = document.getElementById('industry').value || 'conservation';
-    let config = industryConfig[industry];
-    
-    if (industry === 'other') {
-        config = {
-            activities: [],
-            risks: [],
-            measures: [],
-            riskFactors: {}
-        };
-    } else {
-        config = config || industryConfig.conservation;
-    }
-    
-    const container = document.getElementById('activities-container');
-    
-    // Standard activities
-    let html = config.activities.map(activity => `
-        <div class="activity-item">
-            <input type="checkbox" id="activity-${activity.toLowerCase().replace(/\s+/g, '-')}" 
-                   name="activities" value="${activity}">
-            <label for="activity-${activity.toLowerCase().replace(/\s+/g, '-')}">${activity}</label>
-        </div>
-    `).join('');
-    
-    // Add custom activities
-    customActivities.forEach((activity, index) => {
-        const id = `activity-custom-${index}`;
-        html += `
-            <div class="activity-item">
-                <input type="checkbox" id="${id}" name="activities" value="${activity}">
-                <label for="${id}">${activity}</label>
-                <button type="button" onclick="removeCustomActivity('${activity}')" class="btn-danger">Remove</button>
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
-    
-    // Load saved activities if they exist
-    const savedData = localStorage.getItem('biosecurityPlanData');
-    if (savedData) {
-        const data = JSON.parse(savedData);
-        setSelectedCheckboxes('activities', data.activities || []);
-        document.getElementById('activity-frequency').value = data.activityFrequency || '';
-        document.getElementById('activity-staff').value = data.activityStaff || '';
-    }
-}
-
-function updateRisks() {
-    const industry = document.getElementById('industry').value || 'conservation';
-    let config = industryConfig[industry];
-    
-    if (industry === 'other') {
-        config = {
-            activities: [],
-            risks: [],
-            measures: [],
-            riskFactors: {}
-        };
-    } else {
-        config = config || industryConfig.conservation;
-    }
-    
-    const container = document.getElementById('risks-container');
-    
-    // Standard risks
-    let html = config.risks.map(risk => `
-        <div class="risk-item">
-            <input type="checkbox" id="risk-${risk.toLowerCase().replace(/\s+/g, '-')}" 
-                   name="risks" value="${risk}">
-            <label for="risk-${risk.toLowerCase().replace(/\s+/g, '-')}">${risk}</label>
-        </div>
-    `).join('');
-    
-    // Add custom risks
-    customRisks.forEach((risk, index) => {
-        const id = `risk-custom-${index}`;
-        html += `
-            <div class="risk-item">
-                <input type="checkbox" id="${id}" name="risks" value="${risk}">
-                <label for="${id}">${risk}</label>
-                <button type="button" onclick="removeCustomRisk('${risk}')" class="btn-danger">Remove</button>
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
-    
-    // Load saved risks if they exist
-    const savedData = localStorage.getItem('biosecurityPlanData');
-    if (savedData) {
-        const data = JSON.parse(savedData);
-        setSelectedCheckboxes('risks', data.risks || []);
-        document.getElementById('known-issues').value = data.knownIssues || '';
-        document.getElementById('visitor-frequency').value = data.visitorFrequency || '';
-    }
-}
-
-function updateMeasures() {
-    const industry = document.getElementById('industry').value || 'conservation';
-    let config = industryConfig[industry];
-    
-    if (industry === 'other') {
-        config = {
-            activities: [],
-            risks: [],
-            measures: [],
-            riskFactors: {}
-        };
-    } else {
-        config = config || industryConfig.conservation;
-    }
-    
-    const container = document.getElementById('measures-container');
-    
-    // Standard measures
-    let html = config.measures.map(measure => `
-        <div class="measure-item">
-            <input type="checkbox" id="measure-${measure.toLowerCase().replace(/\s+/g, '-')}" 
-                   name="measures" value="${measure}">
-            <label for="measure-${measure.toLowerCase().replace(/\s+/g, '-')}">${measure}</label>
-        </div>
-    `).join('');
-    
-    // Add custom measures
-    customMeasures.forEach((measure, index) => {
-        const id = `measure-custom-${index}`;
-        html += `
-            <div class="measure-item">
-                <input type="checkbox" id="${id}" name="measures" value="${measure}">
-                <label for="${id}">${measure}</label>
-                <button type="button" onclick="removeCustomMeasure('${measure}')" class="btn-danger">Remove</button>
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
-    
-    // Load saved measures if they exist
-    const savedData = localStorage.getItem('biosecurityPlanData');
-    if (savedData) {
-        const data = JSON.parse(savedData);
-        setSelectedCheckboxes('measures', data.measures || []);
-        document.getElementById('implementation').value = data.implementation || '';
-        document.getElementById('monitoring').value = data.monitoring || '';
-        document.getElementById('budget').value = data.budget || '';
-        document.getElementById('timeline').value = data.timeline || '';
-    }
-}
-```
-
-### Key Changes:
-
-1. **Added Back the `validateAndContinue()` Function**:
-   - This function is called when clicking the "Continue" button
-   - It validates the industry selection before proceeding
-   - Calls `goToStep(1)` when validation passes
-
-2. **Fixed Industry Validation**:
-   - Properly checks for both industry selection and "other" industry text
-   - Shows appropriate alerts if validation fails
-
-3. **Maintained All Other Fixes**:
-   - Keeps all the industry-specific content loading fixes
-   - Preserves the custom field functionality
-   - Maintains localStorage integration
-
-### How to Implement:
-
-1. Replace everything from the original `selectIndustry()` function through to the end of the original `updateMeasures()` function with this complete code block.
-
-2. Make sure the "Continue" button in your HTML still has `onclick="validateAndContinue()"` as its handler:
-   ```html
-   <button type="button" onclick="validateAndContinue()" class="btn-primary">Continue</button>
-   ```
-
-This should now properly:
-- Validate industry selection when clicking Continue
-- Show appropriate error messages if validation fails
-- Advance to the next step when validation passes
-- Still maintain all the industry-specific content functionality we fixed earlier
