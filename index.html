@@ -1110,7 +1110,6 @@
 
   <!-- Hidden file input for data import -->
   <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(this.files)">
-
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1772,8 +1771,22 @@
   function showProjectForm(projectId = null) {
     const formContainer = document.getElementById('project-form-container');
     const formTitle = document.getElementById('project-form-title');
-    const form = document.getElementById('project-form');
     
+    // Initialize map
+    const projectLocationMap = L.map('project-location-map').setView([-33.8688, 151.2093], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(projectLocationMap);
+    
+    projectLocationMap.on('click', function(e) {
+      if (state.projectLocationMarker) {
+        projectLocationMap.removeLayer(state.projectLocationMarker);
+      }
+      state.projectLocationMarker = L.marker(e.latlng).addTo(projectLocationMap);
+      document.getElementById('project-lat').value = e.latlng.lat;
+      document.getElementById('project-lng').value = e.latlng.lng;
+    });
+
     if (projectId) {
       // Edit mode
       const project = state.projects.find(p => p.id === projectId);
@@ -1785,8 +1798,6 @@
       document.getElementById('project-type').value = project.type;
       document.getElementById('project-status').value = project.status;
       document.getElementById('project-location').value = project.location.name;
-      document.getElementById('project-lat').value = project.location.coords[0];
-      document.getElementById('project-lng').value = project.location.coords[1];
       document.getElementById('project-start-date').value = project.startDate;
       document.getElementById('project-end-date').value = project.endDate || '';
       document.getElementById('project-area').value = project.area || '';
@@ -1794,11 +1805,12 @@
       document.getElementById('project-description').value = project.description || '';
       
       // Set map marker
-      const projectLocationMap = L.map('project-location-map');
-      if (state.projectLocationMarker) {
-        projectLocationMap.removeLayer(state.projectLocationMarker);
+      if (project.location.coords) {
+        state.projectLocationMarker = L.marker(project.location.coords).addTo(projectLocationMap);
+        projectLocationMap.setView(project.location.coords, 13);
+        document.getElementById('project-lat').value = project.location.coords[0];
+        document.getElementById('project-lng').value = project.location.coords[1];
       }
-      state.projectLocationMarker = L.marker(project.location.coords).addTo(projectLocationMap);
       
       // Show existing photos
       const previewContainer = document.getElementById('photo-preview');
@@ -1829,9 +1841,18 @@
     } else {
       // New project mode
       formTitle.textContent = 'Create New Project';
-      form.reset();
+      document.getElementById('project-form').reset();
       document.getElementById('photo-preview').innerHTML = '';
       state.tempPhotos = [];
+      state.projectLocationMarker = null;
+      
+      // Set default dates
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('project-start-date').value = today;
+      
+      const nextYear = new Date();
+      nextYear.setFullYear(nextYear.getFullYear() + 1);
+      document.getElementById('project-end-date').value = nextYear.toISOString().split('T')[0];
     }
     
     document.getElementById('projects-list').style.display = 'none';
@@ -1846,7 +1867,16 @@
   function handleProjectSubmit(e) {
     e.preventDefault();
 
-    // 1. Create project object
+    // Show loading state
+    const submitBtn = document.getElementById('project-form-submit');
+    const submitText = document.getElementById('submit-text');
+    const submitSpinner = document.getElementById('submit-spinner');
+    
+    submitText.textContent = 'Saving...';
+    submitSpinner.style.display = 'inline-block';
+    submitBtn.disabled = true;
+
+    // Create project object
     const project = {
       id: document.getElementById('project-id').value || Date.now().toString(),
       name: document.getElementById('project-name').value,
@@ -1854,10 +1884,9 @@
       status: document.getElementById('project-status').value,
       location: {
         name: document.getElementById('project-location').value,
-        coords: [
-          parseFloat(document.getElementById('project-lat').value),
-          parseFloat(document.getElementById('project-lng').value)
-        ]
+        coords: state.projectLocationMarker 
+          ? [state.projectLocationMarker.getLatLng().lat, state.projectLocationMarker.getLatLng().lng]
+          : [-33.8688, 151.2093] // Default coordinates if none selected
       },
       description: document.getElementById('project-description').value,
       startDate: document.getElementById('project-start-date').value,
@@ -1870,7 +1899,7 @@
         : []
     };
 
-    // 2. Add to state
+    // Add to state
     if (document.getElementById('project-id').value) {
       // Update existing project
       const index = state.projects.findIndex(p => p.id === project.id);
@@ -1882,12 +1911,24 @@
       addActivity(project.id, 'project-creation', `Created new project: ${project.name}`);
     }
 
-    // 3. Save and refresh
+    // Save and refresh
     saveData();
     renderProjects();
     updateDashboard();
-    hideProjectForm();
     updateProjectMapMarkers();
+    
+    // Reset form
+    document.getElementById('project-form').reset();
+    document.getElementById('photo-preview').innerHTML = '';
+    state.tempPhotos = [];
+    state.projectLocationMarker = null;
+    
+    // Reset button state
+    submitText.textContent = 'Save Project';
+    submitSpinner.style.display = 'none';
+    submitBtn.disabled = false;
+    
+    hideProjectForm();
     showToast('Project saved successfully!', 'success');
   }
 
@@ -2895,6 +2936,9 @@
     const formTitle = document.getElementById('team-member-form-title');
     const form = document.getElementById('team-member-form');
     
+    // Populate projects dropdown
+    populateProjectDropdown('team-member-projects', true);
+    
     if (memberId) {
       // Edit mode
       const member = state.teamMembers.find(m => m.id === memberId);
@@ -2908,20 +2952,19 @@
       document.getElementById('team-member-phone').value = member.phone || '';
       document.getElementById('team-member-status').value = member.status;
       
-      // Populate projects dropdown and set selected values
-      populateProjectDropdown('team-member-projects', true);
+      // Set selected projects
       if (member.projects) {
         Array.from(document.getElementById('team-member-projects').options).forEach(option => {
-          if (member.projects.includes(option.value)) {
-            option.selected = true;
-          }
+          option.selected = member.projects.includes(option.value);
         });
       }
     } else {
       // New member mode
       formTitle.textContent = 'Add Team Member';
       form.reset();
-      populateProjectDropdown('team-member-projects', true);
+      Array.from(document.getElementById('team-member-projects').options).forEach(option => {
+        option.selected = false;
+      });
     }
     
     formContainer.style.display = 'block';
@@ -2934,7 +2977,7 @@
   function handleTeamMemberSubmit(e) {
     e.preventDefault();
 
-    // 1. Create team member object
+    // Create team member object
     const member = {
       id: document.getElementById('team-member-id').value || Date.now().toString(),
       name: document.getElementById('team-member-name').value,
@@ -2942,11 +2985,10 @@
       email: document.getElementById('team-member-email').value,
       phone: document.getElementById('team-member-phone').value || null,
       status: document.getElementById('team-member-status').value,
-      projects: Array.from(document.getElementById('team-member-projects').selectedOptions)
-        .map(option => option.value)
+      projects: Array.from(document.getElementById('team-member-projects').selectedOptions, option => option.value)
     };
 
-    // 2. Add to state
+    // Add to state
     if (document.getElementById('team-member-id').value) {
       // Update existing member
       const index = state.teamMembers.findIndex(m => m.id === member.id);
@@ -2958,10 +3000,15 @@
       addActivity(null, 'team-addition', `Added team member: ${member.name}`);
     }
 
-    // 3. Save and refresh
+    // Save and refresh
     saveData();
     renderTeamMembers();
     updateDashboard();
+    
+    // Reset form
+    document.getElementById('team-member-form').reset();
+    document.getElementById('team-member-projects').selectedIndex = -1;
+    
     hideTeamMemberForm();
     showToast('Team member saved successfully!', 'success');
   }
