@@ -255,6 +255,17 @@
             z-index: 100;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        .frequency-display {
+            position: fixed;
+            top: 10px;
+            left: 15px;
+            font-size: 14px;
+            opacity: 0.7;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
     </style>
 </head>
 <body>
@@ -265,6 +276,7 @@
 
     <div id="statusBar"></div>
     <div id="timer"></div>
+    <div class="frequency-display" id="frequencyDisplay">Left: 0Hz | Right: 0Hz</div>
     <div id="canvas"></div>
     
     <div id="controls" class="hidden">
@@ -345,6 +357,8 @@
                 this.oscillators = { left: null, right: null };
                 this.gainNodes = { left: null, right: null };
                 this.carrierFrequency = 200; // Base frequency for both ears
+                this.leftFrequency = 195; // Calculated left frequency
+                this.rightFrequency = 205; // Calculated right frequency
                 
                 this.audioElements = {
                     forest: document.getElementById('forestSound'),
@@ -420,12 +434,16 @@
                 this.oscillators.right.type = 'sine';
                 
                 // Calculate frequencies for binaural beats
-                const leftFreq = this.carrierFrequency - (this.binauralFrequency / 2);
-                const rightFreq = this.carrierFrequency + (this.binauralFrequency / 2);
+                this.leftFrequency = this.carrierFrequency - (this.binauralFrequency / 2);
+                this.rightFrequency = this.carrierFrequency + (this.binauralFrequency / 2);
                 
                 // Set the frequencies
-                this.oscillators.left.frequency.setValueAtTime(leftFreq, this.audioContext.currentTime);
-                this.oscillators.right.frequency.setValueAtTime(rightFreq, this.audioContext.currentTime);
+                this.oscillators.left.frequency.setValueAtTime(this.leftFrequency, this.audioContext.currentTime);
+                this.oscillators.right.frequency.setValueAtTime(this.rightFrequency, this.audioContext.currentTime);
+                
+                // Set initial gain to 0 for smooth fade in
+                this.gainNodes.left.gain.value = 0;
+                this.gainNodes.right.gain.value = 0;
                 
                 // Connect left oscillator to left channel only
                 this.oscillators.left.connect(this.gainNodes.left);
@@ -439,7 +457,15 @@
                 this.oscillators.left.start();
                 this.oscillators.right.start();
                 
-                console.log(`Binaural beat: Left=${leftFreq.toFixed(1)}Hz, Right=${rightFreq.toFixed(1)}Hz (${this.binauralFrequency}Hz beat)`);
+                // Update frequency display
+                this.updateFrequencyDisplay();
+                
+                console.log(`Binaural beat: Left=${this.leftFrequency.toFixed(1)}Hz, Right=${this.rightFrequency.toFixed(1)}Hz (${this.binauralFrequency}Hz beat)`);
+            }
+            
+            updateFrequencyDisplay() {
+                document.getElementById('frequencyDisplay').textContent = 
+                    `Left: ${this.leftFrequency.toFixed(1)}Hz | Right: ${this.rightFrequency.toFixed(1)}Hz`;
             }
             
             stopOscillators() {
@@ -495,6 +521,14 @@
                 
                 if (this.isPlaying) {
                     this.createOscillators();
+                    // Fade in the new frequencies
+                    const now = this.audioContext.currentTime;
+                    this.gainNodes.left.gain.cancelScheduledValues(now);
+                    this.gainNodes.right.gain.cancelScheduledValues(now);
+                    this.gainNodes.left.gain.setValueAtTime(0, now);
+                    this.gainNodes.right.gain.setValueAtTime(0, now);
+                    this.gainNodes.left.gain.linearRampToValueAtTime(this.volume, now + this.fadeTime);
+                    this.gainNodes.right.gain.linearRampToValueAtTime(this.volume, now + this.fadeTime);
                 }
                 this.updateStatusBar(this.isPlaying);
             }
@@ -563,15 +597,31 @@
                 
                 this.volume = volume;
                 const now = this.audioContext.currentTime;
+                
+                // Update binaural oscillators volume
+                if (this.gainNodes.left && this.gainNodes.right) {
+                    this.gainNodes.left.gain.cancelScheduledValues(now);
+                    this.gainNodes.right.gain.cancelScheduledValues(now);
+                    
+                    if (this.isPlaying) {
+                        this.gainNodes.left.gain.setTargetAtTime(volume, now, 0.1);
+                        this.gainNodes.right.gain.setTargetAtTime(volume, now, 0.1);
+                    } else {
+                        this.gainNodes.left.gain.setValueAtTime(0, now);
+                        this.gainNodes.right.gain.setValueAtTime(0, now);
+                    }
+                }
+                
+                // Update master gain for any other sounds
                 this.masterGain.gain.cancelScheduledValues(now);
                 
-                // Use exponential ramp for smoother volume changes
                 if (this.isPlaying) {
                     this.masterGain.gain.setTargetAtTime(volume, now, 0.1);
                 } else {
                     this.masterGain.gain.setValueAtTime(0, now);
                 }
                 
+                // Update ambience volume
                 if (this.currentAmbience && this.audioElements[this.currentAmbience]) {
                     this.audioElements[this.currentAmbience].volume = volume;
                     this.ambienceGain.gain.cancelScheduledValues(now);
@@ -594,8 +644,16 @@
                     
                     if (this.isPlaying) {
                         // Smooth fade out
+                        if (this.gainNodes.left && this.gainNodes.right) {
+                            this.gainNodes.left.gain.cancelScheduledValues(now);
+                            this.gainNodes.right.gain.cancelScheduledValues(now);
+                            this.gainNodes.left.gain.setTargetAtTime(0, now, this.fadeTime);
+                            this.gainNodes.right.gain.setTargetAtTime(0, now, this.fadeTime);
+                        }
+                        
                         this.masterGain.gain.cancelScheduledValues(now);
                         this.masterGain.gain.setTargetAtTime(0, now, this.fadeTime);
+                        
                         this.isPlaying = false;
                         this.updateTimer(false);
                     } else {
@@ -605,9 +663,19 @@
                         }
                         
                         // Smooth fade in
+                        if (this.gainNodes.left && this.gainNodes.right) {
+                            this.gainNodes.left.gain.cancelScheduledValues(now);
+                            this.gainNodes.right.gain.cancelScheduledValues(now);
+                            this.gainNodes.left.gain.setValueAtTime(0, now);
+                            this.gainNodes.right.gain.setValueAtTime(0, now);
+                            this.gainNodes.left.gain.linearRampToValueAtTime(this.volume, now + this.fadeTime);
+                            this.gainNodes.right.gain.linearRampToValueAtTime(this.volume, now + this.fadeTime);
+                        }
+                        
                         this.masterGain.gain.cancelScheduledValues(now);
                         this.masterGain.gain.setValueAtTime(0, now);
                         this.masterGain.gain.setTargetAtTime(this.volume, now, this.fadeTime);
+                        
                         this.isPlaying = true;
                         this.sessionStart = this.sessionStart || this.audioContext.currentTime;
                         this.updateTimer(true);
