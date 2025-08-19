@@ -335,7 +335,7 @@
             constructor() {
                 this.audioContext = null;
                 this.currentMode = "alpha";
-                this.currentFrequency = 10; // Binaural beat frequency (difference between ears)
+                this.binauralFrequency = 10; // The beat frequency difference between ears
                 this.isPlaying = false;
                 this.sessionStart = 0;
                 this.currentAmbience = null;
@@ -344,7 +344,7 @@
                 this.fadeTime = 0.5;
                 this.oscillators = { left: null, right: null };
                 this.gainNodes = { left: null, right: null };
-                this.baseFrequency = 200; // Base carrier frequency for both ears
+                this.carrierFrequency = 200; // Base frequency for both ears
                 
                 this.audioElements = {
                     forest: document.getElementById('forestSound'),
@@ -374,10 +374,6 @@
                     this.masterGain = this.audioContext.createGain();
                     this.masterGain.gain.value = 0;
                     
-                    // Ambience system
-                    this.ambienceGain = this.audioContext.createGain();
-                    this.ambienceGain.gain.value = 0;
-                    
                     // Limiter to prevent clipping
                     this.limiter = this.audioContext.createDynamicsCompressor();
                     this.limiter.threshold.value = -1;
@@ -390,6 +386,10 @@
                     this.merger.connect(this.masterGain);
                     this.masterGain.connect(this.limiter);
                     this.limiter.connect(this.audioContext.destination);
+                    
+                    // Ambience system
+                    this.ambienceGain = this.audioContext.createGain();
+                    this.ambienceGain.gain.value = 0;
                     this.ambienceGain.connect(this.audioContext.destination);
                     
                     document.getElementById('controls').classList.remove('hidden');
@@ -407,7 +407,7 @@
                 
                 this.stopOscillators();
                 
-                // Create oscillators with different frequencies for binaural effect
+                // Create pure sine wave oscillators
                 this.oscillators.left = this.audioContext.createOscillator();
                 this.oscillators.right = this.audioContext.createOscillator();
                 
@@ -415,32 +415,31 @@
                 this.gainNodes.left = this.audioContext.createGain();
                 this.gainNodes.right = this.audioContext.createGain();
                 
-                // Configure oscillators
+                // Configure oscillators as pure sine waves
                 this.oscillators.left.type = 'sine';
                 this.oscillators.right.type = 'sine';
                 
-                // Set frequencies - the key to binaural beats
-                // Left ear: baseFrequency - (binauralFrequency/2)
-                // Right ear: baseFrequency + (binauralFrequency/2)
-                const leftFreq = this.baseFrequency - (this.currentFrequency / 2);
-                const rightFreq = this.baseFrequency + (this.currentFrequency / 2);
+                // Calculate frequencies for binaural beats
+                const leftFreq = this.carrierFrequency - (this.binauralFrequency / 2);
+                const rightFreq = this.carrierFrequency + (this.binauralFrequency / 2);
                 
-                this.oscillators.left.frequency.value = leftFreq;
-                this.oscillators.right.frequency.value = rightFreq;
+                // Set the frequencies
+                this.oscillators.left.frequency.setValueAtTime(leftFreq, this.audioContext.currentTime);
+                this.oscillators.right.frequency.setValueAtTime(rightFreq, this.audioContext.currentTime);
                 
-                // Small random detune to prevent phase cancellation
-                this.oscillators.left.detune.value = Math.random() * 2 - 1;
-                this.oscillators.right.detune.value = Math.random() * 2 - 1;
-                
-                // Connect to merger through gain nodes
+                // Connect left oscillator to left channel only
                 this.oscillators.left.connect(this.gainNodes.left);
-                this.oscillators.right.connect(this.gainNodes.right);
                 this.gainNodes.left.connect(this.merger, 0, 0);
+                
+                // Connect right oscillator to right channel only
+                this.oscillators.right.connect(this.gainNodes.right);
                 this.gainNodes.right.connect(this.merger, 0, 1);
                 
                 // Start oscillators
                 this.oscillators.left.start();
                 this.oscillators.right.start();
+                
+                console.log(`Binaural beat: Left=${leftFreq.toFixed(1)}Hz, Right=${rightFreq.toFixed(1)}Hz (${this.binauralFrequency}Hz beat)`);
             }
             
             stopOscillators() {
@@ -492,7 +491,7 @@
                 if (!this.audioInitialized) return;
                 
                 this.currentMode = mode;
-                this.currentFrequency = parseInt(document.querySelector(`.mode-btn[data-mode="${mode}"]`).dataset.freq);
+                this.binauralFrequency = parseInt(document.querySelector(`.mode-btn[data-mode="${mode}"]`).dataset.freq);
                 
                 if (this.isPlaying) {
                     this.createOscillators();
@@ -505,6 +504,7 @@
                 
                 const now = this.audioContext.currentTime;
                 
+                // Stop current ambience with fade out
                 if (this.ambienceSource) {
                     this.ambienceGain.gain.cancelScheduledValues(now);
                     this.ambienceGain.gain.setTargetAtTime(0, now, 0.5);
@@ -517,25 +517,35 @@
                     this.audioElements[this.currentAmbience]?.pause();
                 }
                 
+                // Start new ambience if selected (and not 'off')
                 if (type && type !== 'off' && this.audioElements[type]) {
                     this.currentAmbience = type;
                     const element = this.audioElements[type];
                     
-                    if (!element.src) return;
+                    if (!element.src) {
+                        console.log(`No sound file loaded for ${type}`);
+                        return;
+                    }
                     
                     element.loop = true;
                     
                     try {
+                        // Create a media element source
                         this.ambienceSource = this.audioContext.createMediaElementSource(element);
                         this.ambienceSource.connect(this.ambienceGain);
                         
+                        // Smooth fade in
                         this.ambienceGain.gain.cancelScheduledValues(now);
                         this.ambienceGain.gain.setValueAtTime(0, now);
                         this.ambienceGain.gain.setTargetAtTime(this.volume * 0.2, now, 1.5);
                         
+                        // Play the audio element
                         const playPromise = element.play();
+                        
                         if (playPromise !== undefined) {
-                            playPromise.catch(console.error);
+                            playPromise.catch(error => {
+                                console.error("Ambience playback failed:", error);
+                            });
                         }
                     } catch (error) {
                         console.error("Error setting ambience:", error);
@@ -555,6 +565,7 @@
                 const now = this.audioContext.currentTime;
                 this.masterGain.gain.cancelScheduledValues(now);
                 
+                // Use exponential ramp for smoother volume changes
                 if (this.isPlaying) {
                     this.masterGain.gain.setTargetAtTime(volume, now, 0.1);
                 } else {
@@ -582,15 +593,18 @@
                     const now = this.audioContext.currentTime;
                     
                     if (this.isPlaying) {
+                        // Smooth fade out
                         this.masterGain.gain.cancelScheduledValues(now);
                         this.masterGain.gain.setTargetAtTime(0, now, this.fadeTime);
                         this.isPlaying = false;
                         this.updateTimer(false);
                     } else {
+                        // Ensure we have oscillators created
                         if (!this.oscillators.left || !this.oscillators.right) {
                             this.createOscillators();
                         }
                         
+                        // Smooth fade in
                         this.masterGain.gain.cancelScheduledValues(now);
                         this.masterGain.gain.setValueAtTime(0, now);
                         this.masterGain.gain.setTargetAtTime(this.volume, now, this.fadeTime);
@@ -630,7 +644,7 @@
             updateStatusBar(active) {
                 const statusBar = document.getElementById('statusBar');
                 if (active) {
-                    const scale = 0.8 + 0.2 * Math.sin(this.audioContext.currentTime * (this.currentFrequency / 2));
+                    const scale = 0.8 + 0.2 * Math.sin(this.audioContext.currentTime * (this.binauralFrequency / 2));
                     
                     let gradient;
                     switch(this.currentMode) {
@@ -791,11 +805,6 @@
                     case 'delta': this.breathSpeed = 0.005; break;
                     default: this.breathSpeed = 0.01;
                 }
-            }
-            
-            setIntensity(intensity) {
-                this.intensity = intensity;
-                this.breathSpeed += (intensity * 0.005);
             }
             
             updateColors() {
