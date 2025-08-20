@@ -1055,7 +1055,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="speciesScientificName" class="form-label">Scientific Name *</label>
-                                <input type="text" class="form-control" id="speciesScientificName" required>
+                                <input type="text" class="formControl" id="speciesScientificName" required>
                                 <div class="invalid-feedback">Please provide the scientific name.</div>
                             </div>
                             <div class="col-md-6">
@@ -1191,7 +1191,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="monitoringNotes" class="form-label">Notes</label>
+                            <label for="monitoringNotes" class="formLabel">Notes</label>
                             <textarea class="form-control" id="monitoringNotes" rows="2"></textarea>
                         </div>
                     </form>
@@ -1394,14 +1394,14 @@
                 { id: 5, requirement: "Maintained required records", compliant: "", evidence: "", notes: "" }
             ],
             settings: JSON.parse(localStorage.getItem('settings')) || {
-                siteName: "",
-                siteLocation: "",
-                siteArea: "",
-                siteDescription: "",
+                siteName: "Blue Mountains Conservation Area",
+                siteLocation: "Katoomba, NSW",
+                siteArea: "12.5",
+                siteDescription: "A protected area with diverse native flora and fauna, including several endangered species.",
                 userProfile: {
-                    name: "",
-                    email: "",
-                    role: ""
+                    name: "Eco Manager",
+                    email: "manager@ecoconserve.org",
+                    role: "administrator"
                 }
             }
         };
@@ -1468,6 +1468,9 @@
             
             // Set up event listeners
             setupEventListeners();
+            
+            // Add sample data if empty
+            addSampleData();
         });
 
         // Initialize charts
@@ -1480,9 +1483,15 @@
                     labels: ['Biodiversity', 'Native Cover', 'Weed Cover', 'Erosion', 'Fauna', 'Water Quality'],
                     datasets: [{
                         label: 'Current',
-                        data: [0, 0, 0, 0, 0, 0],
+                        data: [75, 80, 35, 65, 70, 85],
                         backgroundColor: 'rgba(40, 167, 69, 0.2)',
                         borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Previous',
+                        data: [65, 70, 45, 60, 65, 80],
+                        backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
                         borderWidth: 1
                     }]
                 },
@@ -1504,10 +1513,10 @@
             window.faunaChart = new Chart(faunaCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                     datasets: [{
                         label: 'Species Count',
-                        data: [0, 0, 0, 0, 0, 0],
+                        data: [12, 15, 18, 22, 25, 28, 32, 30, 27, 23, 18, 14],
                         borderColor: 'rgba(220, 53, 69, 1)',
                         backgroundColor: 'rgba(220, 53, 69, 0.1)',
                         tension: 0.1,
@@ -1541,11 +1550,11 @@
                     labels: ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4'],
                     datasets: [{
                         label: 'Native Cover (%)',
-                        data: [0, 0, 0, 0],
+                        data: [85, 75, 90, 65],
                         backgroundColor: 'rgba(40, 167, 69, 0.7)',
                     }, {
                         label: 'Weed Cover (%)',
-                        data: [0, 0, 0, 0],
+                        data: [15, 25, 10, 35],
                         backgroundColor: 'rgba(220, 53, 69, 0.7)',
                     }]
                 },
@@ -1585,6 +1594,9 @@
             window.vegetationLayer = L.layerGroup();
             window.weedsLayer = L.layerGroup();
 
+            // Add sample data to map
+            addMapSampleData();
+
             // Add layer control
             const baseLayers = {
                 "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1602,6 +1614,10 @@
             };
 
             L.control.layers(baseLayers, overlays, {collapsed: false}).addTo(window.map);
+
+            // Add default layers
+            window.map.addLayer(window.zonesLayer);
+            window.map.addLayer(window.vegetationLayer);
 
             // Button controls for map layers
             document.getElementById('zoneToggle').addEventListener('click', function() {
@@ -1633,6 +1649,53 @@
                     this.classList.add('active');
                 }
             });
+        }
+
+        // Add sample data to map
+        function addMapSampleData() {
+            // Sample zones
+            const zone1 = L.polygon([
+                [-33.41, 150.29],
+                [-33.41, 150.31],
+                [-33.39, 150.31],
+                [-33.39, 150.29]
+            ], {color: 'blue', fillOpacity: 0.1}).bindPopup('Zone 1: Riparian Area').addTo(window.zonesLayer);
+            
+            const zone2 = L.polygon([
+                [-33.40, 150.30],
+                [-33.40, 150.32],
+                [-33.38, 150.32],
+                [-33.38, 150.30]
+            ], {color: 'green', fillOpacity: 0.1}).bindPopup('Zone 2: Woodland').addTo(window.zonesLayer);
+            
+            const zone3 = L.polygon([
+                [-33.42, 150.30],
+                [-33.42, 150.32],
+                [-33.40, 150.32],
+                [-33.40, 150.30]
+            ], {color: 'orange', fillOpacity: 0.1}).bindPopup('Zone 3: Grassland').addTo(window.zonesLayer);
+            
+            // Sample vegetation areas
+            const vegetation1 = L.circle([-33.405, 150.305], {radius: 200, color: 'green', fillOpacity: 0.3})
+                .bindPopup('Dense Native Vegetation: Eucalyptus forest with diverse understory')
+                .addTo(window.vegetationLayer);
+            
+            const vegetation2 = L.circle([-33.395, 150.315], {radius: 150, color: 'green', fillOpacity: 0.3})
+                .bindPopup('Mixed Woodland: Acacia and Casuarina species')
+                .addTo(window.vegetationLayer);
+            
+            // Sample weed infestations
+            const weeds1 = L.circle([-33.41, 150.31], {radius: 80, color: 'red', fillOpacity: 0.5})
+                .bindPopup('Blackberry Infestation: High priority for control')
+                .addTo(window.weedsLayer);
+            
+            const weeds2 = L.circle([-33.39, 150.29], {radius: 60, color: 'red', fillOpacity: 0.5})
+                .bindPopup('Scotch Broom: Medium priority for control')
+                .addTo(window.weedsLayer);
+            
+            const weeds3 = L.circle([-33.40, 150.32], {radius: 100, color: 'red', fillOpacity: 0.5})
+                .bindPopup('Lantana: High priority for control')
+                .addTo(window.weedsLayer);
         }
 
         // Initialize calendar
@@ -1704,7 +1767,7 @@
             const upcomingTasks = db.activities
                 .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
                 .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
-                .slice(0, 3);
+                .slice(0, 5);
             
             const upcomingTasksList = document.getElementById('upcomingTasksList');
             upcomingTasksList.innerHTML = '';
@@ -1732,7 +1795,7 @@
             // Recent observations
             const recentObservations = db.monitoring
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 4);
+                .slice(0, 5);
             
             const recentObservationsList = document.getElementById('recentObservationsList');
             recentObservationsList.innerHTML = '';
@@ -1744,15 +1807,36 @@
                     const obsEl = document.createElement('li');
                     obsEl.className = 'list-group-item d-flex justify-content-between align-items-center';
                     obsEl.innerHTML = `
-                        ${obs.type === 'fauna-survey' ? 'Fauna sighting' : 'Vegetation survey'}
+                        ${obs.type === 'fauna-survey' ? 'Fauna sighting' : 'Vegetation survey'} at ${obs.location}
                         <span class="badge ${getStatusBadgeClass(obs.type === 'fauna-survey' ? 'info' : 'success')} rounded-pill">
-                            ${obs.type === 'fauna-survey' ? 'Fauna' : 'Flora'}
+                            ${formatDate(obs.date)}
                         </span>
                     `;
                     obsEl.addEventListener('click', () => showMonitoringDetails(obs));
                     recentObservationsList.appendChild(obsEl);
                 });
             }
+            
+            // Health indicators
+            const healthIndicators = document.getElementById('healthIndicators');
+            healthIndicators.innerHTML = `
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Biodiversity Index</span>
+                    <span>75% <span class="risk-indicator risk-medium"></span></span>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Native Vegetation</span>
+                    <span>80% <span class="risk-indicator risk-low"></span></span>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Weed Presence</span>
+                    <span>35% <span class="risk-indicator risk-medium"></span></span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Erosion Control</span>
+                    <span>65% <span class="risk-indicator risk-medium"></span></span>
+                </div>
+            `;
             
             // Compliance checklist
             const complianceChecklist = document.getElementById('complianceChecklist');
@@ -1775,6 +1859,11 @@
                         ${item.requirement}
                     </label>
                 `;
+                checkEl.querySelector('input').addEventListener('change', function() {
+                    item.compliant = this.checked ? 'Yes' : '';
+                    saveData();
+                    loadDashboard();
+                });
                 complianceChecklist.appendChild(checkEl);
             });
         }
@@ -1828,7 +1917,7 @@
                     cardCol.className = 'col-md-4 mb-4';
                     cardCol.innerHTML = `
                         <div class="card h-100 species-card">
-                            <img src="${species.image || 'https://via.placeholder.com/300x200?text=No+image'}" class="card-img-top" alt="${species.scientificName}">
+                            <img src="${species.image || 'https://via.placeholder.com/300x200?text=No+image'}" class="card-img-top" alt="${species.scientificName}" style="height: 200px; object-fit: cover;">
                             <div class="card-body">
                                 <h5 class="card-title">${species.scientificName}</h5>
                                 <h6 class="card-subtitle mb-2 text-muted">${species.commonName || 'No common name'}</h6>
@@ -1949,1007 +2038,1053 @@
             }
             
             // Overdue activities
-// Overdue activities
-const overdueTable = document.getElementById('overdueActivitiesTable').getElementsByTagName('tbody')[0];
-overdueTable.innerHTML = '';
-
-const today = new Date();
-today.setHours(0, 0, 0, 0);
-
-const overdueActivities = db.activities
-    .filter(a => (a.status === 'planned' || a.status === 'in-progress') && new Date(a.startDate) < today)
-    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-
-if (overdueActivities.length === 0) {
-    overdueTable.innerHTML = '<tr><td colspan="7" class="text-center">No overdue activities</td></tr>';
-} else {
-    overdueActivities.forEach(activity => {
-        const row = overdueTable.insertRow();
-        row.innerHTML = `
-            <td>${activity.title}</td>
-            <td>${formatActivityType(activity.type)}</td>
-            <td>${formatDate(activity.startDate)}</td>
-            <td>${activity.location}</td>
-            <td>${activity.assignedTo}</td>
-            <td><span class="badge ${getStatusBadgeClass(activity.status)}">${capitalizeFirstLetter(activity.status)}</span></td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary view-activity" data-id="${activity.id}">Details</button>
-                <button class="btn btn-sm btn-outline-warning reschedule-activity" data-id="${activity.id}">Reschedule</button>
-            </td>
-        `;
-    });
-}
-
-// Add event listeners to overdue activity buttons
-document.querySelectorAll('.view-activity').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const activityId = this.getAttribute('data-id');
-        const activity = db.activities.find(a => a.id == activityId);
-        if (activity) {
-            showActivityDetails(activity);
+            const overdueTable = document.getElementById('overdueActivitiesTable').getElementsByTagName('tbody')[0];
+            overdueTable.innerHTML = '';
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const overdueActivities = db.activities
+                .filter(a => (a.status === 'planned' || a.status === 'in-progress') && new Date(a.startDate) < today)
+                .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+            
+            if (overdueActivities.length === 0) {
+                overdueTable.innerHTML = '<tr><td colspan="7" class="text-center">No overdue activities</td></tr>';
+            } else {
+                overdueActivities.forEach(activity => {
+                    const row = overdueTable.insertRow();
+                    row.innerHTML = `
+                        <td>${activity.title}</td>
+                        <td>${formatActivityType(activity.type)}</td>
+                        <td>${formatDate(activity.startDate)}</td>
+                        <td>${activity.location}</td>
+                        <td>${activity.assignedTo}</td>
+                        <td><span class="badge ${getStatusBadgeClass(activity.status)}">${capitalizeFirstLetter(activity.status)}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary view-activity" data-id="${activity.id}">Details</button>
+                            <button class="btn btn-sm btn-outline-warning reschedule-activity" data-id="${activity.id}">Reschedule</button>
+                        </td>
+                    `;
+                });
+            }
+            
+            // Add event listeners to activity buttons
+            document.querySelectorAll('.view-activity').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const activityId = this.getAttribute('data-id');
+                    const activity = db.activities.find(a => a.id == activityId);
+                    if (activity) {
+                        showActivityDetails(activity);
+                    }
+                });
+            });
         }
-    });
-});
 
-document.querySelectorAll('.reschedule-activity').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const activityId = this.getAttribute('data-id');
-        const activity = db.activities.find(a => a.id == activityId);
-        if (activity) {
-            rescheduleActivity(activity);
+        // Load monitoring
+        function loadMonitoring() {
+            const monitoringTable = document.getElementById('monitoringTable').getElementsByTagName('tbody')[0];
+            monitoringTable.innerHTML = '';
+            
+            db.monitoring.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(monitoring => {
+                const row = monitoringTable.insertRow();
+                row.innerHTML = `
+                    <td>${formatDate(monitoring.date)}</td>
+                    <td>${formatActivityType(monitoring.type)}</td>
+                    <td>${monitoring.location}</td>
+                    <td>${monitoring.observer}</td>
+                    <td>${monitoring.findings.substring(0, 50)}${monitoring.findings.length > 50 ? '...' : ''}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary view-monitoring" data-id="${monitoring.id}">View</button>
+                    </td>
+                `;
+            });
+            
+            // Add event listeners to view buttons
+            document.querySelectorAll('.view-monitoring').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const monitoringId = this.getAttribute('data-id');
+                    const monitoring = db.monitoring.find(m => m.id == monitoringId);
+                    if (monitoring) {
+                        showMonitoringDetails(monitoring);
+                    }
+                });
+            });
         }
-    });
-});
 
+        // Load reports
+        function loadReports() {
+            const reportsTable = document.getElementById('reportsTable').getElementsByTagName('tbody')[0];
+            reportsTable.innerHTML = '';
+            
+            // In a real app, you would have actual reports data
+            if (db.reports.length === 0) {
+                reportsTable.innerHTML = '<tr><td colspan="5" class="text-center">No reports generated yet</td></tr>';
+            } else {
+                db.reports.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(report => {
+                    const row = reportsTable.insertRow();
+                    row.innerHTML = `
+                        <td>${formatDate(report.date)}</td>
+                        <td>${report.type}</td>
+                        <td>${report.generatedBy}</td>
+                        <td>${report.period || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary view-report" data-id="${report.id}">View</button>
+                            <button class="btn btn-sm btn-outline-secondary download-report" data-id="${report.id}">Download</button>
+                        </td>
+                    `;
+                });
+            }
+        }
 
+        // Load compliance checklist
+        function loadComplianceChecklist() {
+            const checklistTable = document.getElementById('complianceChecklistTable').getElementsByTagName('tbody')[0];
+            checklistTable.innerHTML = '';
+            
+            db.complianceChecklist.forEach(item => {
+                const row = checklistTable.insertRow();
+                row.innerHTML = `
+                    <td>${item.requirement}</td>
+                    <td>
+                        <select class="form-select form-select-sm compliance-status" data-id="${item.id}">
+                            <option value="" ${item.compliant === '' ? 'selected' : ''}>Select</option>
+                            <option value="Yes" ${item.compliant === 'Yes' ? 'selected' : ''}>Yes</option>
+                            <option value="No" ${item.compliant === 'No' ? 'selected' : ''}>No</option>
+                            <option value="N/A" ${item.compliant === 'N/A' ? 'selected' : ''}>N/A</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm compliance-evidence" data-id="${item.id}" value="${item.evidence || ''}" placeholder="Evidence">
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary add-notes" data-id="${item.id}">Add Notes</button>
+                    </td>
+                `;
+            });
+            
+            // Add event listeners
+            document.querySelectorAll('.compliance-status').forEach(select => {
+                select.addEventListener('change', function() {
+                    const id = this.getAttribute('data-id');
+                    const item = db.complianceChecklist.find(i => i.id == id);
+                    if (item) {
+                        item.compliant = this.value;
+                        saveData();
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.compliance-evidence').forEach(input => {
+                input.addEventListener('change', function() {
+                    const id = this.getAttribute('data-id');
+                    const item = db.complianceChecklist.find(i => i.id == id);
+                    if (item) {
+                        item.evidence = this.value;
+                        saveData();
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.add-notes').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const item = db.complianceChecklist.find(i => i.id == id);
+                    if (item) {
+                        const notes = prompt('Enter notes:', item.notes || '');
+                        if (notes !== null) {
+                            item.notes = notes;
+                            saveData();
+                        }
+                    }
+                });
+            });
+        }
 
+        // Load settings
+        function loadSettings() {
+            // Load user profile
+            if (db.settings.userProfile) {
+                document.getElementById('userName').value = db.settings.userProfile.name || '';
+                document.getElementById('userEmail').value = db.settings.userProfile.email || '';
+                document.getElementById('userRole').value = db.settings.userProfile.role || '';
+            }
+            
+            // Load site settings
+            document.getElementById('siteName').value = db.settings.siteName || '';
+            document.getElementById('siteLocation').value = db.settings.siteLocation || '';
+            document.getElementById('siteArea').value = db.settings.siteArea || '';
+            document.getElementById('siteDescription').value = db.settings.siteDescription || '';
+        }
 
+        // Utility functions
+        function formatDate(dateString) {
+            if (!dateString) return 'Not specified';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-AU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
 
+        function formatActivityType(type) {
+            const typeMap = {
+                'weed-control': 'Weed Control',
+                'revegetation': 'Revegetation',
+                'erosion-control': 'Erosion Control',
+                'fauna-survey': 'Fauna Survey',
+                'vegetation-survey': 'Vegetation Survey',
+                'water-quality': 'Water Quality',
+                'other': 'Other'
+            };
+            return typeMap[type] || type;
+        }
 
+        function getStatusBadgeClass(status) {
+            const statusMap = {
+                'planned': 'bg-secondary',
+                'in-progress': 'bg-primary',
+                'completed': 'bg-success',
+                'cancelled': 'bg-danger'
+            };
+            return statusMap[status] || 'bg-secondary';
+        }
 
+        function getHealthBadgeClass(health) {
+            const healthMap = {
+                'excellent': 'bg-success',
+                'good': 'bg-info',
+                'fair': 'bg-warning',
+                'poor': 'bg-danger',
+                'degraded': 'bg-dark'
+            };
+            return healthMap[health] || 'bg-secondary';
+        }
 
+        function getSpeciesStatusBadgeClass(status) {
+            const statusMap = {
+                'native': 'bg-success',
+                'introduced': 'bg-secondary',
+                'weed': 'bg-danger',
+                'pest': 'bg-warning',
+                'endangered': 'bg-danger',
+                'vulnerable': 'bg-warning',
+                'threatened': 'bg-warning'
+            };
+            return statusMap[status] || 'bg-secondary';
+        }
 
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
 
-            // ... (your existing code continues from above)
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
 
-// Utility functions
-function formatDate(dateString) {
-    if (!dateString) return 'Not specified';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-AU', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    });
-}
+        // Setup event listeners
+        function setupEventListeners() {
+            // Form submissions
+            document.getElementById('assessmentForm').addEventListener('submit', handleAssessmentSubmit);
+            document.getElementById('activityForm').addEventListener('submit', handleActivitySubmit);
+            document.getElementById('speciesForm').addEventListener('submit', handleSpeciesSubmit);
+            document.getElementById('monitoringForm').addEventListener('submit', handleMonitoringSubmit);
+            document.getElementById('userProfileForm').addEventListener('submit', handleUserProfileSubmit);
+            document.getElementById('changePasswordForm').addEventListener('submit', handleChangePasswordSubmit);
+            document.getElementById('siteSettingsForm').addEventListener('submit', handleSiteSettingsSubmit);
+            
+            // Modal save buttons
+            document.getElementById('saveActivity').addEventListener('click', () => {
+                document.getElementById('activityForm').dispatchEvent(new Event('submit'));
+            });
+            
+            document.getElementById('saveSpecies').addEventListener('click', () => {
+                document.getElementById('speciesForm').dispatchEvent(new Event('submit'));
+            });
+            
+            document.getElementById('saveMonitoring').addEventListener('click', () => {
+                document.getElementById('monitoringForm').dispatchEvent(new Event('submit'));
+            });
+            
+            // Image preview handlers
+            document.getElementById('speciesImage').addEventListener('change', function(e) {
+                previewImage(this, document.getElementById('speciesImagePreview'));
+            });
+            
+            document.getElementById('assessmentPhotos').addEventListener('change', function(e) {
+                previewMultipleImages(this, 'assessmentPhotoPreview');
+            });
+            
+            document.getElementById('monitoringPhotos').addEventListener('change', function(e) {
+                previewMultipleImages(this, 'monitoringPhotoPreview');
+            });
+            
+            // Other buttons
+            document.getElementById('generateComplianceReport').addEventListener('click', generateComplianceReport);
+            document.getElementById('saveComplianceChecklist').addEventListener('click', saveComplianceChecklist);
+            document.getElementById('exportAllData').addEventListener('click', exportAllData);
+            document.getElementById('backupDatabase').addEventListener('click', backupDatabase);
+            document.getElementById('resetTestData').addEventListener('click', resetTestData);
+            document.getElementById('generateReportBtn').addEventListener('click', handleGenerateReport);
+            
+            // Tab change events to refresh data
+            const tabLinks = document.querySelectorAll('[data-bs-toggle="tab"]');
+            tabLinks.forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function(e) {
+                    const target = e.target.getAttribute('href');
+                    if (target === '#dashboard') loadDashboard();
+                    if (target === '#site-assessment') loadAssessments();
+                    if (target === '#maintenance-plan') loadActivities();
+                    if (target === '#species-register') loadSpecies();
+                    if (target === '#monitoring') loadMonitoring();
+                    if (target === '#reports') loadReports();
+                    if (target === '#legislation') loadComplianceChecklist();
+                    if (target === '#settings') loadSettings();
+                });
+            });
+        }
 
-function formatActivityType(type) {
-    const typeMap = {
-        'weed-control': 'Weed Control',
-        'revegetation': 'Revegetation',
-        'erosion-control': 'Erosion Control',
-        'fauna-survey': 'Fauna Survey',
-        'vegetation-survey': 'Vegetation Survey',
-        'water-quality': 'Water Quality',
-        'other': 'Other'
-    };
-    return typeMap[type] || type;
-}
-
-function getStatusBadgeClass(status) {
-    const statusMap = {
-        'planned': 'bg-secondary',
-        'in-progress': 'bg-primary',
-        'completed': 'bg-success',
-        'cancelled': 'bg-danger'
-    };
-    return statusMap[status] || 'bg-secondary';
-}
-
-function getHealthBadgeClass(health) {
-    const healthMap = {
-        'excellent': 'bg-success',
-        'good': 'bg-info',
-        'fair': 'bg-warning',
-        'poor': 'bg-danger',
-        'degraded': 'bg-dark'
-    };
-    return healthMap[health] || 'bg-secondary';
-}
-
-function getSpeciesStatusBadgeClass(status) {
-    const statusMap = {
-        'native': 'bg-success',
-        'introduced': 'bg-secondary',
-        'weed': 'bg-danger',
-        'pest': 'bg-warning',
-        'endangered': 'bg-danger',
-        'vulnerable': 'bg-warning',
-        'threatened': 'bg-warning'
-    };
-    return statusMap[status] || 'bg-secondary';
-}
-
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
-// Setup event listeners
-function setupEventListeners() {
-    // Form submissions
-    document.getElementById('assessmentForm').addEventListener('submit', handleAssessmentSubmit);
-    document.getElementById('activityForm').addEventListener('submit', handleActivitySubmit);
-    document.getElementById('speciesForm').addEventListener('submit', handleSpeciesSubmit);
-    document.getElementById('monitoringForm').addEventListener('submit', handleMonitoringSubmit);
-    document.getElementById('userProfileForm').addEventListener('submit', handleUserProfileSubmit);
-    document.getElementById('changePasswordForm').addEventListener('submit', handleChangePasswordSubmit);
-    document.getElementById('siteSettingsForm').addEventListener('submit', handleSiteSettingsSubmit);
-    
-    // Modal save buttons
-    document.getElementById('saveActivity').addEventListener('click', () => {
-        document.getElementById('activityForm').dispatchEvent(new Event('submit'));
-    });
-    
-    document.getElementById('saveSpecies').addEventListener('click', () => {
-        document.getElementById('speciesForm').dispatchEvent(new Event('submit'));
-    });
-    
-    document.getElementById('saveMonitoring').addEventListener('click', () => {
-        document.getElementById('monitoringForm').dispatchEvent(new Event('submit'));
-    });
-    
-    // Image preview handlers
-    document.getElementById('speciesImage').addEventListener('change', function(e) {
-        previewImage(this, document.getElementById('speciesImagePreview'));
-    });
-    
-    document.getElementById('assessmentPhotos').addEventListener('change', function(e) {
-        previewMultipleImages(this, 'assessmentPhotoPreview');
-    });
-    
-    document.getElementById('monitoringPhotos').addEventListener('change', function(e) {
-        previewMultipleImages(this, 'monitoringPhotoPreview');
-    });
-    
-    // Other buttons
-    document.getElementById('generateComplianceReport').addEventListener('click', generateComplianceReport);
-    document.getElementById('saveComplianceChecklist').addEventListener('click', saveComplianceChecklist);
-    document.getElementById('exportAllData').addEventListener('click', exportAllData);
-    document.getElementById('backupDatabase').addEventListener('click', backupDatabase);
-    document.getElementById('resetTestData').addEventListener('click', resetTestData);
-    document.getElementById('generateReportBtn').addEventListener('click', handleGenerateReport);
-    
-    // Tab change events to refresh data
-    const tabLinks = document.querySelectorAll('[data-bs-toggle="tab"]');
-    tabLinks.forEach(tab => {
-        tab.addEventListener('shown.bs.tab', function(e) {
-            const target = e.target.getAttribute('href');
-            if (target === '#dashboard') loadDashboard();
-            if (target === '#site-assessment') loadAssessments();
-            if (target === '#maintenance-plan') loadActivities();
-            if (target === '#species-register') loadSpecies();
-            if (target === '#monitoring') loadMonitoring();
-            if (target === '#reports') loadReports();
-            if (target === '#legislation') loadComplianceChecklist();
-            if (target === '#settings') loadSettings();
-        });
-    });
-}
-
-// Image preview functions
-function previewImage(input, previewElement) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            previewElement.src = e.target.result;
-            previewElement.style.display = 'block';
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-
-function previewMultipleImages(input, previewContainerId) {
-    const previewContainer = document.getElementById(previewContainerId);
-    previewContainer.innerHTML = '';
-    
-    if (input.files) {
-        Array.from(input.files).forEach(file => {
-            if (file.type.match('image.*')) {
+        // Image preview functions
+        function previewImage(input, previewElement) {
+            if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                const img = document.createElement('img');
-                img.className = 'image-thumbnail';
-                
                 reader.onload = function(e) {
-                    img.src = e.target.result;
+                    previewElement.src = e.target.result;
+                    previewElement.style.display = 'block';
                 };
-                
-                reader.readAsDataURL(file);
-                previewContainer.appendChild(img);
+                reader.readAsDataURL(input.files[0]);
             }
-        });
-    }
-}
-
-// Form handlers
-function handleAssessmentSubmit(e) {
-    e.preventDefault();
-    
-    if (!validateForm('assessmentForm')) return;
-    
-    // Get checkbox values
-    const components = Array.from(document.querySelectorAll('input[name="components"]:checked'))
-        .map(checkbox => checkbox.value);
-    
-    if (components.length === 0) {
-        document.getElementById('componentsFeedback').style.display = 'block';
-        return;
-    }
-    
-    const assessment = {
-        id: generateId(),
-        date: document.getElementById('assessmentDate').value,
-        assessor: document.getElementById('assessorName').value,
-        description: document.getElementById('siteDescription').value,
-        components: components,
-        health: document.getElementById('ecosystemHealth').value,
-        threats: Array.from(document.getElementById('threats').selectedOptions).map(option => option.value),
-        photos: [], // Would normally process file uploads here
-        createdAt: new Date().toISOString()
-    };
-    
-    db.assessments.push(assessment);
-    saveData();
-    
-    // Reset form
-    e.target.reset();
-    document.getElementById('assessmentPhotoPreview').innerHTML = '';
-    document.getElementById('componentsFeedback').style.display = 'none';
-    
-    showToast('Success', 'Assessment saved successfully');
-    loadAssessments();
-    
-    // Switch to assessments tab to see the new entry
-    const assessmentTab = document.querySelector('[href="#site-assessment"]');
-    bootstrap.Tab.getInstance(assessmentTab).show();
-}
-
-function handleActivitySubmit(e) {
-    e.preventDefault();
-    
-    if (!validateForm('activityForm')) return;
-    
-    const activity = {
-        id: generateId(),
-        type: document.getElementById('activityType').value,
-        title: document.getElementById('activityTitle').value,
-        startDate: document.getElementById('activityStartDate').value,
-        endDate: document.getElementById('activityEndDate').value || null,
-        location: document.getElementById('activityLocation').value,
-        description: document.getElementById('activityDescription').value,
-        assignedTo: document.getElementById('activityAssignedTo').value,
-        priority: document.getElementById('activityPriority').value,
-        status: document.getElementById('activityStatus').value,
-        notes: document.getElementById('activityNotes').value,
-        createdAt: new Date().toISOString()
-    };
-    
-    db.activities.push(activity);
-    saveData();
-    
-    // Reset form and close modal
-    e.target.reset();
-    const modal = bootstrap.Modal.getInstance(document.getElementById('newActivityModal'));
-    modal.hide();
-    
-    showToast('Success', 'Activity saved successfully');
-    loadActivities();
-    initCalendar(); // Refresh calendar with new activity
-}
-
-function handleSpeciesSubmit(e) {
-    e.preventDefault();
-    
-    if (!validateForm('speciesForm')) return;
-    
-    const species = {
-        id: generateId(),
-        scientificName: document.getElementById('speciesScientificName').value,
-        commonName: document.getElementById('speciesCommonName').value || null,
-        type: document.getElementById('speciesType').value,
-        status: document.getElementById('speciesStatus').value,
-        description: document.getElementById('speciesDescription').value || null,
-        habitat: document.getElementById('speciesHabitat').value || null,
-        lastObserved: document.getElementById('speciesLastObserved').value || null,
-        image: null, // Would normally process file upload here
-        notes: document.getElementById('speciesNotes').value || null,
-        createdAt: new Date().toISOString()
-    };
-    
-    db.species.push(species);
-    saveData();
-    
-    // Reset form and close modal
-    e.target.reset();
-    document.getElementById('speciesImagePreview').style.display = 'none';
-    const modal = bootstrap.Modal.getInstance(document.getElementById('newSpeciesModal'));
-    modal.hide();
-    
-    showToast('Success', 'Species record saved successfully');
-    loadSpecies();
-}
-
-function handleMonitoringSubmit(e) {
-    e.preventDefault();
-    
-    if (!validateForm('monitoringForm')) return;
-    
-    const monitoring = {
-        id: generateId(),
-        type: document.getElementById('monitoringType').value,
-        date: document.getElementById('monitoringDate').value,
-        location: document.getElementById('monitoringLocation').value,
-        observer: document.getElementById('monitoringObserver').value,
-        findings: document.getElementById('monitoringFindings').value,
-        species: Array.from(document.getElementById('monitoringSpecies').selectedOptions).map(option => option.value),
-        photos: [], // Would normally process file uploads here
-        notes: document.getElementById('monitoringNotes').value || null,
-        createdAt: new Date().toISOString()
-    };
-    
-    db.monitoring.push(monitoring);
-    saveData();
-    
-    // Reset form and close modal
-    e.target.reset();
-    document.getElementById('monitoringPhotoPreview').innerHTML = '';
-    const modal = bootstrap.Modal.getInstance(document.getElementById('newMonitoringModal'));
-    modal.hide();
-    
-    showToast('Success', 'Monitoring record saved successfully');
-    loadMonitoring();
-}
-
-function handleUserProfileSubmit(e) {
-    e.preventDefault();
-    
-    if (!validateForm('userProfileForm')) return;
-    
-    db.settings.userProfile = {
-        name: document.getElementById('userName').value,
-        email: document.getElementById('userEmail').value,
-        role: document.getElementById('userRole').value
-    };
-    
-    saveData();
-    showToast('Success', 'Profile updated successfully');
-}
-
-function handleChangePasswordSubmit(e) {
-    e.preventDefault();
-    
-    if (!validateForm('changePasswordForm')) return;
-    
-    const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    if (newPassword !== confirmPassword) {
-        document.getElementById('confirmPassword').classList.add('is-invalid');
-        return;
-    }
-    
-    // In a real app, you would verify current password and update it
-    e.target.reset();
-    showToast('Success', 'Password changed successfully');
-}
-
-function handleSiteSettingsSubmit(e) {
-    e.preventDefault();
-    
-    if (!validateForm('siteSettingsForm')) return;
-    
-    db.settings = {
-        siteName: document.getElementById('siteName').value,
-        siteLocation: document.getElementById('siteLocation').value,
-        siteArea: document.getElementById('siteArea').value,
-        siteDescription: document.getElementById('siteDescription').value,
-        userProfile: db.settings.userProfile || {}
-    };
-    
-    saveData();
-    showToast('Success', 'Site settings updated successfully');
-}
-
-function validateForm(formId) {
-    const form = document.getElementById(formId);
-    let isValid = true;
-    
-    // Check all required fields
-    form.querySelectorAll('[required]').forEach(field => {
-        if (!field.value.trim()) {
-            field.classList.add('is-invalid');
-            isValid = false;
-        } else {
-            field.classList.remove('is-invalid');
         }
-    });
-    
-    // Additional validation for specific fields
-    if (formId === 'changePasswordForm') {
-        const newPassword = document.getElementById('newPassword');
-        const confirmPassword = document.getElementById('confirmPassword');
-        
-        if (newPassword.value !== confirmPassword.value) {
-            confirmPassword.classList.add('is-invalid');
-            isValid = false;
+
+        function previewMultipleImages(input, previewContainerId) {
+            const previewContainer = document.getElementById(previewContainerId);
+            previewContainer.innerHTML = '';
+            
+            if (input.files) {
+                Array.from(input.files).forEach(file => {
+                    if (file.type.match('image.*')) {
+                        const reader = new FileReader();
+                        const img = document.createElement('img');
+                        img.className = 'image-thumbnail';
+                        
+                        reader.onload = function(e) {
+                            img.src = e.target.result;
+                        };
+                        
+                        reader.readAsDataURL(file);
+                        previewContainer.appendChild(img);
+                    }
+                });
+            }
         }
-    }
-    
-    return isValid;
-}
 
-// Detail view functions
-function showAssessmentDetails(assessment) {
-    const modalBody = document.getElementById('assessmentModalBody');
-    
-    modalBody.innerHTML = `
-        <div class="mb-3">
-            <h6>Assessment Date</h6>
-            <p>${formatDate(assessment.date)}</p>
-        </div>
-        <div class="mb-3">
-            <h6>Assessor</h6>
-            <p>${assessment.assessor}</p>
-        </div>
-        <div class="mb-3">
-            <h6>Site Description</h6>
-            <p>${assessment.description}</p>
-        </div>
-        <div class="mb-3">
-            <h6>Ecosystem Components</h6>
-            <p>${assessment.components.map(c => capitalizeFirstLetter(c)).join(', ')}</p>
-        </div>
-        <div class="mb-3">
-            <h6>Health Rating</h6>
-            <span class="badge ${getHealthBadgeClass(assessment.health)}">${capitalizeFirstLetter(assessment.health)}</span>
-        </div>
-        <div class="mb-3">
-            <h6>Identified Threats</h6>
-            <p>${assessment.threats.length > 0 ? assessment.threats.map(t => capitalizeFirstLetter(t)).join(', ') : 'None identified'}</p>
-        </div>
-        ${assessment.photos && assessment.photos.length > 0 ? `
-        <div class="mb-3">
-            <h6>Photos</h6>
-            <div class="d-flex flex-wrap gap-2">
-                ${assessment.photos.map(photo => `<img src="${photo}" class="image-thumbnail" alt="Assessment photo">`).join('')}
-            </div>
-        </div>
-        ` : ''}
-    `;
-    
-    const modal = new bootstrap.Modal(document.getElementById('viewAssessmentModal'));
-    modal.show();
-}
-
-function showSpeciesDetails(species) {
-    const modalBody = document.getElementById('speciesModalBody');
-    
-    modalBody.innerHTML = `
-        <div class="row">
-            <div class="col-md-4">
-                <img src="${species.image || 'https://via.placeholder.com/300x200?text=No+image'}" class="img-fluid rounded" alt="${species.scientificName}">
-            </div>
-            <div class="col-md-8">
-                <h4>${species.scientificName}</h4>
-                ${species.commonName ? `<p class="text-muted">${species.commonName}</p>` : ''}
-                
-                <div class="mb-3">
-                    <span class="badge ${getSpeciesStatusBadgeClass(species.status)} me-2">${capitalizeFirstLetter(species.status)}</span>
-                    <span class="badge bg-secondary">${capitalizeFirstLetter(species.type)}</span>
-                </div>
-                
-                ${species.description ? `
-                <div class="mb-3">
-                    <h6>Description</h6>
-                    <p>${species.description}</p>
-                </div>
-                ` : ''}
-                
-                ${species.habitat ? `
-                <div class="mb-3">
-                    <h6>Habitat</h6>
-                    <p>${species.habitat}</p>
-                </div>
-                ` : ''}
-                
-                ${species.lastObserved ? `
-                <div class="mb-3">
-                    <h6>Last Observed</h6>
-                    <p>${formatDate(species.lastObserved)}</p>
-                </div>
-                ` : ''}
-                
-                ${species.notes ? `
-                <div class="mb-3">
-                    <h6>Notes</h6>
-                    <p>${species.notes}</p>
-                </div>
-                ` : ''}
-            </div>
-        </div>
-    `;
-    
-    const modal = new bootstrap.Modal(document.getElementById('viewSpeciesModal'));
-    modal.show();
-}
-
-function showActivityDetails(activity) {
-    const modalBody = document.getElementById('activityModalBody');
-    
-    modalBody.innerHTML = `
-        <div class="mb-3">
-            <h4>${activity.title}</h4>
-            <span class="badge ${getStatusBadgeClass(activity.status)} me-2">${capitalizeFirstLetter(activity.status)}</span>
-            <span class="badge bg-secondary">${formatActivityType(activity.type)}</span>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <h6>Start Date</h6>
-                <p>${formatDate(activity.startDate)}</p>
-            </div>
-            ${activity.endDate ? `
-            <div class="col-md-6">
-                <h6>End Date</h6>
-                <p>${formatDate(activity.endDate)}</p>
-            </div>
-            ` : ''}
-        </div>
-        
-        <div class="mb-3">
-            <h6>Location</h6>
-            <p>${activity.location}</p>
-        </div>
-        
-        <div class="mb-3">
-            <h6>Description</h6>
-            <p>${activity.description}</p>
-        </div>
-        
-        <div class="mb-3">
-            <h6>Assigned To</h6>
-            <p>${activity.assignedTo}</p>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <h6>Priority</h6>
-                <p>${capitalizeFirstLetter(activity.priority)}</p>
-            </div>
-            <div class="col-md-6">
-                <h6>Status</h6>
-                <p><span class="badge ${getStatusBadgeClass(activity.status)}">${capitalizeFirstLetter(activity.status)}</span></p>
-            </div>
-        </div>
-        
-        ${activity.notes ? `
-        <div class="mb-3">
-            <h6>Notes</h6>
-            <p>${activity.notes}</p>
-        </div>
-        ` : ''}
-    `;
-    
-    // Set up complete button handler
-    document.getElementById('completeActivity').onclick = function() {
-        activity.status = 'completed';
-        activity.endDate = new Date().toISOString();
-        saveData();
-        
-        const modal = bootstrap.Modal.getInstance(document.getElementById('viewActivityModal'));
-        modal.hide();
-        
-        showToast('Success', 'Activity marked as completed');
-        loadActivities();
-        initCalendar();
-    };
-    
-    const modal = new bootstrap.Modal(document.getElementById('viewActivityModal'));
-    modal.show();
-}
-
-function showMonitoringDetails(monitoring) {
-    const modalBody = document.getElementById('monitoringModalBody');
-    
-    // Get species names if any
-    const speciesNames = monitoring.species.map(id => {
-        const species = db.species.find(s => s.id === id);
-        return species ? species.scientificName : id;
-    });
-    
-    modalBody.innerHTML = `
-        <div class="mb-3">
-            <h4>${formatActivityType(monitoring.type)}</h4>
-            <p class="text-muted">${formatDate(monitoring.date)}</p>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <h6>Location</h6>
-                <p>${monitoring.location}</p>
-            </div>
-            <div class="col-md-6">
-                <h6>Observer</h6>
-                <p>${monitoring.observer}</p>
-            </div>
-        </div>
-        
-        <div class="mb-3">
-            <h6>Findings</h6>
-            <p>${monitoring.findings}</p>
-        </div>
-        
-        ${speciesNames.length > 0 ? `
-        <div class="mb-3">
-            <h6>Species Observed</h6>
-            <p>${speciesNames.join(', ')}</p>
-        </div>
-        ` : ''}
-        
-        ${monitoring.photos && monitoring.photos.length > 0 ? `
-        <div class="mb-3">
-            <h6>Photos</h6>
-            <div class="d-flex flex-wrap gap-2">
-                ${monitoring.photos.map(photo => `<img src="${photo}" class="image-thumbnail" alt="Monitoring photo">`).join('')}
-            </div>
-        </div>
-        ` : ''}
-        
-        ${monitoring.notes ? `
-        <div class="mb-3">
-            <h6>Notes</h6>
-            <p>${monitoring.notes}</p>
-        </div>
-        ` : ''}
-    `;
-    
-    const modal = new bootstrap.Modal(document.getElementById('viewMonitoringModal'));
-    modal.show();
-}
-
-// Other functionality
-function loadMonitoring() {
-    const monitoringTable = document.getElementById('monitoringTable').getElementsByTagName('tbody')[0];
-    monitoringTable.innerHTML = '';
-    
-    db.monitoring.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(monitoring => {
-        const row = monitoringTable.insertRow();
-        row.innerHTML = `
-            <td>${formatDate(monitoring.date)}</td>
-            <td>${formatActivityType(monitoring.type)}</td>
-            <td>${monitoring.location}</td>
-            <td>${monitoring.observer}</td>
-            <td>${monitoring.findings.substring(0, 50)}${monitoring.findings.length > 50 ? '...' : ''}</td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary view-monitoring" data-id="${monitoring.id}">View</button>
-            </td>
-        `;
-    });
-    
-    // Add event listeners to view buttons
-    document.querySelectorAll('.view-monitoring').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const monitoringId = this.getAttribute('data-id');
-            const monitoring = db.monitoring.find(m => m.id == monitoringId);
-            if (monitoring) {
-                showMonitoringDetails(monitoring);
+        // Form handlers
+        function handleAssessmentSubmit(e) {
+            e.preventDefault();
+            
+            if (!validateForm('assessmentForm')) return;
+            
+            // Get checkbox values
+            const components = Array.from(document.querySelectorAll('input[name="components"]:checked'))
+                .map(checkbox => checkbox.value);
+            
+            if (components.length === 0) {
+                document.getElementById('componentsFeedback').style.display = 'block';
+                return;
             }
-        });
-    });
-}
+            
+            const assessment = {
+                id: generateId(),
+                date: document.getElementById('assessmentDate').value,
+                assessor: document.getElementById('assessorName').value,
+                description: document.getElementById('siteDescription').value,
+                components: components,
+                health: document.getElementById('ecosystemHealth').value,
+                threats: Array.from(document.getElementById('threats').selectedOptions).map(option => option.value),
+                photos: [], // Would normally process file uploads here
+                createdAt: new Date().toISOString()
+            };
+            
+            db.assessments.push(assessment);
+            saveData();
+            
+            // Reset form
+            e.target.reset();
+            document.getElementById('assessmentPhotoPreview').innerHTML = '';
+            document.getElementById('componentsFeedback').style.display = 'none';
+            
+            showToast('Success', 'Assessment saved successfully');
+            loadAssessments();
+            
+            // Switch to assessments tab to see the new entry
+            const assessmentTab = document.querySelector('[href="#site-assessment"]');
+            bootstrap.Tab.getInstance(assessmentTab).show();
+        }
 
-function loadReports() {
-    const reportsTable = document.getElementById('reportsTable').getElementsByTagName('tbody')[0];
-    reportsTable.innerHTML = '';
-    
-    // In a real app, you would have actual reports data
-    if (db.reports.length === 0) {
-        reportsTable.innerHTML = '<tr><td colspan="5" class="text-center">No reports generated yet</td></tr>';
-    } else {
-        db.reports.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(report => {
-            const row = reportsTable.insertRow();
-            row.innerHTML = `
-                <td>${formatDate(report.date)}</td>
-                <td>${report.type}</td>
-                <td>${report.generatedBy}</td>
-                <td>${report.period || 'N/A'}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary view-report" data-id="${report.id}">View</button>
-                    <button class="btn btn-sm btn-outline-secondary download-report" data-id="${report.id}">Download</button>
-                </td>
-            `;
-        });
-    }
-}
+        function handleActivitySubmit(e) {
+            e.preventDefault();
+            
+            if (!validateForm('activityForm')) return;
+            
+            const activity = {
+                id: generateId(),
+                type: document.getElementById('activityType').value,
+                title: document.getElementById('activityTitle').value,
+                startDate: document.getElementById('activityStartDate').value,
+                endDate: document.getElementById('activityEndDate').value || null,
+                location: document.getElementById('activityLocation').value,
+                description: document.getElementById('activityDescription').value,
+                assignedTo: document.getElementById('activityAssignedTo').value,
+                priority: document.getElementById('activityPriority').value,
+                status: document.getElementById('activityStatus').value,
+                notes: document.getElementById('activityNotes').value,
+                createdAt: new Date().toISOString()
+            };
+            
+            db.activities.push(activity);
+            saveData();
+            
+            // Reset form and close modal
+            e.target.reset();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('newActivityModal'));
+            modal.hide();
+            
+            showToast('Success', 'Activity saved successfully');
+            loadActivities();
+            initCalendar(); // Refresh calendar with new activity
+        }
 
-function loadComplianceChecklist() {
-    const checklistTable = document.getElementById('complianceChecklistTable').getElementsByTagName('tbody')[0];
-    checklistTable.innerHTML = '';
-    
-    db.complianceChecklist.forEach(item => {
-        const row = checklistTable.insertRow();
-        row.innerHTML = `
-            <td>${item.requirement}</td>
-            <td>
-                <select class="form-select form-select-sm compliance-status" data-id="${item.id}">
-                    <option value="" ${item.compliant === '' ? 'selected' : ''}>Select</option>
-                    <option value="Yes" ${item.compliant === 'Yes' ? 'selected' : ''}>Yes</option>
-                    <option value="No" ${item.compliant === 'No' ? 'selected' : ''}>No</option>
-                    <option value="N/A" ${item.compliant === 'N/A' ? 'selected' : ''}>N/A</option>
-                </select>
-            </td>
-            <td>
-                <input type="text" class="form-control form-control-sm compliance-evidence" data-id="${item.id}" value="${item.evidence || ''}" placeholder="Evidence">
-            </td>
-            <td>
-                <button class="btn btn-sm btn-outline-secondary add-notes" data-id="${item.id}">Add Notes</button>
-            </td>
-        `;
-    });
-    
-    // Add event listeners
-    document.querySelectorAll('.compliance-status').forEach(select => {
-        select.addEventListener('change', function() {
-            const id = this.getAttribute('data-id');
-            const item = db.complianceChecklist.find(i => i.id == id);
-            if (item) {
-                item.compliant = this.value;
-                saveData();
+        function handleSpeciesSubmit(e) {
+            e.preventDefault();
+            
+            if (!validateForm('speciesForm')) return;
+            
+            const species = {
+                id: generateId(),
+                scientificName: document.getElementById('speciesScientificName').value,
+                commonName: document.getElementById('speciesCommonName').value || null,
+                type: document.getElementById('speciesType').value,
+                status: document.getElementById('speciesStatus').value,
+                description: document.getElementById('speciesDescription').value || null,
+                habitat: document.getElementById('speciesHabitat').value || null,
+                lastObserved: document.getElementById('speciesLastObserved').value || null,
+                image: null, // Would normally process file upload here
+                notes: document.getElementById('speciesNotes').value || null,
+                createdAt: new Date().toISOString()
+            };
+            
+            db.species.push(species);
+            saveData();
+            
+            // Reset form and close modal
+            e.target.reset();
+            document.getElementById('speciesImagePreview').style.display = 'none';
+            const modal = bootstrap.Modal.getInstance(document.getElementById('newSpeciesModal'));
+            modal.hide();
+            
+            showToast('Success', 'Species record saved successfully');
+            loadSpecies();
+        }
+
+        function handleMonitoringSubmit(e) {
+            e.preventDefault();
+            
+            if (!validateForm('monitoringForm')) return;
+            
+            const monitoring = {
+                id: generateId(),
+                type: document.getElementById('monitoringType').value,
+                date: document.getElementById('monitoringDate').value,
+                location: document.getElementById('monitoringLocation').value,
+                observer: document.getElementById('monitoringObserver').value,
+                findings: document.getElementById('monitoringFindings').value,
+                species: Array.from(document.getElementById('monitoringSpecies').selectedOptions).map(option => option.value),
+                photos: [], // Would normally process file uploads here
+                notes: document.getElementById('monitoringNotes').value || null,
+                createdAt: new Date().toISOString()
+            };
+            
+            db.monitoring.push(monitoring);
+            saveData();
+            
+            // Reset form and close modal
+            e.target.reset();
+            document.getElementById('monitoringPhotoPreview').innerHTML = '';
+            const modal = bootstrap.Modal.getInstance(document.getElementById('newMonitoringModal'));
+            modal.hide();
+            
+            showToast('Success', 'Monitoring record saved successfully');
+            loadMonitoring();
+        }
+
+        function handleUserProfileSubmit(e) {
+            e.preventDefault();
+            
+            if (!validateForm('userProfileForm')) return;
+            
+            db.settings.userProfile = {
+                name: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                role: document.getElementById('userRole').value
+            };
+            
+            saveData();
+            showToast('Success', 'Profile updated successfully');
+        }
+
+        function handleChangePasswordSubmit(e) {
+            e.preventDefault();
+            
+            if (!validateForm('changePasswordForm')) return;
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                document.getElementById('confirmPassword').classList.add('is-invalid');
+                return;
             }
-        });
-    });
-    
-    document.querySelectorAll('.compliance-evidence').forEach(input => {
-        input.addEventListener('change', function() {
-            const id = this.getAttribute('data-id');
-            const item = db.complianceChecklist.find(i => i.id == id);
-            if (item) {
-                item.evidence = this.value;
-                saveData();
-            }
-        });
-    });
-    
-    document.querySelectorAll('.add-notes').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            const item = db.complianceChecklist.find(i => i.id == id);
-            if (item) {
-                const notes = prompt('Enter notes:', item.notes || '');
-                if (notes !== null) {
-                    item.notes = notes;
-                    saveData();
+            
+            // In a real app, you would verify current password and update it
+            e.target.reset();
+            showToast('Success', 'Password changed successfully');
+        }
+
+        function handleSiteSettingsSubmit(e) {
+            e.preventDefault();
+            
+            if (!validateForm('siteSettingsForm')) return;
+            
+            db.settings = {
+                siteName: document.getElementById('siteName').value,
+                siteLocation: document.getElementById('siteLocation').value,
+                siteArea: document.getElementById('siteArea').value,
+                siteDescription: document.getElementById('siteDescription').value,
+                userProfile: db.settings.userProfile || {}
+            };
+            
+            saveData();
+            showToast('Success', 'Site settings updated successfully');
+        }
+
+        function validateForm(formId) {
+            const form = document.getElementById(formId);
+            let isValid = true;
+            
+            // Check all required fields
+            form.querySelectorAll('[required]').forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            // Additional validation for specific fields
+            if (formId === 'changePasswordForm') {
+                const newPassword = document.getElementById('newPassword');
+                const confirmPassword = document.getElementById('confirmPassword');
+                
+                if (newPassword.value !== confirmPassword.value) {
+                    confirmPassword.classList.add('is-invalid');
+                    isValid = false;
                 }
             }
-        });
-    });
-}
+            
+            return isValid;
+        }
 
-function loadSettings() {
-    // Load user profile
-    if (db.settings.userProfile) {
-        document.getElementById('userName').value = db.settings.userProfile.name || '';
-        document.getElementById('userEmail').value = db.settings.userProfile.email || '';
-        document.getElementById('userRole').value = db.settings.userProfile.role || '';
-    }
-    
-    // Load site settings
-    document.getElementById('siteName').value = db.settings.siteName || '';
-    document.getElementById('siteLocation').value = db.settings.siteLocation || '';
-    document.getElementById('siteArea').value = db.settings.siteArea || '';
-    document.getElementById('siteDescription').value = db.settings.siteDescription || '';
-}
+        // Detail view functions
+        function showAssessmentDetails(assessment) {
+            const modalBody = document.getElementById('assessmentModalBody');
+            
+            modalBody.innerHTML = `
+                <div class="mb-3">
+                    <h6>Assessment Date</h6>
+                    <p>${formatDate(assessment.date)}</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Assessor</h6>
+                    <p>${assessment.assessor}</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Site Description</h6>
+                    <p>${assessment.description}</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Ecosystem Components</h6>
+                    <p>${assessment.components.map(c => capitalizeFirstLetter(c)).join(', ')}</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Health Rating</h6>
+                    <span class="badge ${getHealthBadgeClass(assessment.health)}">${capitalizeFirstLetter(assessment.health)}</span>
+                </div>
+                <div class="mb-3">
+                    <h6>Identified Threats</h6>
+                    <p>${assessment.threats.length > 0 ? assessment.threats.map(t => capitalizeFirstLetter(t)).join(', ') : 'None identified'}</p>
+                </div>
+                ${assessment.photos && assessment.photos.length > 0 ? `
+                <div class="mb-3">
+                    <h6>Photos</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        ${assessment.photos.map(photo => `<img src="${photo}" class="image-thumbnail" alt="Assessment photo">`).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('viewAssessmentModal'));
+            modal.show();
+        }
 
-function saveComplianceChecklist() {
-    saveData();
-    showToast('Success', 'Compliance checklist saved successfully');
-}
+        function showSpeciesDetails(species) {
+            const modalBody = document.getElementById('speciesModalBody');
+            
+            modalBody.innerHTML = `
+                <div class="row">
+                    <div class="col-md-4">
+                        <img src="${species.image || 'https://via.placeholder.com/300x200?text=No+image'}" class="img-fluid rounded" alt="${species.scientificName}">
+                    </div>
+                    <div class="col-md-8">
+                        <h4>${species.scientificName}</h4>
+                        ${species.commonName ? `<p class="text-muted">${species.commonName}</p>` : ''}
+                        
+                        <div class="mb-3">
+                            <span class="badge ${getSpeciesStatusBadgeClass(species.status)} me-2">${capitalizeFirstLetter(species.status)}</span>
+                            <span class="badge bg-secondary">${capitalizeFirstLetter(species.type)}</span>
+                        </div>
+                        
+                        ${species.description ? `
+                        <div class="mb-3">
+                            <h6>Description</h6>
+                            <p>${species.description}</p>
+                        </div>
+                        ` : ''}
+                        
+                        ${species.habitat ? `
+                        <div class="mb-3">
+                            <h6>Habitat</h6>
+                            <p>${species.habitat}</p>
+                        </div>
+                        ` : ''}
+                        
+                        ${species.lastObserved ? `
+                        <div class="mb-3">
+                            <h6>Last Observed</h6>
+                            <p>${formatDate(species.lastObserved)}</p>
+                        </div>
+                        ` : ''}
+                        
+                        ${species.notes ? `
+                        <div class="mb-3">
+                            <h6>Notes</h6>
+                            <p>${species.notes}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('viewSpeciesModal'));
+            modal.show();
+        }
 
-function generateComplianceReport() {
-    const completedItems = db.complianceChecklist.filter(item => item.compliant === 'Yes').length;
-    const totalItems = db.complianceChecklist.length;
-    const progressPercentage = Math.round((completedItems / totalItems) * 100);
-    
-    const report = {
-        id: generateId(),
-        type: 'Compliance Report',
-        date: new Date().toISOString(),
-        generatedBy: db.settings.userProfile.name || 'System',
-        content: `Compliance Status: ${progressPercentage}% complete`,
-        period: 'Current'
-    };
-    
-    db.reports.push(report);
-    saveData();
-    
-    showToast('Report Generated', 'Compliance report has been generated successfully');
-    loadReports();
-}
+        function showActivityDetails(activity) {
+            const modalBody = document.getElementById('activityModalBody');
+            
+            modalBody.innerHTML = `
+                <div class="mb-3">
+                    <h4>${activity.title}</h4>
+                    <span class="badge ${getStatusBadgeClass(activity.status)} me-2">${capitalizeFirstLetter(activity.status)}</span>
+                    <span class="badge bg-secondary">${formatActivityType(activity.type)}</span>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Start Date</h6>
+                        <p>${formatDate(activity.startDate)}</p>
+                    </div>
+                    ${activity.endDate ? `
+                    <div class="col-md-6">
+                        <h6>End Date</h6>
+                        <p>${formatDate(activity.endDate)}</p>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Location</h6>
+                    <p>${activity.location}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Description</h6>
+                    <p>${activity.description}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Assigned To</h6>
+                    <p>${activity.assignedTo}</p>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Priority</h6>
+                        <p>${capitalizeFirstLetter(activity.priority)}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Status</h6>
+                        <p><span class="badge ${getStatusBadgeClass(activity.status)}">${capitalizeFirstLetter(activity.status)}</span></p>
+                    </div>
+                </div>
+                
+                ${activity.notes ? `
+                <div class="mb-3">
+                    <h6>Notes</h6>
+                    <p>${activity.notes}</p>
+                </div>
+                ` : ''}
+            `;
+            
+            // Set up complete button handler
+            document.getElementById('completeActivity').onclick = function() {
+                activity.status = 'completed';
+                activity.endDate = new Date().toISOString();
+                saveData();
+                
+                const modal = bootstrap.Modal.getInstance(document.getElementById('viewActivityModal'));
+                modal.hide();
+                
+                showToast('Success', 'Activity marked as completed');
+                loadActivities();
+                initCalendar();
+            };
+            
+            const modal = new bootstrap.Modal(document.getElementById('viewActivityModal'));
+            modal.show();
+        }
 
-function handleGenerateReport() {
-    const reportType = document.getElementById('reportType').value;
-    const startDate = document.getElementById('reportStartDate').value;
-    const endDate = document.getElementById('reportEndDate').value;
-    const format = document.getElementById('reportFormat').value;
-    
-    if (!reportType) {
-        document.getElementById('reportType').classList.add('is-invalid');
-        return;
-    }
-    
-    const report = {
-        id: generateId(),
-        type: document.getElementById('reportType').options[document.getElementById('reportType').selectedIndex].text,
-        date: new Date().toISOString(),
-        generatedBy: db.settings.userProfile.name || 'System',
-        period: startDate && endDate ? `${formatDate(startDate)} to ${formatDate(endDate)}` : 'All time',
-        format: format
-    };
-    
-    db.reports.push(report);
-    saveData();
-    
-    const modal = bootstrap.Modal.getInstance(document.getElementById('generateReportModal'));
-    modal.hide();
-    
-    showToast('Report Generated', `${report.type} has been generated successfully`);
-    loadReports();
-}
+        function showMonitoringDetails(monitoring) {
+            const modalBody = document.getElementById('monitoringModalBody');
+            
+            // Get species names if any
+            const speciesNames = monitoring.species.map(id => {
+                const species = db.species.find(s => s.id === id);
+                return species ? species.scientificName : id;
+            });
+            
+            modalBody.innerHTML = `
+                <div class="mb-3">
+                    <h4>${formatActivityType(monitoring.type)}</h4>
+                    <p class="text-muted">${formatDate(monitoring.date)}</p>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Location</h6>
+                        <p>${monitoring.location}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Observer</h6>
+                        <p>${monitoring.observer}</p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Findings</h6>
+                    <p>${monitoring.findings}</p>
+                </div>
+                
+                ${speciesNames.length > 0 ? `
+                <div class="mb-3">
+                    <h6>Species Observed</h6>
+                    <p>${speciesNames.join(', ')}</p>
+                </div>
+                ` : ''}
+                
+                ${monitoring.photos && monitoring.photos.length > 0 ? `
+                <div class="mb-3">
+                    <h6>Photos</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        ${monitoring.photos.map(photo => `<img src="${photo}" class="image-thumbnail" alt="Monitoring photo">`).join('')}
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${monitoring.notes ? `
+                <div class="mb-3">
+                    <h6>Notes</h6>
+                    <p>${monitoring.notes}</p>
+                </div>
+                ` : ''}
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('viewMonitoringModal'));
+            modal.show();
+        }
 
-function exportAllData() {
-    const dataStr = JSON.stringify(db, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = 'ecosystem-data.json';
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    showToast('Export Complete', 'All data has been exported successfully');
-}
+        // Other functionality
+        function saveComplianceChecklist() {
+            saveData();
+            showToast('Success', 'Compliance checklist saved successfully');
+        }
 
-function backupDatabase() {
-    // In a real app, this would backup to a server or cloud storage
-    exportAllData(); // For now, just export the data
-    showToast('Backup Created', 'Database backup has been created successfully');
-}
-
-function resetTestData() {
-    if (confirm('Are you sure you want to reset all test data? This action cannot be undone.')) {
-        localStorage.clear();
-        location.reload();
-    }
-}
-
-// Add some sample data if the database is empty
-function addSampleData() {
-    if (db.assessments.length === 0) {
-        db.assessments.push({
-            id: generateId(),
-            date: new Date('2023-06-15').toISOString(),
-            assessor: 'Dr. Jane Smith',
-            description: 'Initial assessment of the northern woodland area. Found healthy native vegetation with some weed infestation.',
-            components: ['flora', 'fauna', 'soil'],
-            health: 'good',
-            threats: ['weeds', 'erosion'],
-            createdAt: new Date('2023-06-15').toISOString()
-        });
-    }
-    
-    if (db.species.length === 0) {
-        db.species.push(
-            {
+        function generateComplianceReport() {
+            const completedItems = db.complianceChecklist.filter(item => item.compliant === 'Yes').length;
+            const totalItems = db.complianceChecklist.length;
+            const progressPercentage = Math.round((completedItems / totalItems) * 100);
+            
+            const report = {
                 id: generateId(),
-                scientificName: 'Eucalyptus pauciflora',
-                commonName: 'Snow Gum',
-                type: 'flora',
-                status: 'native',
-                description: 'A small to medium-sized tree with smooth bark and sickle-shaped leaves.',
-                habitat: 'Alpine and subalpine woodlands',
-                lastObserved: new Date('2023-07-20').toISOString(),
-                notes: 'Healthy population observed in Zone 2',
-                createdAt: new Date('2023-06-20').toISOString()
-            },
-            {
-                id: generateId(),
-                scientificName: 'Vulpes vulpes',
-                commonName: 'Red Fox',
-                type: 'fauna',
-                status: 'pest',
-                description: 'Introduced predator species that threatens native wildlife.',
-                habitat: 'Various habitats including woodlands and grasslands',
-                lastObserved: new Date('2023-07-15').toISOString(),
-                notes: 'Sighting confirmed, control measures needed',
-                createdAt: new Date('2023-06-25').toISOString()
+                type: 'Compliance Report',
+                date: new Date().toISOString(),
+                generatedBy: db.settings.userProfile.name || 'System',
+                content: `Compliance Status: ${progressPercentage}% complete`,
+                period: 'Current'
+            };
+            
+            db.reports.push(report);
+            saveData();
+            
+            showToast('Report Generated', 'Compliance report has been generated successfully');
+            loadReports();
+        }
+
+        function handleGenerateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const startDate = document.getElementById('reportStartDate').value;
+            const endDate = document.getElementById('reportEndDate').value;
+            const format = document.getElementById('reportFormat').value;
+            
+            if (!reportType) {
+                document.getElementById('reportType').classList.add('is-invalid');
+                return;
             }
-        );
-    }
-    
-    if (db.activities.length === 0) {
-        const nextWeek = new Date();
-        nextWeek.setDate(nextWeek.getDate() + 7);
-        
-        db.activities.push(
-            {
+            
+            const report = {
                 id: generateId(),
-                type: 'weed-control',
-                title: 'Blackberry removal in Zone 1',
-                startDate: nextWeek.toISOString(),
-                location: 'Zone 1 - Creek area',
-                description: 'Manual removal of blackberry bushes along the creek bank.',
-                assignedTo: 'John Davis',
-                priority: 'high',
-                status: 'planned',
-                notes: 'Need to ensure minimal disturbance to creek bank',
-                createdAt: new Date().toISOString()
-            },
-            {
-                id: generateId(),
-                type: 'fauna-survey',
-                title: 'Bird survey - Spring season',
-                startDate: new Date('2023-09-01').toISOString(),
-                endDate: new Date('2023-09-30').toISOString(),
-                location: 'Entire site',
-                description: 'Seasonal bird survey to monitor population changes.',
-                assignedTo: 'Sarah Wilson',
-                priority: 'medium',
-                status: 'planned',
-                notes: 'Focus on threatened species',
-                createdAt: new Date().toISOString()
+                type: document.getElementById('reportType').options[document.getElementById('reportType').selectedIndex].text,
+                date: new Date().toISOString(),
+                generatedBy: db.settings.userProfile.name || 'System',
+                period: startDate && endDate ? `${formatDate(startDate)} to ${formatDate(endDate)}` : 'All time',
+                format: format
+            };
+            
+            db.reports.push(report);
+            saveData();
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('generateReportModal'));
+            modal.hide();
+            
+            showToast('Report Generated', `${report.type} has been generated successfully`);
+            loadReports();
+        }
+
+        function exportAllData() {
+            const dataStr = JSON.stringify(db, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'ecosystem-data.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+            
+            showToast('Export Complete', 'All data has been exported successfully');
+        }
+
+        function backupDatabase() {
+            // In a real app, this would backup to a server or cloud storage
+            exportAllData(); // For now, just export the data
+            showToast('Backup Created', 'Database backup has been created successfully');
+        }
+
+        function resetTestData() {
+            if (confirm('Are you sure you want to reset all test data? This action cannot be undone.')) {
+                localStorage.clear();
+                location.reload();
             }
-        );
-    }
-    
-    if (db.monitoring.length === 0) {
-        db.monitoring.push({
-            id: generateId(),
-            type: 'vegetation-survey',
-            date: new Date('2023-07-10').toISOString(),
-            location: 'Zone 3 - Southern slope',
-            observer: 'Michael Chen',
-            findings: 'Native vegetation cover at 75%, weed cover at 15%. Significant improvement since last survey.',
-            species: db.species.filter(s => s.type === 'flora').map(s => s.id),
-            notes: 'Continue monitoring weed control efforts',
-            createdAt: new Date('2023-07-10').toISOString()
-        });
-    }
-    
-    saveData();
-}
+        }
 
-// Initialize with sample data if needed
-addSampleData();
+        // Add sample data if the database is empty
+        function addSampleData() {
+            if (db.assessments.length === 0) {
+                db.assessments.push({
+                    id: generateId(),
+                    date: new Date('2023-06-15').toISOString(),
+                    assessor: 'Dr. Jane Smith',
+                    description: 'Initial assessment of the northern woodland area. Found healthy native vegetation with some weed infestation.',
+                    components: ['flora', 'fauna', 'soil'],
+                    health: 'good',
+                    threats: ['weeds', 'erosion'],
+                    createdAt: new Date('2023-06-15').toISOString()
+                });
+                
+                db.assessments.push({
+                    id: generateId(),
+                    date: new Date('2023-09-20').toISOString(),
+                    assessor: 'Michael Chen',
+                    description: 'Follow-up assessment showing improvement in vegetation health after weed control activities.',
+                    components: ['flora', 'fauna', 'water'],
+                    health: 'excellent',
+                    threats: ['weeds'],
+                    createdAt: new Date('2023-09-20').toISOString()
+                });
+            }
+            
+            if (db.species.length === 0) {
+                db.species.push(
+                    {
+                        id: generateId(),
+                        scientificName: 'Eucalyptus pauciflora',
+                        commonName: 'Snow Gum',
+                        type: 'flora',
+                        status: 'native',
+                        description: 'A small to medium-sized tree with smooth bark and sickle-shaped leaves.',
+                        habitat: 'Alpine and subalpine woodlands',
+                        lastObserved: new Date('2023-07-20').toISOString(),
+                        notes: 'Healthy population observed in Zone 2',
+                        createdAt: new Date('2023-06-20').toISOString()
+                    },
+                    {
+                        id: generateId(),
+                        scientificName: 'Vulpes vulpes',
+                        commonName: 'Red Fox',
+                        type: 'fauna',
+                        status: 'pest',
+                        description: 'Introduced predator species that threatens native wildlife.',
+                        habitat: 'Various habitats including woodlands and grasslands',
+                        lastObserved: new Date('2023-07-15').toISOString(),
+                        notes: 'Sighting confirmed, control measures needed',
+                        createdAt: new Date('2023-06-25').toISOString()
+                    },
+                    {
+                        id: generateId(),
+                        scientificName: 'Rubus fruticosus',
+                        commonName: 'Blackberry',
+                        type: 'flora',
+                        status: 'weed',
+                        description: 'Invasive shrub forming dense thickets that crowd out native vegetation.',
+                        habitat: 'Riparian zones and disturbed areas',
+                        lastObserved: new Date('2023-08-10').toISOString(),
+                        notes: 'High priority for control in Zone 1',
+                        createdAt: new Date('2023-07-05').toISOString()
+                    },
+                    {
+                        id: generateId(),
+                        scientificName: 'Platycercus elegans',
+                        commonName: 'Crimson Rosella',
+                        type: 'fauna',
+                        status: 'native',
+                        description: 'Colorful parrot species with crimson plumage and blue cheek patches.',
+                        habitat: 'Forests and woodlands',
+                        lastObserved: new Date('2023-09-05').toISOString(),
+                        notes: 'Nesting observed in hollow-bearing trees',
+                        createdAt: new Date('2023-07-15').toISOString()
+                    }
+                );
+            }
+            
+            if (db.activities.length === 0) {
+                const nextWeek = new Date();
+                nextWeek.setDate(nextWeek.getDate() + 7);
+                
+                const lastWeek = new Date();
+                lastWeek.setDate(lastWeek.getDate() - 7);
+                
+                db.activities.push(
+                    {
+                        id: generateId(),
+                        type: 'weed-control',
+                        title: 'Blackberry removal in Zone 1',
+                        startDate: nextWeek.toISOString(),
+                        location: 'Zone 1 - Creek area',
+                        description: 'Manual removal of blackberry bushes along the creek bank.',
+                        assignedTo: 'John Davis',
+                        priority: 'high',
+                        status: 'planned',
+                        notes: 'Need to ensure minimal disturbance to creek bank',
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: generateId(),
+                        type: 'fauna-survey',
+                        title: 'Bird survey - Spring season',
+                        startDate: new Date('2023-09-01').toISOString(),
+                        endDate: new Date('2023-09-30').toISOString(),
+                        location: 'Entire site',
+                        description: 'Seasonal bird survey to monitor population changes.',
+                        assignedTo: 'Sarah Wilson',
+                        priority: 'medium',
+                        status: 'in-progress',
+                        notes: 'Focus on threatened species',
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: generateId(),
+                        type: 'revegetation',
+                        title: 'Riparian zone planting',
+                        startDate: lastWeek.toISOString(),
+                        endDate: new Date().toISOString(),
+                        location: 'Zone 1 - Creek bank',
+                        description: 'Planting of native riparian species to stabilize banks and improve habitat.',
+                        assignedTo: 'Volunteer Group',
+                        priority: 'medium',
+                        status: 'completed',
+                        notes: 'Planted 200 native tubestock',
+                        createdAt: new Date().toISOString()
+                    }
+                );
+            }
+            
+            if (db.monitoring.length === 0) {
+                db.monitoring.push({
+                    id: generateId(),
+                    type: 'vegetation-survey',
+                    date: new Date('2023-07-10').toISOString(),
+                    location: 'Zone 3 - Southern slope',
+                    observer: 'Michael Chen',
+                    findings: 'Native vegetation cover at 75%, weed cover at 15%. Significant improvement since last survey.',
+                    species: db.species.filter(s => s.type === 'flora').map(s => s.id),
+                    notes: 'Continue monitoring weed control efforts',
+                    createdAt: new Date('2023-07-10').toISOString()
+                });
+                
+                db.monitoring.push({
+                    id: generateId(),
+                    type: 'fauna-survey',
+                    date: new Date('2023-08-15').toISOString(),
+                    location: 'Zone 2 - Woodland',
+                    observer: 'Sarah Wilson',
+                    findings: 'Recorded 12 bird species, including 3 threatened species. Fox activity detected.',
+                    species: [db.species.find(s => s.commonName === 'Crimson Rosella').id],
+                    notes: 'Need to implement fox control program',
+                    createdAt: new Date('2023-08-15').toISOString()
+                });
+            }
+            
+            saveData();
+        }
 
-// Final initialization
-loadDashboard();
-loadAssessments();
-loadSpecies();
-loadActivities();
-loadMonitoring();
-loadReports();
-loadComplianceChecklist();
-loadSettings();
-
-// Add event listeners after everything is loaded
-setTimeout(setupEventListeners, 100);
-
-// End of JavaScript code
-</script>
+        // Generate report function called from buttons
+        function generateReport(type) {
+            const report = {
+                id: generateId(),
+                type: type,
+                date: new Date().toISOString(),
+                generatedBy: db.settings.userProfile.name || 'System',
+                period: 'All time'
+            };
+            
+            db.reports.push(report);
+            saveData();
+            
+            showToast('Report Generated', `${type} report has been generated successfully`);
+            loadReports();
+        }
+    </script>
 </body>
 </html>
