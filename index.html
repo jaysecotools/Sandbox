@@ -3,1156 +3,2917 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Binaural Therapy App</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <title>Native Ecosystem Maintenance Tool | AHCECR301 Compliance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background: #000;
-            font-family: 'Arial', sans-serif;
+        .sidebar {
+            min-height: 100vh;
+            background-color: #2c3e50;
             color: white;
-            user-select: none;
-            touch-action: manipulation;
         }
-        #canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
         }
-        #controls {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s;
-            width: 90%;
-            max-width: 400px;
-        }
-        #controls.hidden {
-            transform: translateX(-50%) translateY(120%);
-        }
-        #playButton {
-            position: relative;
-            background: rgba(255, 255, 255, 0.2);
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
             color: white;
-            border: none;
-            border-radius: 50%;
-            width: 70px;
-            height: 70px;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 0 20px rgba(0, 150, 255, 0.5);
+            background-color: #34495e;
         }
-        #playButton:hover {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 25px rgba(0, 200, 255, 0.7);
+        .sidebar .nav-link i {
+            margin-right: 10px;
         }
-        .mode-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            padding: 10px 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            width: 100%;
-            text-align: left;
-            margin: 5px 0;
-        }
-        .mode-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        .mode-btn.active {
-            background: linear-gradient(90deg, rgba(0, 150, 255, 0.3), rgba(100, 0, 255, 0.3));
-            border-color: rgba(255, 255, 255, 0.5);
-            box-shadow: 0 0 15px rgba(0, 200, 255, 0.3);
-        }
-        #statusBar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, #4fc3f7, #7b1fa2);
-            transform-origin: left;
-            transform: scaleX(0);
-            transition: transform 0.5s;
-            z-index: 3;
-        }
-        #timer {
-            position: fixed;
-            top: 10px;
-            right: 15px;
-            font-size: 14px;
-            opacity: 0.7;
-            z-index: 2;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 5px 10px;
-            border-radius: 15px;
-        }
-        #ambienceMenu {
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 15px;
-            padding: 10px;
-            backdrop-filter: blur(10px);
-            z-index: 2;
-            display: none;
-            flex-direction: column;
-            gap: 8px;
-            width: 150px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        #ambienceMenu button {
-            background: none;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-            text-align: left;
-        }
-        #ambienceMenu button:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        #ambienceMenu button.active {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-        #ambienceToggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            cursor: pointer;
-            z-index: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            transition: all 0.3s;
-        }
-        #ambienceToggle:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
-        #volumeControl {
-            position: fixed;
-            bottom: 80px;
-            left: 20px;
-            z-index: 2;
-            width: 150px;
-            opacity: 0.8;
-        }
-        #modeSelector {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            max-height: 200px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-        #modeSelector::-webkit-scrollbar {
-            width: 5px;
-        }
-        #modeSelector::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-        #modeSelector::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-        }
-        .brainwave-info {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
+        .main-content {
+            background-color: #f8f9fa;
             padding: 20px;
-            border-radius: 15px;
-            max-width: 300px;
-            text-align: center;
-            z-index: 10;
-            display: none;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .close-info {
+        .card {
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .map-container {
+            height: 400px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .species-card {
+            transition: transform 0.2s;
+        }
+        .species-card:hover {
+            transform: translateY(-5px);
+        }
+        .risk-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .risk-low {
+            background-color: #28a745;
+        }
+        .risk-medium {
+            background-color: #ffc107;
+        }
+        .risk-high {
+            background-color: #dc3545;
+        }
+        .logo {
+            font-weight: 700;
+            padding: 15px;
+            font-size: 1.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #map { 
+            height: 100%;
+            width: 100%;
+            border-radius: 5px;
+        }
+        .map-controls {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 16px;
+            z-index: 1000;
+        }
+        .leaflet-top.leaflet-right {
+            margin-top: 50px;
+        }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+        }
+        .form-control.is-invalid {
+            background-image: none;
+            padding-right: 0.75rem;
+        }
+        .form-control.is-valid {
+            background-image: none;
+            padding-right: 0.75rem;
+        }
+        .fc-event {
             cursor: pointer;
         }
-        .info-icon {
-            margin-left: 5px;
-            cursor: help;
-            font-size: 14px;
-            opacity: 0.7;
-        }
-        .file-input-container {
+        .species-image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
             display: none;
-            position: fixed;
-            bottom: 180px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 15px;
-            padding: 10px;
-            backdrop-filter: blur(10px);
-            z-index: 2;
-            flex-direction: column;
-            gap: 8px;
-            width: 150px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .file-input-container label {
-            font-size: 12px;
-            margin-bottom: 5px;
-            display: block;
+        .assessment-image-preview {
+            max-width: 100%;
+            max-height: 150px;
+            margin-top: 10px;
         }
-        .file-input-container input[type="file"] {
-            width: 100%;
-            margin-bottom: 10px;
-            font-size: 12px;
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
         }
-        #startPrompt {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            z-index: 100;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .image-thumbnail {
+            max-width: 100px;
+            max-height: 100px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
-        .frequency-display {
-            position: fixed;
-            top: 10px;
-            left: 15px;
-            font-size: 14px;
-            opacity: 0.7;
-            z-index: 2;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 5px 10px;
-            border-radius: 15px;
+        .fc-event-title {
+            white-space: normal;
+        }
+        .fc-daygrid-event-dot {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div id="startPrompt">
-        <h2>Binaural Therapy App</h2>
-        <p>Click anywhere to start audio</p>
-    </div>
-
-    <div id="statusBar"></div>
-    <div id="timer"></div>
-    <div class="frequency-display" id="frequencyDisplay">Left: 0Hz | Right: 0Hz</div>
-    <div id="canvas"></div>
-    
-    <div id="controls" class="hidden">
-        <div id="modeSelector">
-            <button class="mode-btn" data-mode="gamma" data-freq="40">
-                🚀 Gamma (40Hz) - Peak Focus
-                <span class="info-icon">ℹ️</span>
-            </button>
-            <button class="mode-btn" data-mode="beta" data-freq="18">
-                💡 Beta (18Hz) - Alert Concentration
-                <span class="info-icon">ℹ️</span>
-            </button>
-            <button class="mode-btn active" data-mode="alpha" data-freq="10">
-                ☁️ Alpha (10Hz) - Relaxed Awareness
-                <span class="info-icon">ℹ️</span>
-            </button>
-            <button class="mode-btn" data-mode="theta" data-freq="6">
-                🌙 Theta (6Hz) - Deep Meditation
-                <span class="info-icon">ℹ️</span>
-            </button>
-            <button class="mode-btn" data-mode="delta" data-freq="2">
-                💤 Delta (2Hz) - Deep Sleep
-                <span class="info-icon">ℹ️</span>
-            </button>
-        </div>
-        <button id="playButton">▶</button>
-    </div>
-    
-    <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.5">
-    
-    <button id="ambienceToggle">🌿</button>
-    <div id="ambienceMenu">
-        <button data-sound="forest">🌲 Forest</button>
-        <button data-sound="ocean">🌊 Ocean</button>
-        <button data-sound="white">🌀 White Noise</button>
-        <button data-sound="off">❌ Turn Off</button>
-    </div>
-
-    <div class="brainwave-info" id="brainwaveInfo">
-        <button class="close-info">×</button>
-        <h3 id="infoTitle">Alpha Waves</h3>
-        <p id="infoDescription">8-13Hz: Associated with relaxed awareness, meditation, and reduced anxiety.</p>
-        <p><strong>Best for:</strong> Stress relief, light meditation, creativity</p>
-    </div>
-
-    <audio id="forestSound" preload="auto" loop></audio>
-    <audio id="oceanSound" preload="auto" loop></audio>
-    <audio id="whiteSound" preload="auto" loop></audio>
-
-    <div id="fileInputContainer" class="file-input-container">
-        <div>
-            <label for="forestFile">Forest Sound:</label>
-            <input type="file" id="forestFile" accept=".wav,.mp3,.ogg">
-        </div>
-        <div>
-            <label for="oceanFile">Ocean Sound:</label>
-            <input type="file" id="oceanFile" accept=".wav,.mp3,.ogg">
-        </div>
-        <div>
-            <label for="whiteFile">White Noise:</label>
-            <input type="file" id="whiteFile" accept=".wav,.mp3,.ogg">
+    <div class="toast-container">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+                Operation completed successfully.
+            </div>
         </div>
     </div>
 
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="logo">EcoMaintain</div>
+                <ul class="nav flex-column p-3">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#dashboard" data-bs-toggle="tab">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#site-assessment" data-bs-toggle="tab">
+                            <i class="bi bi-clipboard-data"></i> Site Assessment
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#maintenance-plan" data-bs-toggle="tab">
+                            <i class="bi bi-calendar-check"></i> Maintenance Plan
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#species-register" data-bs-toggle="tab">
+                            <i class="bi bi-tree"></i> Species Register
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#monitoring" data-bs-toggle="tab">
+                            <i class="bi bi-binoculars"></i> Monitoring
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#reports" data-bs-toggle="tab">
+                            <i class="bi bi-file-earmark-text"></i> Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#legislation" data-bs-toggle="tab">
+                            <i class="bi bi-journal-bookmark"></i> Legislation
+                        </a>
+                    </li>
+                    <li class="nav-item mt-4">
+                        <a class="nav-link" href="#settings" data-bs-toggle="tab">
+                            <i class="bi bi-gear"></i> Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 ms-sm-auto main-content">
+                <div class="tab-content">
+                    <!-- Dashboard Tab -->
+                    <div class="tab-pane fade show active" id="dashboard">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Native Ecosystem Maintenance Dashboard</h1>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <div class="btn-group me-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">Print</button>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newActivityModal">
+                                    <i class="bi bi-plus"></i> New Activity
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Upcoming Tasks</h5>
+                                        <div class="list-group" id="upcomingTasksList">
+                                            <!-- Tasks will be loaded here dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Site Health Indicators</h5>
+                                        <canvas id="healthChart" height="200"></canvas>
+                                        <div class="mt-3" id="healthIndicators">
+                                            <!-- Indicators will be loaded here dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Recent Observations</h5>
+                                        <ul class="list-group list-group-flush" id="recentObservationsList">
+                                            <!-- Observations will be loaded here dynamically -->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Site Map</h5>
+                                        <div class="map-container p-3">
+                                            <div id="map"></div>
+                                            <div class="map-controls">
+                                                <div class="btn-group-vertical">
+                                                    <button id="zoneToggle" class="btn btn-sm btn-outline-primary active">Zones</button>
+                                                    <button id="vegetationToggle" class="btn btn-sm btn-outline-success">Vegetation</button>
+                                                    <button id="weedsToggle" class="btn btn-sm btn-outline-danger">Weeds</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Compliance Checklist</h5>
+                                        <div id="complianceChecklist">
+                                            <!-- Checklist will be loaded here dynamically -->
+                                        </div>
+                                        <div class="progress mt-3">
+                                            <div class="progress-bar bg-success" id="complianceProgress" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0% Complete</div>
+                                        </div>
+                                        <button class="btn btn-sm btn-primary mt-3" id="generateComplianceReport">Generate Compliance Report</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Site Assessment Tab -->
+                    <div class="tab-pane fade" id="site-assessment">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Site Assessment</h1>
+                            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newAssessmentModal">
+                                <i class="bi bi-plus"></i> New Assessment
+                            </button>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">New Site Assessment</h5>
+                                <form id="assessmentForm">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="assessmentDate" class="form-label">Assessment Date *</label>
+                                            <input type="date" class="form-control" id="assessmentDate" required>
+                                            <div class="invalid-feedback">Please provide a valid date.</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="assessorName" class="form-label">Assessor Name *</label>
+                                            <input type="text" class="form-control" id="assessorName" required>
+                                            <div class="invalid-feedback">Please provide the assessor's name.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="siteDescription" class="form-label">Site Description *</label>
+                                        <textarea class="form-control" id="siteDescription" rows="3" required></textarea>
+                                        <div class="invalid-feedback">Please provide a site description.</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Ecosystem Components Present *</label>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="flora" name="components" value="flora">
+                                                    <label class="form-check-label" for="flora">Flora</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="fauna" name="components" value="fauna">
+                                                    <label class="form-check-label" for="fauna">Fauna</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="soil" name="components" value="soil">
+                                                    <label class="form-check-label" for="soil">Soil</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="water" name="components" value="water">
+                                                    <label class="form-check-label" for="water">Water</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="geology" name="components" value="geology">
+                                                    <label class="form-check-label" for="geology">Geology</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="climate" name="components" value="climate">
+                                                    <label class="form-check-label" for="climate">Climate</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="invalid-feedback" id="componentsFeedback">Please select at least one component.</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="ecosystemHealth" class="form-label">Ecosystem Health Assessment *</label>
+                                        <select class="form-select" id="ecosystemHealth" required>
+                                            <option value="" selected disabled>Select health rating...</option>
+                                            <option value="excellent">Excellent - Minimal disturbance</option>
+                                            <option value="good">Good - Some disturbance but recovering</option>
+                                            <option value="fair">Fair - Moderate disturbance</option>
+                                            <option value="poor">Poor - Significant disturbance</option>
+                                            <option value="degraded">Degraded - Severe disturbance</option>
+                                        </select>
+                                        <div class="invalid-feedback">Please select a health rating.</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="threats" class="form-label">Identified Threats</label>
+                                        <select class="form-select" id="threats" multiple>
+                                            <option value="weeds">Weeds</option>
+                                            <option value="pests">Pests</option>
+                                            <option value="erosion">Erosion</option>
+                                            <option value="fire">Fire</option>
+                                            <option value="climate">Climate change</option>
+                                            <option value="development">Development</option>
+                                            <option value="recreation">Recreational impacts</option>
+                                            <option value="grazing">Grazing</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="assessmentPhotos" class="form-label">Upload Photos</label>
+                                        <input class="form-control" type="file" id="assessmentPhotos" multiple accept="image/*">
+                                        <div class="image-preview-container" id="assessmentPhotoPreview"></div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">Save Assessment</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Previous Assessments</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover" id="assessmentsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Assessor</th>
+                                                <th>Health Rating</th>
+                                                <th>Main Threats</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Assessments will be loaded here dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Maintenance Plan Tab -->
+                    <div class="tab-pane fade" id="maintenance-plan">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Maintenance Plan</h1>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newActivityModal">
+                                    <i class="bi bi-plus"></i> New Activity
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Maintenance Activities</h5>
+                                <ul class="nav nav-tabs" id="maintenanceTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab">Upcoming</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">Completed</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="overdue-tab" data-bs-toggle="tab" data-bs-target="#overdue" type="button" role="tab">Overdue</button>
+                                    </li>
+                                </ul>
+                                <div class="tab-content p-3 border border-top-0 rounded-bottom">
+                                    <div class="tab-pane fade show active" id="upcoming" role="tabpanel">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="upcomingActivitiesTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Activity</th>
+                                                        <th>Type</th>
+                                                        <th>Scheduled</th>
+                                                        <th>Location</th>
+                                                        <th>Assigned To</th>
+                                                        <th>Status</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Upcoming activities will be loaded here dynamically -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="completed" role="tabpanel">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="completedActivitiesTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Activity</th>
+                                                        <th>Type</th>
+                                                        <th>Completed</th>
+                                                        <th>Location</th>
+                                                        <th>Assigned To</th>
+                                                        <th>Status</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Completed activities will be loaded here dynamically -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="overdue" role="tabpanel">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="overdueActivitiesTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Activity</th>
+                                                        <th>Type</th>
+                                                        <th>Due Date</th>
+                                                        <th>Location</th>
+                                                        <th>Assigned To</th>
+                                                        <th>Status</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Overdue activities will be loaded here dynamically -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Maintenance Calendar</h5>
+                                <div id="calendar" style="height: 600px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Species Register Tab -->
+                    <div class="tab-pane fade" id="species-register">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Species Register</h1>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <div class="btn-group me-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="exportSpecies">Export</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="printSpecies">Print</button>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newSpeciesModal">
+                                    <i class="bi bi-plus"></i> New Species
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row" id="speciesCardsContainer">
+                            <!-- Species cards will be loaded here dynamically -->
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Species List</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover" id="speciesTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Scientific Name</th>
+                                                <th>Common Name</th>
+                                                <th>Type</th>
+                                                <th>Status</th>
+                                                <th>Last Observed</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Species will be loaded here dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monitoring Tab -->
+                    <div class="tab-pane fade" id="monitoring">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Monitoring</h1>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newMonitoringModal">
+                                    <i class="bi bi-plus"></i> New Monitoring
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Fauna Monitoring</h5>
+                                        <canvas id="faunaChart" height="200"></canvas>
+                                        <div class="mt-3">
+                                            <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#newFaunaSightingModal">Add Sighting</button>
+                                            <button class="btn btn-sm btn-outline-secondary" id="viewAllFauna">View All</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Vegetation Monitoring</h5>
+                                        <canvas id="vegetationChart" height="200"></canvas>
+                                        <div class="mt-3">
+                                            <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#newVegetationSurveyModal">Add Survey</button>
+                                            <button class="btn btn-sm btn-outline-secondary" id="viewAllVegetation">View All</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Recent Monitoring Activities</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover" id="monitoringTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Type</th>
+                                                <th>Location</th>
+                                                <th>Observer</th>
+                                                <th>Findings</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Monitoring activities will be loaded here dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reports Tab -->
+                    <div class="tab-pane fade" id="reports">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Reports</h1>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#generateReportModal">
+                                    <i class="bi bi-fileearmark-plus"></i> Generate Report
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Compliance Report</h5>
+                                        <p class="card-text">Generate a report showing compliance with AHCECR301 requirements.</p>
+                                        <button class="btn btn-primary" onclick="generateReport('compliance')">Generate</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Maintenance Summary</h5>
+                                        <p class="card-text">Summary of all maintenance activities for a selected period.</p>
+                                        <button class="btn btn-primary" onclick="generateReport('maintenance')">Generate</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Monitoring Summary</h5>
+                                        <p class="card-text">Summary of monitoring activities and findings.</p>
+                                        <button class="btn btn-primary" onclick="generateReport('monitoring')">Generate</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Ecosystem Health Trend</h5>
+                                        <p class="card-text">Generate a trend report showing changes in ecosystem health over time.</p>
+                                        <button class="btn btn-primary" onclick="generateReport('health-trend')">Generate</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Threat Management</h5>
+                                        <p class="card-text">Report on threats and management actions taken.</p>
+                                        <button class="btn btn-primary" onclick="generateReport('threat-management')">Generate</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Previous Reports</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover" id="reportsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Report Type</th>
+                                                <th>Generated By</th>
+                                                <th>Period</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Reports will be loaded here dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legislation Tab -->
+                    <div class="tab-pane fade" id="legislation">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Legislation & Compliance</h1>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Relevant Legislation</h5>
+                                <div class="accordion" id="legislationAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingOne">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                                Environment Protection and Biodiversity Conservation Act 1999 (EPBC Act)
+                                            </button>
+                                        </h2>
+                                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#legislationAccordion">
+                                            <div class="accordion-body">
+                                                <p>The EPBC Act is the Australian Government's central piece of environmental legislation. It provides a legal framework to protect and manage nationally and internationally important flora, fauna, ecological communities and heritage places.</p>
+                                                <p><strong>Key requirements:</strong></p>
+                                                <ul>
+                                                    <li>Identification and protection of threatened species and ecological communities</li>
+                                                    <li>Regulation of actions that may impact matters of national environmental significance</li>
+                                                    <li>Promotion of ecologically sustainable development</li>
+                                                </ul>
+                                                <a href="https://www.environment.gov.au/epbc" target="_blank" class="btn btn-sm btn-outline-primary">More Information</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingTwo">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                                State/Territory Environmental Legislation
+                                            </button>
+                                        </h2>
+                                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#legislationAccordion">
+                                            <div class="accordion-body">
+                                                <p>Each state and territory has its own environmental protection and biodiversity conservation legislation that operates alongside the EPBC Act.</p>
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Jurisdiction</th>
+                                                                <th>Primary Legislation</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>NSW</td>
+                                                                <td>Biodiversity Conservation Act 2016</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>VIC</td>
+                                                                <td>Flora and Fauna Guarantee Act 1988</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>QLD</td>
+                                                                <td>Nature Conservation Act 1992</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>WA</td>
+                                                                <td>Biodiversity Conservation Act 2016</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>SA</td>
+                                                                <td>National Parks and Wildlife Act 1972</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>TAS</td>
+                                                                <td>Nature Conservation Act 2002</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>ACT</td>
+                                                                <td>Nature Conservation Act 2014</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>NT</td>
+                                                                <td>Territory Parks and Wildlife Conservation Act 2000</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="headingThree">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                                Local Government Regulations
+                                            </button>
+                                        </h2>
+                                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#legislationAccordion">
+                                            <div class="accordion-body">
+                                                <p>Local governments often have additional planning schemes, local laws and policies that affect native ecosystem management.</p>
+                                                <p><strong>Common local regulations include:</strong></p>
+                                                <ul>
+                                                    <li>Tree preservation orders</li>
+                                                    <li>Vegetation clearing controls</li>
+                                                    <li>Weed control requirements</li>
+                                                    <li>Bushfire management provisions</li>
+                                                </ul>
+                                                <p>Check with your local council for specific requirements in your area.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Compliance Checklist</h5>
+                                <p>This checklist helps ensure your activities comply with relevant legislation and the requirements of AHCECR301.</p>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="complianceChecklistTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Requirement</th>
+                                                <th>Compliant?</th>
+                                                <th>Evidence</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Compliance checklist will be loaded here dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <button class="btn btn-primary mt-3" id="saveComplianceChecklist">Save Compliance Checklist</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Tab -->
+                    <div class="tab-pane fade" id="settings">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Settings</h1>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">User Profile</h5>
+                                        <form id="userProfileForm">
+                                            <div class="mb-3">
+                                                <label for="userName" class="form-label">Full Name *</label>
+                                                <input type="text" class="form-control" id="userName" required>
+                                                <div class="invalid-feedback">Please provide your full name.</div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="userEmail" class="form-label">Email *</label>
+                                                <input type="email" class="form-control" id="userEmail" required>
+                                                <div class="invalid-feedback">Please provide a valid email.</div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="userRole" class="form-label">Role *</label>
+                                                <select class="form-select" id="userRole" required>
+                                                    <option value="" selected disabled>Select role...</option>
+                                                    <option value="administrator">Administrator</option>
+                                                    <option value="ecologist">Ecologist</option>
+                                                    <option value="field-technician">Field Technician</option>
+                                                    <option value="volunteer">Volunteer</option>
+                                                </select>
+                                                <div class="invalid-feedback">Please select a role.</div>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Change Password</h5>
+                                        <form id="changePasswordForm">
+                                            <div class="mb-3">
+                                                <label for="currentPassword" class="form-label">Current Password *</label>
+                                                <input type="password" class="form-control" id="currentPassword" required>
+                                                <div class="invalid-feedback">Please enter your current password.</div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="newPassword" class="form-label">New Password *</label>
+                                                <input type="password" class="form-control" id="newPassword" required minlength="8">
+                                                <div class="invalid-feedback">Password must be at least 8 characters.</div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="confirmPassword" class="form-label">Confirm New Password *</label>
+                                                <input type="password" class="formControl" id="confirmPassword" required>
+                                                <div class="invalid-feedback">Passwords must match.</div>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Change Password</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Site Settings</h5>
+                                        <form id="siteSettingsForm">
+                                            <div class="mb-3">
+                                                <label for="siteName" class="form-label">Site Name *</label>
+                                                <input type="text" class="form-control" id="siteName" required>
+                                                <div class="invalid-feedback">Please provide a site name.</div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="siteLocation" class="form-label">Location *</label>
+                                                <input type="text" class="form-control" id="siteLocation" required>
+                                                <div class="invalid-feedback">Please provide the site location.</div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="siteArea" class="form-label">Area (hectares) *</label>
+                                                <input type="number" class="form-control" id="siteArea" required min="0" step="0.1">
+                                                <div class="invalid-feedback">Please provide a valid area.</div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="siteDescription" class="form-label">Description *</label>
+                                                <textarea class="form-control" id="siteDescription" rows="3" required></textarea>
+                                                <div class="invalid-feedback">Please provide a site description.</div>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Update Site Details</button>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Data Management</h5>
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-outline-secondary" id="exportAllData">Export All Data</button>
+                                            <button class="btn btn-outline-secondary" id="backupDatabase">Backup Database</button>
+                                            <button class="btn btn-outline-danger" id="resetTestData">Reset Test Data</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- New Activity Modal -->
+    <div class="modal fade" id="newActivityModal" tabindex="-1" aria-labelledby="newActivityModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newActivityModalLabel">New Maintenance Activity</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="activityForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="activityType" class="form-label">Activity Type *</label>
+                                <select class="form-select" id="activityType" required>
+                                    <option value="" selected disabled>Select type...</option>
+                                    <option value="weed-control">Weed Control</option>
+                                    <option value="revegetation">Revegetation</option>
+                                    <option value="erosion-control">Erosion Control</option>
+                                    <option value="fauna-survey">Fauna Survey</option>
+                                    <option value="vegetation-survey">Vegetation Survey</option>
+                                    <option value="water-quality">Water Quality Testing</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <div class="invalid-feedback">Please select an activity type.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="activityTitle" class="form-label">Title *</label>
+                                <input type="text" class="form-control" id="activityTitle" required>
+                                <div class="invalid-feedback">Please provide a title.</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="activityStartDate" class="form-label">Start Date *</label>
+                                <input type="datetime-local" class="form-control" id="activityStartDate" required>
+                                <div class="invalid-feedback">Please provide a start date.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="activityEndDate" class="form-label">End Date</label>
+                                <input type="datetime-local" class="form-control" id="activityEndDate">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="activityLocation" class="form-label">Location *</label>
+                            <input type="text" class="form-control" id="activityLocation" required>
+                            <div class="invalid-feedback">Please provide a location.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="activityDescription" class="form-label">Description *</label>
+                            <textarea class="form-control" id="activityDescription" rows="3" required></textarea>
+                            <div class="invalid-feedback">Please provide a description.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="activityAssignedTo" class="form-label">Assigned To *</label>
+                            <input type="text" class="form-control" id="activityAssignedTo" required>
+                            <div class="invalid-feedback">Please specify who this is assigned to.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="activityPriority" class="form-label">Priority</label>
+                            <select class="form-select" id="activityPriority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="activityStatus" class="form-label">Status</label>
+                            <select class="form-select" id="activityStatus">
+                                <option value="planned">Planned</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="activityNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="activityNotes" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveActivity">Save Activity</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Species Modal -->
+    <div class="modal fade" id="newSpeciesModal" tabindex="-1" aria-labelledby="newSpeciesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newSpeciesModalLabel">New Species Record</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="speciesForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="speciesScientificName" class="form-label">Scientific Name *</label>
+                                <input type="text" class="form-control" id="speciesScientificName" required>
+                                <div class="invalid-feedback">Please provide the scientific name.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="speciesCommonName" class="form-label">Common Name</label>
+                                <input type="text" class="form-control" id="speciesCommonName">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="speciesType" class="form-label">Type *</label>
+                                <select class="form-select" id="speciesType" required>
+                                    <option value="" selected disabled>Select type...</option>
+                                    <option value="flora">Flora</option>
+                                    <option value="fauna">Fauna</option>
+                                    <option value="fungi">Fungi</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a type.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="speciesStatus" class="form-label">Status *</label>
+                                <select class="form-select" id="speciesStatus" required>
+                                    <option value="" selected disabled>Select status...</option>
+                                    <option value="native">Native</option>
+                                    <option value="introduced">Introduced</option>
+                                    <option value="weed">Weed</option>
+                                    <option value="pest">Pest</option>
+                                    <option value="endangered">Endangered</option>
+                                    <option value="vulnerable">Vulnerable</option>
+                                    <option value="threatened">Threatened</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a status.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="speciesDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="speciesDescription" rows="3"></textarea>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="speciesHabitat" class="form-label">Habitat</label>
+                                <input type="text" class="form-control" id="speciesHabitat">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="speciesLastObserved" class="form-label">Last Observed</label>
+                                <input type="date" class="form-control" id="speciesLastObserved">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="speciesImage" class="form-label">Image</label>
+                            <input class="form-control" type="file" id="speciesImage" accept="image/*">
+                            <img id="speciesImagePreview" class="species-image-preview" src="#" alt="Species image preview">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="speciesNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="speciesNotes" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveSpecies">Save Species</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Monitoring Modal -->
+    <div class="modal fade" id="newMonitoringModal" tabindex="-1" aria-labelledby="newMonitoringModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newMonitoringModalLabel">New Monitoring Activity</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="monitoringForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="monitoringType" class="form-label">Monitoring Type *</label>
+                                <select class="form-select" id="monitoringType" required>
+                                    <option value="" selected disabled>Select type...</option>
+                                    <option value="fauna-survey">Fauna Survey</option>
+                                    <option value="vegetation-survey">Vegetation Survey</option>
+                                    <option value="water-quality">Water Quality Testing</option>
+                                    <option value="weed-mapping">Weed Mapping</option>
+                                    <option value="erosion-monitoring">Erosion Monitoring</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a monitoring type.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="monitoringDate" class="form-label">Date *</label>
+                                <input type="date" class="form-control" id="monitoringDate" required>
+                                <div class="invalid-feedback">Please provide a date.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="monitoringLocation" class="form-label">Location *</label>
+                            <input type="text" class="form-control" id="monitoringLocation" required>
+                            <div class="invalid-feedback">Please provide a location.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="monitoringObserver" class="form-label">Observer *</label>
+                            <input type="text" class="form-control" id="monitoringObserver" required>
+                            <div class="invalid-feedback">Please specify the observer.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="monitoringFindings" class="form-label">Findings *</label>
+                            <textarea class="form-control" id="monitoringFindings" rows="3" required></textarea>
+                            <div class="invalid-feedback">Please provide findings.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="monitoringSpecies" class="form-label">Species Observed (if applicable)</label>
+                            <select class="form-select" id="monitoringSpecies" multiple>
+                                <!-- Species options will be loaded here dynamically -->
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="monitoringPhotos" class="form-label">Upload Photos</label>
+                            <input class="form-control" type="file" id="monitoringPhotos" multiple accept="image/*">
+                            <div class="image-preview-container" id="monitoringPhotoPreview"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="monitoringNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="monitoringNotes" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveMonitoring">Save Monitoring</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Assessment Modal -->
+    <div class="modal fade" id="viewAssessmentModal" tabindex="-1" aria-labelledby="viewAssessmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewAssessmentModalLabel">Assessment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="assessmentModalBody">
+                    <!-- Assessment details will be loaded here dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="printAssessment">Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Report Modal -->
+    <div class="modal fade" id="generateReportModal" tabindex="-1" aria-labelledby="generateReportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="generateReportModalLabel">Generate Report</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="reportForm">
+                        <div class="mb-3">
+                            <label for="reportType" class="form-label">Report Type *</label>
+                            <select class="form-select" id="reportType" required>
+                                <option value="" selected disabled>Select report type...</option>
+                                <option value="compliance">Compliance Report</option>
+                                <option value="maintenance">Maintenance Summary</option>
+                                <option value="monitoring">Monitoring Summary</option>
+                                <option value="health-trend">Ecosystem Health Trend</option>
+                                <option value="threat-management">Threat Management</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a report type.</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="reportStartDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="reportStartDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="reportEndDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="reportEndDate">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reportFormat" class="form-label">Format *</label>
+                            <select class="form-select" id="reportFormat" required>
+                                <option value="pdf" selected>PDF</option>
+                                <option value="excel">Excel</option>
+                                <option value="word">Word</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="generateReportBtn">Generate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Report Modal -->
+    <div class="modal fade" id="viewReportModal" tabindex="-1" aria-labelledby="viewReportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewReportModalLabel">Report Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="reportModalBody">
+                    <!-- Report content will be loaded here dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="downloadReport">Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Species Modal -->
+    <div class="modal fade" id="viewSpeciesModal" tabindex="-1" aria-labelledby="viewSpeciesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewSpeciesModalLabel">Species Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="speciesModalBody">
+                    <!-- Species details will be loaded here dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="printSpeciesDetails">Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Activity Modal -->
+    <div class="modal fade" id="viewActivityModal" tabindex="-1" aria-labelledby="viewActivityModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewActivityModalLabel">Activity Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="activityModalBody">
+                    <!-- Activity details will be loaded here dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="printActivity">Print</button>
+                    <button type="button" class="btn btn-success" id="completeActivity">Mark Complete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Monitoring Modal -->
+    <div class="modal fade" id="viewMonitoringModal" tabindex="-1" aria-labelledby="viewMonitoringModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewMonitoringModalLabel">Monitoring Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="monitoringModalBody">
+                    <!-- Monitoring details will be loaded here dynamically -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="printMonitoring">Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmationModalBody">
+                    Are you sure you want to perform this action?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmAction">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
     <script>
-        // ===== BINAURAL AUDIO ENGINE =====
-        class BinauralTherapy {
-            constructor() {
-                this.audioContext = null;
-                this.currentMode = "alpha";
-                this.binauralFrequency = 10; // The beat frequency difference between ears
-                this.isPlaying = false;
-                this.sessionStart = 0;
-                this.currentAmbience = null;
-                this.volume = 0.5;
-                this.audioInitialized = false;
-                this.fadeTime = 0.5;
-                this.oscillators = { left: null, right: null };
-                this.gainNodes = { left: null, right: null };
-                this.carrierFrequency = 200; // Base frequency for both ears
-                this.leftFrequency = 195; // Calculated left frequency
-                this.rightFrequency = 205; // Calculated right frequency
-                
-                this.audioElements = {
-                    forest: document.getElementById('forestSound'),
-                    ocean: document.getElementById('oceanSound'),
-                    white: document.getElementById('whiteSound')
-                };
-                
-                this.initAudio = this.initAudio.bind(this);
-            }
-            
-            async initAudio() {
-                if (this.audioInitialized) return;
-                
-                try {
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
-                        latencyHint: 'interactive',
-                        sampleRate: 44100
-                    });
-                    this.audioInitialized = true;
-                    
-                    document.getElementById('startPrompt').style.display = 'none';
-                    
-                    // Create audio nodes
-                    this.merger = this.audioContext.createChannelMerger(2);
-                    
-                    // Master gain
-                    this.masterGain = this.audioContext.createGain();
-                    this.masterGain.gain.value = 0;
-                    
-                    // Limiter to prevent clipping
-                    this.limiter = this.audioContext.createDynamicsCompressor();
-                    this.limiter.threshold.value = -1;
-                    this.limiter.knee.value = 1;
-                    this.limiter.ratio.value = 12;
-                    this.limiter.attack.value = 0.003;
-                    this.limiter.release.value = 0.025;
-                    
-                    // Connect audio graph
-                    this.merger.connect(this.masterGain);
-                    this.masterGain.connect(this.limiter);
-                    this.limiter.connect(this.audioContext.destination);
-                    
-                    // Ambience system
-                    this.ambienceGain = this.audioContext.createGain();
-                    this.ambienceGain.gain.value = 0;
-                    this.ambienceGain.connect(this.audioContext.destination);
-                    
-                    document.getElementById('controls').classList.remove('hidden');
-                    
-                    await this.loadDefaultLocalFiles();
-                    
-                } catch (error) {
-                    console.error("Error initializing audio:", error);
-                    alert("Error initializing audio. Please check console for details.");
+        // Data storage and management
+        const db = {
+            assessments: JSON.parse(localStorage.getItem('assessments')) || [],
+            species: JSON.parse(localStorage.getItem('species')) || [],
+            activities: JSON.parse(localStorage.getItem('activities')) || [],
+            monitoring: JSON.parse(localStorage.getItem('monitoring')) || [],
+            reports: JSON.parse(localStorage.getItem('reports')) || [],
+            complianceChecklist: JSON.parse(localStorage.getItem('complianceChecklist')) || [
+                { id: 1, requirement: "Identified all relevant legislation", compliant: "", evidence: "", notes: "" },
+                { id: 2, requirement: "Assessed impacts on protected matters", compliant: "", evidence: "", notes: "" },
+                { id: 3, requirement: "Obtained necessary permits/approvals", compliant: "", evidence: "", notes: "" },
+                { id: 4, requirement: "Implemented required protections", compliant: "", evidence: "", notes: "" },
+                { id: 5, requirement: "Maintained required records", compliant: "", evidence: "", notes: "" }
+            ],
+            settings: JSON.parse(localStorage.getItem('settings')) || {
+                siteName: "",
+                siteLocation: "",
+                siteArea: "",
+                siteDescription: "",
+                userProfile: {
+                    name: "",
+                    email: "",
+                    role: ""
                 }
-            }
-            
-            createOscillators() {
-                if (!this.audioInitialized) return;
-                
-                this.stopOscillators();
-                
-                // Create pure sine wave oscillators
-                this.oscillators.left = this.audioContext.createOscillator();
-                this.oscillators.right = this.audioContext.createOscillator();
-                
-                // Create gain nodes for each oscillator
-                this.gainNodes.left = this.audioContext.createGain();
-                this.gainNodes.right = this.audioContext.createGain();
-                
-                // Configure oscillators as pure sine waves
-                this.oscillators.left.type = 'sine';
-                this.oscillators.right.type = 'sine';
-                
-                // Calculate frequencies for binaural beats
-                this.leftFrequency = this.carrierFrequency - (this.binauralFrequency / 2);
-                this.rightFrequency = this.carrierFrequency + (this.binauralFrequency / 2);
-                
-                // Set the frequencies
-                this.oscillators.left.frequency.setValueAtTime(this.leftFrequency, this.audioContext.currentTime);
-                this.oscillators.right.frequency.setValueAtTime(this.rightFrequency, this.audioContext.currentTime);
-                
-                // Set initial gain to 0 for smooth fade in
-                this.gainNodes.left.gain.value = 0;
-                this.gainNodes.right.gain.value = 0;
-                
-                // Connect left oscillator to left channel only
-                this.oscillators.left.connect(this.gainNodes.left);
-                this.gainNodes.left.connect(this.merger, 0, 0);
-                
-                // Connect right oscillator to right channel only
-                this.oscillators.right.connect(this.gainNodes.right);
-                this.gainNodes.right.connect(this.merger, 0, 1);
-                
-                // Start oscillators
-                this.oscillators.left.start();
-                this.oscillators.right.start();
-                
-                // Update frequency display
-                this.updateFrequencyDisplay();
-                
-                console.log(`Binaural beat: Left=${this.leftFrequency.toFixed(1)}Hz, Right=${this.rightFrequency.toFixed(1)}Hz (${this.binauralFrequency}Hz beat)`);
-            }
-            
-            updateFrequencyDisplay() {
-                document.getElementById('frequencyDisplay').textContent = 
-                    `Left: ${this.leftFrequency.toFixed(1)}Hz | Right: ${this.rightFrequency.toFixed(1)}Hz`;
-            }
-            
-            stopOscillators() {
-                const now = this.audioContext?.currentTime || 0;
-                
-                if (this.oscillators.left) {
-                    this.gainNodes.left.gain.setValueAtTime(this.gainNodes.left.gain.value, now);
-                    this.gainNodes.left.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-                    setTimeout(() => {
-                        this.oscillators.left?.disconnect();
-                        this.oscillators.left?.stop();
-                        this.oscillators.left = null;
-                    }, 100);
-                }
-                
-                if (this.oscillators.right) {
-                    this.gainNodes.right.gain.setValueAtTime(this.gainNodes.right.gain.value, now);
-                    this.gainNodes.right.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-                    setTimeout(() => {
-                        this.oscillators.right?.disconnect();
-                        this.oscillators.right?.stop();
-                        this.oscillators.right = null;
-                    }, 100);
-                }
-            }
-            
-            async loadDefaultLocalFiles() {
-                const soundFiles = [
-                    { type: 'forest', file: 'forest.wav' },
-                    { type: 'ocean', file: 'ocean.wav' },
-                    { type: 'white', file: 'white.wav' }
-                ];
-                
-                for (const {type, file} of soundFiles) {
-                    try {
-                        const response = await fetch(file);
-                        if (response.ok) {
-                            const blob = await response.blob();
-                            const objectURL = URL.createObjectURL(blob);
-                            this.audioElements[type].src = objectURL;
-                        }
-                    } catch (e) {
-                        console.log(`Error loading ${file}:`, e);
-                    }
-                }
-            }
-            
-            setMode(mode) {
-                if (!this.audioInitialized) return;
-                
-                this.currentMode = mode;
-                this.binauralFrequency = parseInt(document.querySelector(`.mode-btn[data-mode="${mode}"]`).dataset.freq);
-                
-                if (this.isPlaying) {
-                    this.createOscillators();
-                    // Fade in the new frequencies
-                    const now = this.audioContext.currentTime;
-                    this.gainNodes.left.gain.cancelScheduledValues(now);
-                    this.gainNodes.right.gain.cancelScheduledValues(now);
-                    this.gainNodes.left.gain.setValueAtTime(0, now);
-                    this.gainNodes.right.gain.setValueAtTime(0, now);
-                    this.gainNodes.left.gain.linearRampToValueAtTime(this.volume, now + this.fadeTime);
-                    this.gainNodes.right.gain.linearRampToValueAtTime(this.volume, now + this.fadeTime);
-                }
-                this.updateStatusBar(this.isPlaying);
-            }
-            
-            setAmbience(type) {
-                if (!this.audioInitialized) return;
-                
-                const now = this.audioContext.currentTime;
-                
-                // Stop current ambience with fade out
-                if (this.ambienceSource) {
-                    this.ambienceGain.gain.cancelScheduledValues(now);
-                    this.ambienceGain.gain.setTargetAtTime(0, now, 0.5);
-                    setTimeout(() => {
-                        if (this.ambienceSource) {
-                            this.ambienceSource.disconnect();
-                            this.ambienceSource = null;
-                        }
-                    }, 500);
-                    this.audioElements[this.currentAmbience]?.pause();
-                }
-                
-                // Start new ambience if selected (and not 'off')
-                if (type && type !== 'off' && this.audioElements[type]) {
-                    this.currentAmbience = type;
-                    const element = this.audioElements[type];
-                    
-                    if (!element.src) {
-                        console.log(`No sound file loaded for ${type}`);
-                        return;
-                    }
-                    
-                    element.loop = true;
-                    
-                    try {
-                        // Create a media element source
-                        this.ambienceSource = this.audioContext.createMediaElementSource(element);
-                        this.ambienceSource.connect(this.ambienceGain);
-                        
-                        // Smooth fade in
-                        this.ambienceGain.gain.cancelScheduledValues(now);
-                        this.ambienceGain.gain.setValueAtTime(0, now);
-                        this.ambienceGain.gain.setTargetAtTime(this.volume * 0.2, now, 1.5);
-                        
-                        // Play the audio element
-                        const playPromise = element.play();
-                        
-                        if (playPromise !== undefined) {
-                            playPromise.catch(error => {
-                                console.error("Ambience playback failed:", error);
-                            });
-                        }
-                    } catch (error) {
-                        console.error("Error setting ambience:", error);
-                    }
-                } else {
-                    this.currentAmbience = null;
-                    if (type === 'off') {
-                        document.getElementById('ambienceToggle').textContent = '🌿';
-                    }
-                }
-            }
-            
-            setVolume(volume) {
-                if (!this.audioInitialized) return;
-                
-                this.volume = volume;
-                const now = this.audioContext.currentTime;
-                
-                // Update binaural oscillators volume
-                if (this.gainNodes.left && this.gainNodes.right) {
-                    this.gainNodes.left.gain.cancelScheduledValues(now);
-                    this.gainNodes.right.gain.cancelScheduledValues(now);
-                    
-                    if (this.isPlaying) {
-                        this.gainNodes.left.gain.setTargetAtTime(volume, now, 0.1);
-                        this.gainNodes.right.gain.setTargetAtTime(volume, now, 0.1);
-                    } else {
-                        this.gainNodes.left.gain.setValueAtTime(0, now);
-                        this.gainNodes.right.gain.setValueAtTime(0, now);
-                    }
-                }
-                
-                // Update master gain for any other sounds
-                this.masterGain.gain.cancelScheduledValues(now);
-                
-                if (this.isPlaying) {
-                    this.masterGain.gain.setTargetAtTime(volume, now, 0.1);
-                } else {
-                    this.masterGain.gain.setValueAtTime(0, now);
-                }
-                
-                // Update ambience volume
-                if (this.currentAmbience && this.audioElements[this.currentAmbience]) {
-                    this.audioElements[this.currentAmbience].volume = volume;
-                    this.ambienceGain.gain.cancelScheduledValues(now);
-                    this.ambienceGain.gain.setTargetAtTime(volume * 0.2, now, 0.1);
-                }
-            }
-            
-            async togglePlayback() {
-                if (!this.audioInitialized) {
-                    await this.initAudio();
-                    return;
-                }
-                
-                try {
-                    if (this.audioContext.state === 'suspended') {
-                        await this.audioContext.resume();
-                    }
-                    
-                    const now = this.audioContext.currentTime;
-                    
-                    if (this.isPlaying) {
-                        // Smooth fade out
-                        if (this.gainNodes.left && this.gainNodes.right) {
-                            this.gainNodes.left.gain.cancelScheduledValues(now);
-                            this.gainNodes.right.gain.cancelScheduledValues(now);
-                            this.gainNodes.left.gain.setTargetAtTime(0, now, this.fadeTime);
-                            this.gainNodes.right.gain.setTargetAtTime(0, now, this.fadeTime);
-                        }
-                        
-                        this.masterGain.gain.cancelScheduledValues(now);
-                        this.masterGain.gain.setTargetAtTime(0, now, this.fadeTime);
-                        
-                        this.isPlaying = false;
-                        this.updateTimer(false);
-                    } else {
-                        // Ensure we have oscillators created
-                        if (!this.oscillators.left || !this.oscillators.right) {
-                            this.createOscillators();
-                        }
-                        
-                        // Smooth fade in
-                        if (this.gainNodes.left && this.gainNodes.right) {
-                            this.gainNodes.left.gain.cancelScheduledValues(now);
-                            this.gainNodes.right.gain.cancelScheduledValues(now);
-                            this.gainNodes.left.gain.setValueAtTime(0, now);
-                            this.gainNodes.right.gain.setValueAtTime(0, now);
-                            this.gainNodes.left.gain.linearRampToValueAtTime(this.volume, now + this.fadeTime);
-                            this.gainNodes.right.gain.linearRampToValueAtTime(this.volume, now + this.fadeTime);
-                        }
-                        
-                        this.masterGain.gain.cancelScheduledValues(now);
-                        this.masterGain.gain.setValueAtTime(0, now);
-                        this.masterGain.gain.setTargetAtTime(this.volume, now, this.fadeTime);
-                        
-                        this.isPlaying = true;
-                        this.sessionStart = this.sessionStart || this.audioContext.currentTime;
-                        this.updateTimer(true);
-                    }
-                    
-                    return this.isPlaying;
-                } catch (e) {
-                    console.warn("Playback error:", e);
-                    return false;
-                }
-            }
-            
-            updateTimer(running) {
-                const timerEl = document.getElementById('timer');
-                if (!running) {
-                    timerEl.textContent = '';
-                    return;
-                }
-                
-                const update = () => {
-                    if (!this.isPlaying) return;
-                    
-                    const seconds = Math.floor(this.audioContext.currentTime - this.sessionStart);
-                    const mins = Math.floor(seconds / 60);
-                    const secs = seconds % 60;
-                    timerEl.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                    
-                    requestAnimationFrame(update);
-                };
-                
-                update();
-            }
-            
-            updateStatusBar(active) {
-                const statusBar = document.getElementById('statusBar');
-                if (active) {
-                    const scale = 0.8 + 0.2 * Math.sin(this.audioContext.currentTime * (this.binauralFrequency / 2));
-                    
-                    let gradient;
-                    switch(this.currentMode) {
-                        case 'gamma':
-                            gradient = 'linear-gradient(90deg, #ff00ff, #00ffff)';
-                            break;
-                        case 'beta':
-                            gradient = 'linear-gradient(90deg, #00ff00, #ffff00)';
-                            break;
-                        case 'alpha':
-                            gradient = 'linear-gradient(90deg, #4fc3f7, #7b1fa2)';
-                            break;
-                        case 'theta':
-                            gradient = 'linear-gradient(90deg, #7b1fa2, #e91e63)';
-                            break;
-                        case 'delta':
-                            gradient = 'linear-gradient(90deg, #3a1c71, #d76d77)';
-                            break;
-                        default:
-                            gradient = 'linear-gradient(90deg, #4fc3f7, #7b1fa2)';
-                    }
-                    
-                    statusBar.style.transform = `scaleX(${scale})`;
-                    statusBar.style.background = gradient;
-                    requestAnimationFrame(() => this.updateStatusBar(true));
-                } else {
-                    statusBar.style.transform = 'scaleX(0)';
-                }
-            }
-        }
-
-        // ===== PARTICLE VISUALIZER =====
-        class ParticleVisualizer {
-            constructor(container) {
-                this.container = container;
-                this.scene = new THREE.Scene();
-                this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-                this.camera.position.z = 50;
-                
-                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.container.appendChild(this.renderer.domElement);
-                
-                this.breathPhase = 0;
-                this.breathSpeed = 0.01;
-                this.currentMode = 'alpha';
-                this.intensity = 0;
-                
-                this.orbParticles = this.createOrbParticles(5000);
-                this.galaxyParticles = this.createGalaxyParticles(10000);
-                
-                this.scene.add(this.orbParticles);
-                this.scene.add(this.galaxyParticles);
-                
-                this.ambientLight = new THREE.AmbientLight(0x222244);
-                this.scene.add(this.ambientLight);
-                
-                this.renderer.setAnimationLoop(() => this.animate());
-                window.addEventListener('resize', () => this.onWindowResize());
-            }
-            
-            createOrbParticles(count) {
-                const particles = new THREE.BufferGeometry();
-                const positions = new Float32Array(count * 3);
-                const colors = new Float32Array(count * 3);
-                const sizes = new Float32Array(count);
-                
-                for (let i = 0; i < count; i++) {
-                    const radius = 5 * Math.random();
-                    const theta = Math.random() * Math.PI * 2;
-                    const phi = Math.acos(2 * Math.random() - 1);
-                    
-                    positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-                    positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-                    positions[i * 3 + 2] = radius * Math.cos(phi);
-                    
-                    colors[i * 3] = 0.3 + Math.random() * 0.7;
-                    colors[i * 3 + 1] = 0.2 + Math.random() * 0.5;
-                    colors[i * 3 + 2] = 0.7 + Math.random() * 0.3;
-                    
-                    sizes[i] = 0.1 + Math.random() * 0.3;
-                }
-                
-                particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-                particles.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-                
-                const material = new THREE.PointsMaterial({
-                    size: 0.2,
-                    vertexColors: true,
-                    transparent: true,
-                    opacity: 0.7,
-                    blending: THREE.AdditiveBlending,
-                    sizeAttenuation: true
-                });
-                
-                const particleSystem = new THREE.Points(particles, material);
-                particleSystem.userData = {
-                    originalPositions: positions.slice(),
-                    originalColors: colors.slice()
-                };
-                
-                return particleSystem;
-            }
-            
-            createGalaxyParticles(count) {
-                const particles = new THREE.BufferGeometry();
-                const positions = new Float32Array(count * 3);
-                const colors = new Float32Array(count * 3);
-                const sizes = new Float32Array(count);
-                
-                for (let i = 0; i < count; i++) {
-                    const radius = 10 + Math.random() * 80;
-                    const angle = Math.random() * Math.PI * 2;
-                    const spiral = Math.random() * Math.PI * 4;
-                    
-                    positions[i * 3] = radius * Math.cos(angle + spiral) * (0.8 + Math.random() * 0.4);
-                    positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-                    positions[i * 3 + 2] = radius * Math.sin(angle + spiral) * (0.8 + Math.random() * 0.4);
-                    
-                    colors[i * 3] = 0.5 + Math.random() * 0.5;
-                    colors[i * 3 + 1] = 0.3 + Math.random() * 0.7;
-                    colors[i * 3 + 2] = 0.5 + Math.random() * 0.5;
-                    
-                    sizes[i] = 0.05 + Math.random() * 0.2;
-                }
-                
-                particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-                particles.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-                
-                const material = new THREE.PointsMaterial({
-                    size: 0.1,
-                    vertexColors: true,
-                    transparent: true,
-                    opacity: 0.7,
-                    blending: THREE.AdditiveBlending,
-                    sizeAttenuation: true
-                });
-                
-                const particleSystem = new THREE.Points(particles, material);
-                particleSystem.userData = {
-                    originalColors: colors.slice()
-                };
-                
-                return particleSystem;
-            }
-            
-            setMode(mode) {
-                this.currentMode = mode;
-                this.updateColors();
-                
-                switch(mode) {
-                    case 'gamma': this.breathSpeed = 0.03; break;
-                    case 'beta': this.breathSpeed = 0.02; break;
-                    case 'alpha': this.breathSpeed = 0.015; break;
-                    case 'theta': this.breathSpeed = 0.01; break;
-                    case 'delta': this.breathSpeed = 0.005; break;
-                    default: this.breathSpeed = 0.01;
-                }
-            }
-            
-            updateColors() {
-                const orbColors = this.orbParticles.geometry.attributes.color.array;
-                const galaxyColors = this.galaxyParticles.geometry.attributes.color.array;
-                const origOrbColors = this.orbParticles.userData.originalColors;
-                const origGalaxyColors = this.galaxyParticles.userData.originalColors;
-                
-                let colorShiftR = 0, colorShiftG = 0, colorShiftB = 0;
-                
-                switch(this.currentMode) {
-                    case 'gamma':
-                        colorShiftR = 0.8; colorShiftG = 0.2; colorShiftB = 0.8;
-                        break;
-                    case 'beta':
-                        colorShiftR = 0.2; colorShiftG = 0.8; colorShiftB = 0.2;
-                        break;
-                    case 'alpha':
-                        colorShiftR = 0.3; colorShiftG = 0.5; colorShiftB = 0.8;
-                        break;
-                    case 'theta':
-                        colorShiftR = 0.7; colorShiftG = 0.3; colorShiftB = 0.7;
-                        break;
-                    case 'delta':
-                        colorShiftR = 0.4; colorShiftG = 0.1; colorShiftB = 0.5;
-                        break;
-                }
-                
-                for (let i = 0; i < orbColors.length; i += 3) {
-                    orbColors[i] = origOrbColors[i] * (1 - colorShiftR) + colorShiftR;
-                    orbColors[i + 1] = origOrbColors[i + 1] * (1 - colorShiftG) + colorShiftG;
-                    orbColors[i + 2] = origOrbColors[i + 2] * (1 - colorShiftB) + colorShiftB;
-                }
-                
-                for (let i = 0; i < galaxyColors.length; i += 3) {
-                    galaxyColors[i] = origGalaxyColors[i] * (1 - colorShiftR) + colorShiftR;
-                    galaxyColors[i + 1] = origGalaxyColors[i + 1] * (1 - colorShiftG) + colorShiftG;
-                    galaxyColors[i + 2] = origGalaxyColors[i + 2] * (1 - colorShiftB) + colorShiftB;
-                }
-                
-                this.orbParticles.geometry.attributes.color.needsUpdate = true;
-                this.galaxyParticles.geometry.attributes.color.needsUpdate = true;
-                
-                let lightColor;
-                switch(this.currentMode) {
-                    case 'gamma': lightColor = new THREE.Color(0x330066); break;
-                    case 'beta': lightColor = new THREE.Color(0x003300); break;
-                    case 'alpha': lightColor = new THREE.Color(0x000044); break;
-                    case 'theta': lightColor = new THREE.Color(0x220022); break;
-                    case 'delta': lightColor = new THREE.Color(0x110011); break;
-                    default: lightColor = new THREE.Color(0x000044);
-                }
-                this.ambientLight.color.copy(lightColor);
-            }
-            
-            animate() {
-                this.breathPhase += this.breathSpeed;
-                const breathScale = 1 + (0.3 + this.intensity * 0.2) * Math.sin(this.breathPhase);
-                
-                const positions = this.orbParticles.geometry.attributes.position.array;
-                const originalPositions = this.orbParticles.userData.originalPositions;
-                
-                for (let i = 0; i < positions.length; i++) {
-                    positions[i] = originalPositions[i] * breathScale;
-                }
-                this.orbParticles.geometry.attributes.position.needsUpdate = true;
-                
-                const opacity = 0.6 + (0.3 + this.intensity * 0.1) * Math.sin(this.breathPhase * 2);
-                this.orbParticles.material.opacity = opacity;
-                this.galaxyParticles.material.opacity = opacity * 0.9;
-                this.orbParticles.material.needsUpdate = true;
-                this.galaxyParticles.material.needsUpdate = true;
-                
-                this.galaxyParticles.rotation.y += 0.0005 + (this.intensity * 0.0003);
-                
-                this.renderer.render(this.scene, this.camera);
-            }
-            
-            onWindowResize() {
-                this.camera.aspect = window.innerWidth / window.innerHeight;
-                this.camera.updateProjectionMatrix();
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-            }
-        }
-
-        // Brainwave information data
-        const brainwaveInfo = {
-            gamma: {
-                title: "Gamma Waves (30-100Hz)",
-                description: "Associated with peak concentration, high-level cognition, and problem-solving.",
-                benefits: "Enhances cognitive processing, memory recall, and sensory perception."
-            },
-            beta: {
-                title: "Beta Waves (13-30Hz)",
-                description: "Present during normal waking consciousness and active thinking.",
-                benefits: "Improves focus, alertness, and analytical thinking."
-            },
-            alpha: {
-                title: "Alpha Waves (8-13Hz)",
-                description: "Occur during relaxed states, light meditation, and daydreaming.",
-                benefits: "Reduces stress, enhances creativity, and promotes relaxation."
-            },
-            theta: {
-                title: "Theta Waves (4-8Hz)",
-                description: "Present during deep meditation, REM sleep, and creative inspiration.",
-                benefits: "Deep meditation, enhanced intuition, and emotional healing."
-            },
-            delta: {
-                title: "Delta Waves (0.5-4Hz)",
-                description: "The slowest brainwaves, occurring in deep, dreamless sleep.",
-                benefits: "Promotes deep sleep, healing, and immune system functioning."
             }
         };
 
-        // ===== MAIN APP =====
-        document.addEventListener('DOMContentLoaded', async () => {
-            const container = document.getElementById('canvas');
-            const playButton = document.getElementById('playButton');
-            const ambienceToggle = document.getElementById('ambienceToggle');
-            const ambienceMenu = document.getElementById('ambienceMenu');
-            const controls = document.getElementById('controls');
-            const volumeControl = document.getElementById('volumeControl');
-            const brainwaveInfoEl = document.getElementById('brainwaveInfo');
-            const infoTitle = document.getElementById('infoTitle');
-            const infoDescription = document.getElementById('infoDescription');
-            const fileInputContainer = document.getElementById('fileInputContainer');
-            const forestFileInput = document.getElementById('forestFile');
-            const oceanFileInput = document.getElementById('oceanFile');
-            const whiteFileInput = document.getElementById('whiteFile');
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('assessments', JSON.stringify(db.assessments));
+            localStorage.setItem('species', JSON.stringify(db.species));
+            localStorage.setItem('activities', JSON.stringify(db.activities));
+            localStorage.setItem('monitoring', JSON.stringify(db.monitoring));
+            localStorage.setItem('reports', JSON.stringify(db.reports));
+            localStorage.setItem('complianceChecklist', JSON.stringify(db.complianceChecklist));
+            localStorage.setItem('settings', JSON.stringify(db.settings));
+        }
+
+        // Show toast notification
+        function showToast(title, message, type = 'success') {
+            const toastEl = document.getElementById('liveToast');
+            const toastTitle = document.getElementById('toast-title');
+            const toastMessage = document.getElementById('toast-message');
             
-            // Initialize systems
-            const visualizer = new ParticleVisualizer(container);
-            const audioTherapy = new BinauralTherapy();
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
             
-            // Set initial volume
-            volumeControl.addEventListener('input', () => {
-                audioTherapy.setVolume(volumeControl.value);
-            });
+            // Remove previous color classes
+            toastEl.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info');
             
-            // Play/pause button
-            playButton.addEventListener('click', async () => {
-                const isPlaying = await audioTherapy.togglePlayback();
-                playButton.textContent = isPlaying ? '❚❚' : '▶';
-                
-                if (isPlaying) {
-                    audioTherapy.updateStatusBar(true);
-                }
-            });
+            // Add appropriate color class based on type
+            switch(type) {
+                case 'success':
+                    toastEl.classList.add('bg-success');
+                    break;
+                case 'error':
+                    toastEl.classList.add('bg-danger');
+                    break;
+                case 'warning':
+                    toastEl.classList.add('bg-warning');
+                    break;
+                case 'info':
+                    toastEl.classList.add('bg-info');
+                    break;
+                default:
+                    toastEl.classList.add('bg-success');
+            }
             
-            // Mode selection
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    
-                    const mode = btn.dataset.mode;
-                    audioTherapy.setMode(mode);
-                    visualizer.setMode(mode);
-                    
-                    if ('vibrate' in navigator) {
-                        navigator.vibrate(10);
-                    }
-                });
-            });
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize components
+            initCharts();
+            initMap();
+            initCalendar();
+            loadDashboard();
+            loadAssessments();
+            loadSpecies();
+            loadActivities();
+            loadMonitoring();
+            loadReports();
+            loadComplianceChecklist();
+            loadSettings();
             
-            // Info icons
-            document.querySelectorAll('.info-icon').forEach(icon => {
-                icon.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const mode = icon.parentElement.dataset.mode;
-                    infoTitle.textContent = brainwaveInfo[mode].title;
-                    infoDescription.textContent = brainwaveInfo[mode].description + " " + brainwaveInfo[mode].benefits;
-                    brainwaveInfoEl.style.display = 'block';
-                });
-            });
-            
-            // Close info panel
-            document.querySelector('.close-info').addEventListener('click', () => {
-                brainwaveInfoEl.style.display = 'none';
-            });
-            
-            // Ambience menu toggle
-            ambienceToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                ambienceMenu.style.display = ambienceMenu.style.display === 'flex' ? 'none' : 'flex';
-                fileInputContainer.style.display = 'none';
-            });
-            
-            // File input toggle
-            ambienceToggle.addEventListener('dblclick', (e) => {
-                e.stopPropagation();
-                fileInputContainer.style.display = fileInputContainer.style.display === 'flex' ? 'none' : 'flex';
-                ambienceMenu.style.display = 'none';
-            });
-            
-            // File input handlers
-            forestFileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const url = URL.createObjectURL(file);
-                    audioTherapy.audioElements.forest.src = url;
-                }
-            });
-            
-            oceanFileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const url = URL.createObjectURL(file);
-                    audioTherapy.audioElements.ocean.src = url;
-                }
-            });
-            
-            whiteFileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const url = URL.createObjectURL(file);
-                    audioTherapy.audioElements.white.src = url;
-                }
-            });
-            
-            // Ambience selection
-            ambienceMenu.querySelectorAll('button').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    ambienceMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-                    
-                    if (btn.dataset.sound !== 'off') {
-                        btn.classList.add('active');
-                    }
-                    
-                    const soundType = btn.dataset.sound;
-                    audioTherapy.setAmbience(soundType);
-                    
-                    if (soundType !== 'off') {
-                        ambienceToggle.textContent = 
-                            soundType === 'forest' ? '🌲' :
-                            soundType === 'ocean' ? '🌊' : '🌀';
-                    }
-                    
-                    ambienceMenu.style.display = 'none';
-                });
-            });
-            
-            // Initialize audio on first click
-            document.body.addEventListener('click', () => {
-                audioTherapy.initAudio();
-            }, { once: true });
-            
-            // Hide controls after inactivity
-            let hideTimeout;
-            const resetHideTimeout = () => {
-                clearTimeout(hideTimeout);
-                controls.classList.remove('hidden');
-                hideTimeout = setTimeout(() => {
-                    controls.classList.add('hidden');
-                }, 3000);
-            };
-            
-            document.addEventListener('mousemove', resetHideTimeout);
-            document.addEventListener('touchmove', resetHideTimeout);
-            resetHideTimeout();
-            
-            // Keyboard controls
-            document.addEventListener('keydown', (e) => {
-                if (e.code === 'Space') {
-                    e.preventDefault();
-                    playButton.click();
-                } else if (e.code === 'KeyM') {
-                    const modes = ['gamma', 'beta', 'alpha', 'theta', 'delta'];
-                    const currentIndex = modes.indexOf(audioTherapy.currentMode);
-                    const nextIndex = (currentIndex + 1) % modes.length;
-                    document.querySelector(`.mode-btn[data-mode="${modes[nextIndex]}"]`).click();
-                } else if (e.code === 'KeyA') {
-                    ambienceToggle.click();
-                } else if (e.code === 'KeyV') {
-                    volumeControl.focus();
-                } else if (e.code === 'Escape') {
-                    brainwaveInfoEl.style.display = 'none';
-                }
-            });
+            // Set up event listeners
+            setupEventListeners();
         });
-    </script>
+
+        // Initialize charts
+        function initCharts() {
+            // Health Indicators Chart
+            const healthCtx = document.getElementById('healthChart').getContext('2d');
+            window.healthChart = new Chart(healthCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Biodiversity', 'Native Cover', 'Weed Cover', 'Erosion', 'Fauna', 'Water Quality'],
+                    datasets: [{
+                        label: 'Current',
+                        data: [0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+
+            // Fauna Monitoring Chart
+            const faunaCtx = document.getElementById('faunaChart').getContext('2d');
+            window.faunaChart = new Chart(faunaCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Species Count',
+                        data: [0, 0, 0, 0, 0, 0],
+                        borderColor: 'rgba(220, 53, 69, 1)',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Fauna Sightings'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Vegetation Monitoring Chart
+            const vegetationCtx = document.getElementById('vegetationChart').getContext('2d');
+            window.vegetationChart = new Chart(vegetationCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Zone 1', 'Zone 2', 'Zone 3', 'Zone 4'],
+                    datasets: [{
+                        label: 'Native Cover (%)',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                    }, {
+                        label: 'Weed Cover (%)',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Vegetation Cover by Zone'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize map
+        function initMap() {
+            // Initialize the map
+            window.map = L.map('map').setView([-33.4000, 150.3000], 13); // Default coordinates and zoom level
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(window.map);
+
+            // Create layer groups for different map features
+            window.zonesLayer = L.layerGroup();
+            window.vegetationLayer = L.layerGroup();
+            window.weedsLayer = L.layerGroup();
+
+            // Add layer control
+            const baseLayers = {
+                "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }),
+                "Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                })
+            };
+
+            const overlays = {
+                "Zones": window.zonesLayer,
+                "Vegetation": window.vegetationLayer,
+                "Weeds": window.weedsLayer
+            };
+
+            L.control.layers(baseLayers, overlays, {collapsed: false}).addTo(window.map);
+
+            // Button controls for map layers
+            document.getElementById('zoneToggle').addEventListener('click', function() {
+                if (window.map.hasLayer(window.zonesLayer)) {
+                    window.map.removeLayer(window.zonesLayer);
+                    this.classList.remove('active');
+                } else {
+                    window.map.addLayer(window.zonesLayer);
+                    this.classList.add('active');
+                }
+            });
+
+            document.getElementById('vegetationToggle').addEventListener('click', function() {
+                if (window.map.hasLayer(window.vegetationLayer)) {
+                    window.map.removeLayer(window.vegetationLayer);
+                    this.classList.remove('active');
+                } else {
+                    window.map.addLayer(window.vegetationLayer);
+                    this.classList.add('active');
+                }
+            });
+
+            document.getElementById('weedsToggle').addEventListener('click', function() {
+                if (window.map.hasLayer(window.weedsLayer)) {
+                    window.map.removeLayer(window.weedsLayer);
+                    this.classList.remove('active');
+                } else {
+                    window.map.addLayer(window.weedsLayer);
+                    this.classList.add('active');
+                }
+            });
+        }
+
+        // Initialize calendar
+        function initCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            window.calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: db.activities.map(activity => ({
+                    title: activity.title,
+                    start: activity.startDate,
+                    end: activity.endDate || activity.startDate,
+                    extendedProps: {
+                        type: activity.type,
+                        location: activity.location,
+                        assignedTo: activity.assignedTo,
+                        status: activity.status
+                    },
+                    backgroundColor: getActivityColor(activity.type),
+                    borderColor: getActivityColor(activity.type),
+                    textColor: '#fff'
+                })),
+                eventClick: function(info) {
+                    const activity = db.activities.find(a => a.title === info.event.title && a.startDate === info.event.startStr);
+                    if (activity) {
+                        showActivityDetails(activity);
+                    }
+                },
+                eventContent: function(arg) {
+                    // Customize event display to show type and location
+                    const type = arg.event.extendedProps.type;
+                    const location = arg.event.extendedProps.location;
+                    
+                    const eventEl = document.createElement('div');
+                    eventEl.className = 'fc-event-main-frame';
+                    
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'fc-event-title';
+                    titleEl.innerHTML = `<strong>${arg.event.title}</strong><br>${formatActivityType(type)} - ${location}`;
+                    
+                    eventEl.appendChild(titleEl);
+                    
+                    return { domNodes: [eventEl] };
+                }
+            });
+            window.calendar.render();
+        }
+
+        // Get color for activity type
+        function getActivityColor(type) {
+            switch(type) {
+                case 'weed-control': return '#dc3545';
+                case 'revegetation': return '#28a745';
+                case 'erosion-control': return '#fd7e14';
+                case 'fauna-survey': return '#17a2b8';
+                case 'vegetation-survey': return '#20c997';
+                case 'water-quality': return '#007bff';
+                default: return '#6c757d';
+            }
+        }
+
+        // Load dashboard data
+        function loadDashboard() {
+            // Upcoming tasks
+            const upcomingTasks = db.activities
+                .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
+                .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+                .slice(0, 3);
+            
+            const upcomingTasksList = document.getElementById('upcomingTasksList');
+            upcomingTasksList.innerHTML = '';
+            
+            if (upcomingTasks.length === 0) {
+                upcomingTasksList.innerHTML = '<div class="list-group-item">No upcoming tasks</div>';
+            } else {
+                upcomingTasks.forEach(task => {
+                    const taskEl = document.createElement('a');
+                    taskEl.href = '#';
+                    taskEl.className = 'list-group-item list-group-item-action';
+                    taskEl.innerHTML = `
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">${task.title}</h6>
+                            <small class="text-muted">${formatDate(task.startDate)}</small>
+                        </div>
+                        <p class="mb-1">${task.description.substring(0, 50)}${task.description.length > 50 ? '...' : ''}</p>
+                        <small class="text-muted">Assigned to: ${task.assignedTo}</small>
+                    `;
+                    taskEl.addEventListener('click', () => showActivityDetails(task));
+                    upcomingTasksList.appendChild(taskEl);
+                });
+            }
+            
+            // Recent observations
+            const recentObservations = db.monitoring
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 4);
+            
+            const recentObservationsList = document.getElementById('recentObservationsList');
+            recentObservationsList.innerHTML = '';
+            
+            if (recentObservations.length === 0) {
+                recentObservationsList.innerHTML = '<li class="list-group-item">No recent observations</li>';
+            } else {
+                recentObservations.forEach(obs => {
+                    const obsEl = document.createElement('li');
+                    obsEl.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    obsEl.innerHTML = `
+                        ${obs.type === 'fauna-survey' ? 'Fauna sighting' : 'Vegetation survey'}
+                        <span class="badge ${getStatusBadgeClass(obs.type === 'fauna-survey' ? 'info' : 'success')} rounded-pill">
+                            ${obs.type === 'fauna-survey' ? 'Fauna' : 'Flora'}
+                        </span>
+                    `;
+                    obsEl.addEventListener('click', () => showMonitoringDetails(obs));
+                    recentObservationsList.appendChild(obsEl);
+                });
+            }
+            
+            // Compliance checklist
+            const complianceChecklist = document.getElementById('complianceChecklist');
+            complianceChecklist.innerHTML = '';
+            
+            const completedItems = db.complianceChecklist.filter(item => item.compliant === 'Yes').length;
+            const totalItems = db.complianceChecklist.length;
+            const progressPercentage = Math.round((completedItems / totalItems) * 100);
+            
+            document.getElementById('complianceProgress').style.width = `${progressPercentage}%`;
+            document.getElementById('complianceProgress').textContent = `${progressPercentage}% Complete`;
+            document.getElementById('complianceProgress').setAttribute('aria-valuenow', progressPercentage);
+            
+            db.complianceChecklist.forEach(item => {
+                const checkEl = document.createElement('div');
+                checkEl.className = 'form-check mb-2';
+                checkEl.innerHTML = `
+                    <input class="form-check-input" type="checkbox" id="check${item.id}" ${item.compliant === 'Yes' ? 'checked' : ''}>
+                    <label class="form-check-label" for="check${item.id}">
+                        ${item.requirement}
+                    </label>
+                `;
+                complianceChecklist.appendChild(checkEl);
+            });
+        }
+
+        // Load assessments
+        function loadAssessments() {
+            const assessmentsTable = document.getElementById('assessmentsTable').getElementsByTagName('tbody')[0];
+            assessmentsTable.innerHTML = '';
+            
+            db.assessments.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(assessment => {
+                const row = assessmentsTable.insertRow();
+                row.innerHTML = `
+                    <td>${formatDate(assessment.date)}</td>
+                    <td>${assessment.assessor}</td>
+                    <td><span class="badge ${getHealthBadgeClass(assessment.health)}">${capitalizeFirstLetter(assessment.health)}</span></td>
+                    <td>${assessment.threats.join(', ') || 'None'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary view-assessment" data-id="${assessment.id}">View</button>
+                        <button class="btn btn-sm btn-outline-secondary export-assessment" data-id="${assessment.id}">PDF</button>
+                    </td>
+                `;
+            });
+            
+            // Add event listeners to view buttons
+            document.querySelectorAll('.view-assessment').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const assessmentId = this.getAttribute('data-id');
+                    const assessment = db.assessments.find(a => a.id == assessmentId);
+                    if (assessment) {
+                        showAssessmentDetails(assessment);
+                    }
+                });
+            });
+        }
+
+        // Load species
+        function loadSpecies() {
+            // Species cards
+            const speciesCardsContainer = document.getElementById('speciesCardsContainer');
+            speciesCardsContainer.innerHTML = '';
+            
+            const recentSpecies = db.species
+                .sort((a, b) => new Date(b.lastObserved || 0) - new Date(a.lastObserved || 0))
+                .slice(0, 3);
+            
+            if (recentSpecies.length === 0) {
+                speciesCardsContainer.innerHTML = '<div class="col-12"><p>No species recorded yet.</p></div>';
+            } else {
+                recentSpecies.forEach(species => {
+                    const cardCol = document.createElement('div');
+                    cardCol.className = 'col-md-4 mb-4';
+                    cardCol.innerHTML = `
+                        <div class="card h-100 species-card">
+                            <img src="${species.image || 'https://via.placeholder.com/300x200?text=No+image'}" class="card-img-top" alt="${species.scientificName}">
+                            <div class="card-body">
+                                <h5 class="card-title">${species.scientificName}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">${species.commonName || 'No common name'}</h6>
+                                <p class="card-text">
+                                    <span class="badge ${getSpeciesStatusBadgeClass(species.status)} me-1">${capitalizeFirstLetter(species.status)}</span>
+                                    ${species.type === 'weed' || species.type === 'pest' ? `<span class="badge bg-warning">High priority</span>` : ''}
+                                </p>
+                                <p class="card-text"><small>Last observed: ${species.lastObserved ? formatDate(species.lastObserved) : 'Not recorded'}</small></p>
+                                <button class="btn btn-sm btn-outline-primary view-species" data-id="${species.id}">View Details</button>
+                            </div>
+                        </div>
+                    `;
+                    speciesCardsContainer.appendChild(cardCol);
+                });
+            }
+            
+            // Species table
+            const speciesTable = document.getElementById('speciesTable').getElementsByTagName('tbody')[0];
+            speciesTable.innerHTML = '';
+            
+            // Populate monitoring species dropdown
+            const monitoringSpeciesSelect = document.getElementById('monitoringSpecies');
+            monitoringSpeciesSelect.innerHTML = '';
+            
+            db.species.forEach(species => {
+                // Add to table
+                const row = speciesTable.insertRow();
+                row.innerHTML = `
+                    <td>${species.scientificName}</td>
+                    <td>${species.commonName || '-'}</td>
+                    <td>${capitalizeFirstLetter(species.type)}</td>
+                    <td><span class="badge ${getSpeciesStatusBadgeClass(species.status)}">${capitalizeFirstLetter(species.status)}</span></td>
+                    <td>${species.lastObserved ? formatDate(species.lastObserved) : 'Not recorded'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary view-species" data-id="${species.id}">View</button>
+                        ${species.type === 'flora' && species.status === 'weed' ? 
+                            '<button class="btn btn-sm btn-outline-warning control-species" data-id="${species.id}">Control</button>' : 
+                            (species.type === 'fauna' && (species.status === 'endangered' || species.status === 'vulnerable') ? 
+                                '<button class="btn btn-sm btn-outline-info monitor-species" data-id="${species.id}">Monitor</button>' : 
+                                '<button class="btn btn-sm btn-outline-secondary map-species" data-id="${species.id}">Map</button>')}
+                    </td>
+                `;
+                
+                // Add to monitoring species dropdown
+                const option = document.createElement('option');
+                option.value = species.id;
+                option.textContent = `${species.scientificName}${species.commonName ? ` (${species.commonName})` : ''}`;
+                monitoringSpeciesSelect.appendChild(option);
+            });
+            
+            // Add event listeners to species buttons
+            document.querySelectorAll('.view-species').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const speciesId = this.getAttribute('data-id');
+                    const species = db.species.find(s => s.id == speciesId);
+                    if (species) {
+                        showSpeciesDetails(species);
+                    }
+                });
+            });
+        }
+
+        // Load activities
+        function loadActivities() {
+            // Upcoming activities
+            const upcomingTable = document.getElementById('upcomingActivitiesTable').getElementsByTagName('tbody')[0];
+            upcomingTable.innerHTML = '';
+            
+            const upcomingActivities = db.activities
+                .filter(a => a.status === 'planned' || a.status === 'in-progress')
+                .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+            
+            if (upcomingActivities.length === 0) {
+                upcomingTable.innerHTML = '<tr><td colspan="7" class="text-center">No upcoming activities</td></tr>';
+            } else {
+                upcomingActivities.forEach(activity => {
+                    const row = upcomingTable.insertRow();
+                    row.innerHTML = `
+                        <td>${activity.title}</td>
+                        <td>${formatActivityType(activity.type)}</td>
+                        <td>${formatDate(activity.startDate)}</td>
+                        <td>${activity.location}</td>
+                        <td>${activity.assignedTo}</td>
+                        <td><span class="badge ${getStatusBadgeClass(activity.status)}">${capitalizeFirstLetter(activity.status)}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary view-activity" data-id="${activity.id}">Details</button>
+                        </td>
+                    `;
+                });
+            }
+            
+            // Completed activities
+            const completedTable = document.getElementById('completedActivitiesTable').getElementsByTagName('tbody')[0];
+            completedTable.innerHTML = '';
+            
+            const completedActivities = db.activities
+                .filter(a => a.status === 'completed')
+                .sort((a, b) => new Date(b.endDate || b.startDate) - new Date(a.endDate || a.startDate));
+            
+            if (completedActivities.length === 0) {
+                completedTable.innerHTML = '<tr><td colspan="7" class="text-center">No completed activities</td></tr>';
+            } else {
+                completedActivities.forEach(activity => {
+                    const row = completedTable.insertRow();
+                    row.innerHTML = `
+                        <td>${activity.title}</td>
+                        <td>${formatActivityType(activity.type)}</td>
+                        <td>${formatDate(activity.endDate || activity.startDate)}</td>
+                        <td>${activity.location}</td>
+                        <td>${activity.assignedTo}</td>
+                        <td><span class="badge ${getStatusBadgeClass(activity.status)}">${capitalizeFirstLetter(activity.status)}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary view-activity" data-id="${activity.id}">Details</button>
+                            <button class="btn btn-sm btn-outline-secondary report-activity" data-id="${activity.id}">Report</button>
+                        </td>
+                    `;
+                });
+            }
+            
+            // Overdue activities
+            const overdueTable = document.getElementById('overdueActivitiesTable').getElementsByTagName('tbody')[0];
+            overdueTable.innerHTML = '';
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const overdueActivities = db.activities
+                .filter(a => (a.status === 'planned' || a.status === 'in-progress') && new Date(a.startDate) < today)
+                .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+            
+            if (overdueActivities.length === 0) {
+                overdueTable.innerHTML = '<tr><td colspan="7"
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // ... (your existing code continues from above)
+
+// Utility functions
+function formatDate(dateString) {
+    if (!dateString) return 'Not specified';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-AU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
+
+function formatActivityType(type) {
+    const typeMap = {
+        'weed-control': 'Weed Control',
+        'revegetation': 'Revegetation',
+        'erosion-control': 'Erosion Control',
+        'fauna-survey': 'Fauna Survey',
+        'vegetation-survey': 'Vegetation Survey',
+        'water-quality': 'Water Quality',
+        'other': 'Other'
+    };
+    return typeMap[type] || type;
+}
+
+function getStatusBadgeClass(status) {
+    const statusMap = {
+        'planned': 'bg-secondary',
+        'in-progress': 'bg-primary',
+        'completed': 'bg-success',
+        'cancelled': 'bg-danger'
+    };
+    return statusMap[status] || 'bg-secondary';
+}
+
+function getHealthBadgeClass(health) {
+    const healthMap = {
+        'excellent': 'bg-success',
+        'good': 'bg-info',
+        'fair': 'bg-warning',
+        'poor': 'bg-danger',
+        'degraded': 'bg-dark'
+    };
+    return healthMap[health] || 'bg-secondary';
+}
+
+function getSpeciesStatusBadgeClass(status) {
+    const statusMap = {
+        'native': 'bg-success',
+        'introduced': 'bg-secondary',
+        'weed': 'bg-danger',
+        'pest': 'bg-warning',
+        'endangered': 'bg-danger',
+        'vulnerable': 'bg-warning',
+        'threatened': 'bg-warning'
+    };
+    return statusMap[status] || 'bg-secondary';
+}
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    // Form submissions
+    document.getElementById('assessmentForm').addEventListener('submit', handleAssessmentSubmit);
+    document.getElementById('activityForm').addEventListener('submit', handleActivitySubmit);
+    document.getElementById('speciesForm').addEventListener('submit', handleSpeciesSubmit);
+    document.getElementById('monitoringForm').addEventListener('submit', handleMonitoringSubmit);
+    document.getElementById('userProfileForm').addEventListener('submit', handleUserProfileSubmit);
+    document.getElementById('changePasswordForm').addEventListener('submit', handleChangePasswordSubmit);
+    document.getElementById('siteSettingsForm').addEventListener('submit', handleSiteSettingsSubmit);
+    
+    // Modal save buttons
+    document.getElementById('saveActivity').addEventListener('click', () => {
+        document.getElementById('activityForm').dispatchEvent(new Event('submit'));
+    });
+    
+    document.getElementById('saveSpecies').addEventListener('click', () => {
+        document.getElementById('speciesForm').dispatchEvent(new Event('submit'));
+    });
+    
+    document.getElementById('saveMonitoring').addEventListener('click', () => {
+        document.getElementById('monitoringForm').dispatchEvent(new Event('submit'));
+    });
+    
+    // Image preview handlers
+    document.getElementById('speciesImage').addEventListener('change', function(e) {
+        previewImage(this, document.getElementById('speciesImagePreview'));
+    });
+    
+    document.getElementById('assessmentPhotos').addEventListener('change', function(e) {
+        previewMultipleImages(this, 'assessmentPhotoPreview');
+    });
+    
+    document.getElementById('monitoringPhotos').addEventListener('change', function(e) {
+        previewMultipleImages(this, 'monitoringPhotoPreview');
+    });
+    
+    // Other buttons
+    document.getElementById('generateComplianceReport').addEventListener('click', generateComplianceReport);
+    document.getElementById('saveComplianceChecklist').addEventListener('click', saveComplianceChecklist);
+    document.getElementById('exportAllData').addEventListener('click', exportAllData);
+    document.getElementById('backupDatabase').addEventListener('click', backupDatabase);
+    document.getElementById('resetTestData').addEventListener('click', resetTestData);
+    document.getElementById('generateReportBtn').addEventListener('click', handleGenerateReport);
+    
+    // Tab change events to refresh data
+    const tabLinks = document.querySelectorAll('[data-bs-toggle="tab"]');
+    tabLinks.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(e) {
+            const target = e.target.getAttribute('href');
+            if (target === '#dashboard') loadDashboard();
+            if (target === '#site-assessment') loadAssessments();
+            if (target === '#maintenance-plan') loadActivities();
+            if (target === '#species-register') loadSpecies();
+            if (target === '#monitoring') loadMonitoring();
+            if (target === '#reports') loadReports();
+            if (target === '#legislation') loadComplianceChecklist();
+            if (target === '#settings') loadSettings();
+        });
+    });
+}
+
+// Image preview functions
+function previewImage(input, previewElement) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewElement.src = e.target.result;
+            previewElement.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function previewMultipleImages(input, previewContainerId) {
+    const previewContainer = document.getElementById(previewContainerId);
+    previewContainer.innerHTML = '';
+    
+    if (input.files) {
+        Array.from(input.files).forEach(file => {
+            if (file.type.match('image.*')) {
+                const reader = new FileReader();
+                const img = document.createElement('img');
+                img.className = 'image-thumbnail';
+                
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                };
+                
+                reader.readAsDataURL(file);
+                previewContainer.appendChild(img);
+            }
+        });
+    }
+}
+
+// Form handlers
+function handleAssessmentSubmit(e) {
+    e.preventDefault();
+    
+    if (!validateForm('assessmentForm')) return;
+    
+    // Get checkbox values
+    const components = Array.from(document.querySelectorAll('input[name="components"]:checked'))
+        .map(checkbox => checkbox.value);
+    
+    if (components.length === 0) {
+        document.getElementById('componentsFeedback').style.display = 'block';
+        return;
+    }
+    
+    const assessment = {
+        id: generateId(),
+        date: document.getElementById('assessmentDate').value,
+        assessor: document.getElementById('assessorName').value,
+        description: document.getElementById('siteDescription').value,
+        components: components,
+        health: document.getElementById('ecosystemHealth').value,
+        threats: Array.from(document.getElementById('threats').selectedOptions).map(option => option.value),
+        photos: [], // Would normally process file uploads here
+        createdAt: new Date().toISOString()
+    };
+    
+    db.assessments.push(assessment);
+    saveData();
+    
+    // Reset form
+    e.target.reset();
+    document.getElementById('assessmentPhotoPreview').innerHTML = '';
+    document.getElementById('componentsFeedback').style.display = 'none';
+    
+    showToast('Success', 'Assessment saved successfully');
+    loadAssessments();
+    
+    // Switch to assessments tab to see the new entry
+    const assessmentTab = document.querySelector('[href="#site-assessment"]');
+    bootstrap.Tab.getInstance(assessmentTab).show();
+}
+
+function handleActivitySubmit(e) {
+    e.preventDefault();
+    
+    if (!validateForm('activityForm')) return;
+    
+    const activity = {
+        id: generateId(),
+        type: document.getElementById('activityType').value,
+        title: document.getElementById('activityTitle').value,
+        startDate: document.getElementById('activityStartDate').value,
+        endDate: document.getElementById('activityEndDate').value || null,
+        location: document.getElementById('activityLocation').value,
+        description: document.getElementById('activityDescription').value,
+        assignedTo: document.getElementById('activityAssignedTo').value,
+        priority: document.getElementById('activityPriority').value,
+        status: document.getElementById('activityStatus').value,
+        notes: document.getElementById('activityNotes').value,
+        createdAt: new Date().toISOString()
+    };
+    
+    db.activities.push(activity);
+    saveData();
+    
+    // Reset form and close modal
+    e.target.reset();
+    const modal = bootstrap.Modal.getInstance(document.getElementById('newActivityModal'));
+    modal.hide();
+    
+    showToast('Success', 'Activity saved successfully');
+    loadActivities();
+    initCalendar(); // Refresh calendar with new activity
+}
+
+function handleSpeciesSubmit(e) {
+    e.preventDefault();
+    
+    if (!validateForm('speciesForm')) return;
+    
+    const species = {
+        id: generateId(),
+        scientificName: document.getElementById('speciesScientificName').value,
+        commonName: document.getElementById('speciesCommonName').value || null,
+        type: document.getElementById('speciesType').value,
+        status: document.getElementById('speciesStatus').value,
+        description: document.getElementById('speciesDescription').value || null,
+        habitat: document.getElementById('speciesHabitat').value || null,
+        lastObserved: document.getElementById('speciesLastObserved').value || null,
+        image: null, // Would normally process file upload here
+        notes: document.getElementById('speciesNotes').value || null,
+        createdAt: new Date().toISOString()
+    };
+    
+    db.species.push(species);
+    saveData();
+    
+    // Reset form and close modal
+    e.target.reset();
+    document.getElementById('speciesImagePreview').style.display = 'none';
+    const modal = bootstrap.Modal.getInstance(document.getElementById('newSpeciesModal'));
+    modal.hide();
+    
+    showToast('Success', 'Species record saved successfully');
+    loadSpecies();
+}
+
+function handleMonitoringSubmit(e) {
+    e.preventDefault();
+    
+    if (!validateForm('monitoringForm')) return;
+    
+    const monitoring = {
+        id: generateId(),
+        type: document.getElementById('monitoringType').value,
+        date: document.getElementById('monitoringDate').value,
+        location: document.getElementById('monitoringLocation').value,
+        observer: document.getElementById('monitoringObserver').value,
+        findings: document.getElementById('monitoringFindings').value,
+        species: Array.from(document.getElementById('monitoringSpecies').selectedOptions).map(option => option.value),
+        photos: [], // Would normally process file uploads here
+        notes: document.getElementById('monitoringNotes').value || null,
+        createdAt: new Date().toISOString()
+    };
+    
+    db.monitoring.push(monitoring);
+    saveData();
+    
+    // Reset form and close modal
+    e.target.reset();
+    document.getElementById('monitoringPhotoPreview').innerHTML = '';
+    const modal = bootstrap.Modal.getInstance(document.getElementById('newMonitoringModal'));
+    modal.hide();
+    
+    showToast('Success', 'Monitoring record saved successfully');
+    loadMonitoring();
+}
+
+function handleUserProfileSubmit(e) {
+    e.preventDefault();
+    
+    if (!validateForm('userProfileForm')) return;
+    
+    db.settings.userProfile = {
+        name: document.getElementById('userName').value,
+        email: document.getElementById('userEmail').value,
+        role: document.getElementById('userRole').value
+    };
+    
+    saveData();
+    showToast('Success', 'Profile updated successfully');
+}
+
+function handleChangePasswordSubmit(e) {
+    e.preventDefault();
+    
+    if (!validateForm('changePasswordForm')) return;
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        document.getElementById('confirmPassword').classList.add('is-invalid');
+        return;
+    }
+    
+    // In a real app, you would verify current password and update it
+    e.target.reset();
+    showToast('Success', 'Password changed successfully');
+}
+
+function handleSiteSettingsSubmit(e) {
+    e.preventDefault();
+    
+    if (!validateForm('siteSettingsForm')) return;
+    
+    db.settings = {
+        siteName: document.getElementById('siteName').value,
+        siteLocation: document.getElementById('siteLocation').value,
+        siteArea: document.getElementById('siteArea').value,
+        siteDescription: document.getElementById('siteDescription').value,
+        userProfile: db.settings.userProfile || {}
+    };
+    
+    saveData();
+    showToast('Success', 'Site settings updated successfully');
+}
+
+function validateForm(formId) {
+    const form = document.getElementById(formId);
+    let isValid = true;
+    
+    // Check all required fields
+    form.querySelectorAll('[required]').forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            field.classList.remove('is-invalid');
+        }
+    });
+    
+    // Additional validation for specific fields
+    if (formId === 'changePasswordForm') {
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        if (newPassword.value !== confirmPassword.value) {
+            confirmPassword.classList.add('is-invalid');
+            isValid = false;
+        }
+    }
+    
+    return isValid;
+}
+
+// Detail view functions
+function showAssessmentDetails(assessment) {
+    const modalBody = document.getElementById('assessmentModalBody');
+    
+    modalBody.innerHTML = `
+        <div class="mb-3">
+            <h6>Assessment Date</h6>
+            <p>${formatDate(assessment.date)}</p>
+        </div>
+        <div class="mb-3">
+            <h6>Assessor</h6>
+            <p>${assessment.assessor}</p>
+        </div>
+        <div class="mb-3">
+            <h6>Site Description</h6>
+            <p>${assessment.description}</p>
+        </div>
+        <div class="mb-3">
+            <h6>Ecosystem Components</h6>
+            <p>${assessment.components.map(c => capitalizeFirstLetter(c)).join(', ')}</p>
+        </div>
+        <div class="mb-3">
+            <h6>Health Rating</h6>
+            <span class="badge ${getHealthBadgeClass(assessment.health)}">${capitalizeFirstLetter(assessment.health)}</span>
+        </div>
+        <div class="mb-3">
+            <h6>Identified Threats</h6>
+            <p>${assessment.threats.length > 0 ? assessment.threats.map(t => capitalizeFirstLetter(t)).join(', ') : 'None identified'}</p>
+        </div>
+        ${assessment.photos && assessment.photos.length > 0 ? `
+        <div class="mb-3">
+            <h6>Photos</h6>
+            <div class="d-flex flex-wrap gap-2">
+                ${assessment.photos.map(photo => `<img src="${photo}" class="image-thumbnail" alt="Assessment photo">`).join('')}
+            </div>
+        </div>
+        ` : ''}
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('viewAssessmentModal'));
+    modal.show();
+}
+
+function showSpeciesDetails(species) {
+    const modalBody = document.getElementById('speciesModalBody');
+    
+    modalBody.innerHTML = `
+        <div class="row">
+            <div class="col-md-4">
+                <img src="${species.image || 'https://via.placeholder.com/300x200?text=No+image'}" class="img-fluid rounded" alt="${species.scientificName}">
+            </div>
+            <div class="col-md-8">
+                <h4>${species.scientificName}</h4>
+                ${species.commonName ? `<p class="text-muted">${species.commonName}</p>` : ''}
+                
+                <div class="mb-3">
+                    <span class="badge ${getSpeciesStatusBadgeClass(species.status)} me-2">${capitalizeFirstLetter(species.status)}</span>
+                    <span class="badge bg-secondary">${capitalizeFirstLetter(species.type)}</span>
+                </div>
+                
+                ${species.description ? `
+                <div class="mb-3">
+                    <h6>Description</h6>
+                    <p>${species.description}</p>
+                </div>
+                ` : ''}
+                
+                ${species.habitat ? `
+                <div class="mb-3">
+                    <h6>Habitat</h6>
+                    <p>${species.habitat}</p>
+                </div>
+                ` : ''}
+                
+                ${species.lastObserved ? `
+                <div class="mb-3">
+                    <h6>Last Observed</h6>
+                    <p>${formatDate(species.lastObserved)}</p>
+                </div>
+                ` : ''}
+                
+                ${species.notes ? `
+                <div class="mb-3">
+                    <h6>Notes</h6>
+                    <p>${species.notes}</p>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('viewSpeciesModal'));
+    modal.show();
+}
+
+function showActivityDetails(activity) {
+    const modalBody = document.getElementById('activityModalBody');
+    
+    modalBody.innerHTML = `
+        <div class="mb-3">
+            <h4>${activity.title}</h4>
+            <span class="badge ${getStatusBadgeClass(activity.status)} me-2">${capitalizeFirstLetter(activity.status)}</span>
+            <span class="badge bg-secondary">${formatActivityType(activity.type)}</span>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h6>Start Date</h6>
+                <p>${formatDate(activity.startDate)}</p>
+            </div>
+            ${activity.endDate ? `
+            <div class="col-md-6">
+                <h6>End Date</h6>
+                <p>${formatDate(activity.endDate)}</p>
+            </div>
+            ` : ''}
+        </div>
+        
+        <div class="mb-3">
+            <h6>Location</h6>
+            <p>${activity.location}</p>
+        </div>
+        
+        <div class="mb-3">
+            <h6>Description</h6>
+            <p>${activity.description}</p>
+        </div>
+        
+        <div class="mb-3">
+            <h6>Assigned To</h6>
+            <p>${activity.assignedTo}</p>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h6>Priority</h6>
+                <p>${capitalizeFirstLetter(activity.priority)}</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Status</h6>
+                <p><span class="badge ${getStatusBadgeClass(activity.status)}">${capitalizeFirstLetter(activity.status)}</span></p>
+            </div>
+        </div>
+        
+        ${activity.notes ? `
+        <div class="mb-3">
+            <h6>Notes</h6>
+            <p>${activity.notes}</p>
+        </div>
+        ` : ''}
+    `;
+    
+    // Set up complete button handler
+    document.getElementById('completeActivity').onclick = function() {
+        activity.status = 'completed';
+        activity.endDate = new Date().toISOString();
+        saveData();
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('viewActivityModal'));
+        modal.hide();
+        
+        showToast('Success', 'Activity marked as completed');
+        loadActivities();
+        initCalendar();
+    };
+    
+    const modal = new bootstrap.Modal(document.getElementById('viewActivityModal'));
+    modal.show();
+}
+
+function showMonitoringDetails(monitoring) {
+    const modalBody = document.getElementById('monitoringModalBody');
+    
+    // Get species names if any
+    const speciesNames = monitoring.species.map(id => {
+        const species = db.species.find(s => s.id === id);
+        return species ? species.scientificName : id;
+    });
+    
+    modalBody.innerHTML = `
+        <div class="mb-3">
+            <h4>${formatActivityType(monitoring.type)}</h4>
+            <p class="text-muted">${formatDate(monitoring.date)}</p>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h6>Location</h6>
+                <p>${monitoring.location}</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Observer</h6>
+                <p>${monitoring.observer}</p>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <h6>Findings</h6>
+            <p>${monitoring.findings}</p>
+        </div>
+        
+        ${speciesNames.length > 0 ? `
+        <div class="mb-3">
+            <h6>Species Observed</h6>
+            <p>${speciesNames.join(', ')}</p>
+        </div>
+        ` : ''}
+        
+        ${monitoring.photos && monitoring.photos.length > 0 ? `
+        <div class="mb-3">
+            <h6>Photos</h6>
+            <div class="d-flex flex-wrap gap-2">
+                ${monitoring.photos.map(photo => `<img src="${photo}" class="image-thumbnail" alt="Monitoring photo">`).join('')}
+            </div>
+        </div>
+        ` : ''}
+        
+        ${monitoring.notes ? `
+        <div class="mb-3">
+            <h6>Notes</h6>
+            <p>${monitoring.notes}</p>
+        </div>
+        ` : ''}
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('viewMonitoringModal'));
+    modal.show();
+}
+
+// Other functionality
+function loadMonitoring() {
+    const monitoringTable = document.getElementById('monitoringTable').getElementsByTagName('tbody')[0];
+    monitoringTable.innerHTML = '';
+    
+    db.monitoring.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(monitoring => {
+        const row = monitoringTable.insertRow();
+        row.innerHTML = `
+            <td>${formatDate(monitoring.date)}</td>
+            <td>${formatActivityType(monitoring.type)}</td>
+            <td>${monitoring.location}</td>
+            <td>${monitoring.observer}</td>
+            <td>${monitoring.findings.substring(0, 50)}${monitoring.findings.length > 50 ? '...' : ''}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary view-monitoring" data-id="${monitoring.id}">View</button>
+            </td>
+        `;
+    });
+    
+    // Add event listeners to view buttons
+    document.querySelectorAll('.view-monitoring').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const monitoringId = this.getAttribute('data-id');
+            const monitoring = db.monitoring.find(m => m.id == monitoringId);
+            if (monitoring) {
+                showMonitoringDetails(monitoring);
+            }
+        });
+    });
+}
+
+function loadReports() {
+    const reportsTable = document.getElementById('reportsTable').getElementsByTagName('tbody')[0];
+    reportsTable.innerHTML = '';
+    
+    // In a real app, you would have actual reports data
+    if (db.reports.length === 0) {
+        reportsTable.innerHTML = '<tr><td colspan="5" class="text-center">No reports generated yet</td></tr>';
+    } else {
+        db.reports.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(report => {
+            const row = reportsTable.insertRow();
+            row.innerHTML = `
+                <td>${formatDate(report.date)}</td>
+                <td>${report.type}</td>
+                <td>${report.generatedBy}</td>
+                <td>${report.period || 'N/A'}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary view-report" data-id="${report.id}">View</button>
+                    <button class="btn btn-sm btn-outline-secondary download-report" data-id="${report.id}">Download</button>
+                </td>
+            `;
+        });
+    }
+}
+
+function loadComplianceChecklist() {
+    const checklistTable = document.getElementById('complianceChecklistTable').getElementsByTagName('tbody')[0];
+    checklistTable.innerHTML = '';
+    
+    db.complianceChecklist.forEach(item => {
+        const row = checklistTable.insertRow();
+        row.innerHTML = `
+            <td>${item.requirement}</td>
+            <td>
+                <select class="form-select form-select-sm compliance-status" data-id="${item.id}">
+                    <option value="" ${item.compliant === '' ? 'selected' : ''}>Select</option>
+                    <option value="Yes" ${item.compliant === 'Yes' ? 'selected' : ''}>Yes</option>
+                    <option value="No" ${item.compliant === 'No' ? 'selected' : ''}>No</option>
+                    <option value="N/A" ${item.compliant === 'N/A' ? 'selected' : ''}>N/A</option>
+                </select>
+            </td>
+            <td>
+                <input type="text" class="form-control form-control-sm compliance-evidence" data-id="${item.id}" value="${item.evidence || ''}" placeholder="Evidence">
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-secondary add-notes" data-id="${item.id}">Add Notes</button>
+            </td>
+        `;
+    });
+    
+    // Add event listeners
+    document.querySelectorAll('.compliance-status').forEach(select => {
+        select.addEventListener('change', function() {
+            const id = this.getAttribute('data-id');
+            const item = db.complianceChecklist.find(i => i.id == id);
+            if (item) {
+                item.compliant = this.value;
+                saveData();
+            }
+        });
+    });
+    
+    document.querySelectorAll('.compliance-evidence').forEach(input => {
+        input.addEventListener('change', function() {
+            const id = this.getAttribute('data-id');
+            const item = db.complianceChecklist.find(i => i.id == id);
+            if (item) {
+                item.evidence = this.value;
+                saveData();
+            }
+        });
+    });
+    
+    document.querySelectorAll('.add-notes').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const item = db.complianceChecklist.find(i => i.id == id);
+            if (item) {
+                const notes = prompt('Enter notes:', item.notes || '');
+                if (notes !== null) {
+                    item.notes = notes;
+                    saveData();
+                }
+            }
+        });
+    });
+}
+
+function loadSettings() {
+    // Load user profile
+    if (db.settings.userProfile) {
+        document.getElementById('userName').value = db.settings.userProfile.name || '';
+        document.getElementById('userEmail').value = db.settings.userProfile.email || '';
+        document.getElementById('userRole').value = db.settings.userProfile.role || '';
+    }
+    
+    // Load site settings
+    document.getElementById('siteName').value = db.settings.siteName || '';
+    document.getElementById('siteLocation').value = db.settings.siteLocation || '';
+    document.getElementById('siteArea').value = db.settings.siteArea || '';
+    document.getElementById('siteDescription').value = db.settings.siteDescription || '';
+}
+
+function saveComplianceChecklist() {
+    saveData();
+    showToast('Success', 'Compliance checklist saved successfully');
+}
+
+function generateComplianceReport() {
+    const completedItems = db.complianceChecklist.filter(item => item.compliant === 'Yes').length;
+    const totalItems = db.complianceChecklist.length;
+    const progressPercentage = Math.round((completedItems / totalItems) * 100);
+    
+    const report = {
+        id: generateId(),
+        type: 'Compliance Report',
+        date: new Date().toISOString(),
+        generatedBy: db.settings.userProfile.name || 'System',
+        content: `Compliance Status: ${progressPercentage}% complete`,
+        period: 'Current'
+    };
+    
+    db.reports.push(report);
+    saveData();
+    
+    showToast('Report Generated', 'Compliance report has been generated successfully');
+    loadReports();
+}
+
+function handleGenerateReport() {
+    const reportType = document.getElementById('reportType').value;
+    const startDate = document.getElementById('reportStartDate').value;
+    const endDate = document.getElementById('reportEndDate').value;
+    const format = document.getElementById('reportFormat').value;
+    
+    if (!reportType) {
+        document.getElementById('reportType').classList.add('is-invalid');
+        return;
+    }
+    
+    const report = {
+        id: generateId(),
+        type: document.getElementById('reportType').options[document.getElementById('reportType').selectedIndex].text,
+        date: new Date().toISOString(),
+        generatedBy: db.settings.userProfile.name || 'System',
+        period: startDate && endDate ? `${formatDate(startDate)} to ${formatDate(endDate)}` : 'All time',
+        format: format
+    };
+    
+    db.reports.push(report);
+    saveData();
+    
+    const modal = bootstrap.Modal.getInstance(document.getElementById('generateReportModal'));
+    modal.hide();
+    
+    showToast('Report Generated', `${report.type} has been generated successfully`);
+    loadReports();
+}
+
+function exportAllData() {
+    const dataStr = JSON.stringify(db, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'ecosystem-data.json';
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    showToast('Export Complete', 'All data has been exported successfully');
+}
+
+function backupDatabase() {
+    // In a real app, this would backup to a server or cloud storage
+    exportAllData(); // For now, just export the data
+    showToast('Backup Created', 'Database backup has been created successfully');
+}
+
+function resetTestData() {
+    if (confirm('Are you sure you want to reset all test data? This action cannot be undone.')) {
+        localStorage.clear();
+        location.reload();
+    }
+}
+
+// Add some sample data if the database is empty
+function addSampleData() {
+    if (db.assessments.length === 0) {
+        db.assessments.push({
+            id: generateId(),
+            date: new Date('2023-06-15').toISOString(),
+            assessor: 'Dr. Jane Smith',
+            description: 'Initial assessment of the northern woodland area. Found healthy native vegetation with some weed infestation.',
+            components: ['flora', 'fauna', 'soil'],
+            health: 'good',
+            threats: ['weeds', 'erosion'],
+            createdAt: new Date('2023-06-15').toISOString()
+        });
+    }
+    
+    if (db.species.length === 0) {
+        db.species.push(
+            {
+                id: generateId(),
+                scientificName: 'Eucalyptus pauciflora',
+                commonName: 'Snow Gum',
+                type: 'flora',
+                status: 'native',
+                description: 'A small to medium-sized tree with smooth bark and sickle-shaped leaves.',
+                habitat: 'Alpine and subalpine woodlands',
+                lastObserved: new Date('2023-07-20').toISOString(),
+                notes: 'Healthy population observed in Zone 2',
+                createdAt: new Date('2023-06-20').toISOString()
+            },
+            {
+                id: generateId(),
+                scientificName: 'Vulpes vulpes',
+                commonName: 'Red Fox',
+                type: 'fauna',
+                status: 'pest',
+                description: 'Introduced predator species that threatens native wildlife.',
+                habitat: 'Various habitats including woodlands and grasslands',
+                lastObserved: new Date('2023-07-15').toISOString(),
+                notes: 'Sighting confirmed, control measures needed',
+                createdAt: new Date('2023-06-25').toISOString()
+            }
+        );
+    }
+    
+    if (db.activities.length === 0) {
+        const nextWeek = new Date();
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        
+        db.activities.push(
+            {
+                id: generateId(),
+                type: 'weed-control',
+                title: 'Blackberry removal in Zone 1',
+                startDate: nextWeek.toISOString(),
+                location: 'Zone 1 - Creek area',
+                description: 'Manual removal of blackberry bushes along the creek bank.',
+                assignedTo: 'John Davis',
+                priority: 'high',
+                status: 'planned',
+                notes: 'Need to ensure minimal disturbance to creek bank',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: generateId(),
+                type: 'fauna-survey',
+                title: 'Bird survey - Spring season',
+                startDate: new Date('2023-09-01').toISOString(),
+                endDate: new Date('2023-09-30').toISOString(),
+                location: 'Entire site',
+                description: 'Seasonal bird survey to monitor population changes.',
+                assignedTo: 'Sarah Wilson',
+                priority: 'medium',
+                status: 'planned',
+                notes: 'Focus on threatened species',
+                createdAt: new Date().toISOString()
+            }
+        );
+    }
+    
+    if (db.monitoring.length === 0) {
+        db.monitoring.push({
+            id: generateId(),
+            type: 'vegetation-survey',
+            date: new Date('2023-07-10').toISOString(),
+            location: 'Zone 3 - Southern slope',
+            observer: 'Michael Chen',
+            findings: 'Native vegetation cover at 75%, weed cover at 15%. Significant improvement since last survey.',
+            species: db.species.filter(s => s.type === 'flora').map(s => s.id),
+            notes: 'Continue monitoring weed control efforts',
+            createdAt: new Date('2023-07-10').toISOString()
+        });
+    }
+    
+    saveData();
+}
+
+// Initialize with sample data if needed
+addSampleData();
+
+// Final initialization
+loadDashboard();
+loadAssessments();
+loadSpecies();
+loadActivities();
+loadMonitoring();
+loadReports();
+loadComplianceChecklist();
+loadSettings();
+
+// Add event listeners after everything is loaded
+setTimeout(setupEventListeners, 100);
+
+// End of JavaScript code
+</script>
 </body>
 </html>
