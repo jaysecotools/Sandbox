@@ -1949,21 +1949,57 @@
             }
             
             // Overdue activities
-            const overdueTable = document.getElementById('overdueActivitiesTable').getElementsByTagName('tbody')[0];
-            overdueTable.innerHTML = '';
-            
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            const overdueActivities = db.activities
-                .filter(a => (a.status === 'planned' || a.status === 'in-progress') && new Date(a.startDate) < today)
-                .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-            
-            if (overdueActivities.length === 0) {
-                overdueTable.innerHTML = '<tr><td colspan="7"
+// Overdue activities
+const overdueTable = document.getElementById('overdueActivitiesTable').getElementsByTagName('tbody')[0];
+overdueTable.innerHTML = '';
 
+const today = new Date();
+today.setHours(0, 0, 0, 0);
 
+const overdueActivities = db.activities
+    .filter(a => (a.status === 'planned' || a.status === 'in-progress') && new Date(a.startDate) < today)
+    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
+if (overdueActivities.length === 0) {
+    overdueTable.innerHTML = '<tr><td colspan="7" class="text-center">No overdue activities</td></tr>';
+} else {
+    overdueActivities.forEach(activity => {
+        const row = overdueTable.insertRow();
+        row.innerHTML = `
+            <td>${activity.title}</td>
+            <td>${formatActivityType(activity.type)}</td>
+            <td>${formatDate(activity.startDate)}</td>
+            <td>${activity.location}</td>
+            <td>${activity.assignedTo}</td>
+            <td><span class="badge ${getStatusBadgeClass(activity.status)}">${capitalizeFirstLetter(activity.status)}</span></td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary view-activity" data-id="${activity.id}">Details</button>
+                <button class="btn btn-sm btn-outline-warning reschedule-activity" data-id="${activity.id}">Reschedule</button>
+            </td>
+        `;
+    });
+}
+
+// Add event listeners to overdue activity buttons
+document.querySelectorAll('.view-activity').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const activityId = this.getAttribute('data-id');
+        const activity = db.activities.find(a => a.id == activityId);
+        if (activity) {
+            showActivityDetails(activity);
+        }
+    });
+});
+
+document.querySelectorAll('.reschedule-activity').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const activityId = this.getAttribute('data-id');
+        const activity = db.activities.find(a => a.id == activityId);
+        if (activity) {
+            rescheduleActivity(activity);
+        }
+    });
+});
 
 
 
