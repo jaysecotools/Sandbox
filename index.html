@@ -3088,3 +3088,907 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Native Ecosystem Maintenance Tool | AHCECR301 Compliance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <style>
+        /* Existing styles remain unchanged */
+        .sidebar {
+            min-height: 100vh;
+            background-color: #2c3e50;
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+            background-color: #34495e;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .map-container {
+            height: 400px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .species-card {
+            transition: transform 0.2s;
+        }
+        .species-card:hover {
+            transform: translateY(-5px);
+        }
+        .risk-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .risk-low {
+            background-color: #28a745;
+        }
+        .risk-medium {
+            background-color: #ffc107;
+        }
+        .risk-high {
+            background-color: #dc3545;
+        }
+        .logo {
+            font-weight: 700;
+            padding: 15px;
+            font-size: 1.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #map, #map-editor { 
+            height: 100%;
+            width: 100%;
+            border-radius: 5px;
+        }
+        .map-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+        .leaflet-top.leaflet-right {
+            margin-top: 50px;
+        }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+        }
+        .form-control.is-invalid {
+            background-image: none;
+            padding-right: 0.75rem;
+        }
+        .form-control.is-valid {
+            background-image: none;
+            padding-right: 0.75rem;
+        }
+        .fc-event {
+            cursor: pointer;
+        }
+        .species-image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 10px;
+            display: none;
+        }
+        .assessment-image-preview {
+            max-width: 100%;
+            max-height: 150px;
+            margin-top: 10px;
+        }
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .image-thumbnail {
+            max-width: 100px;
+            max-height: 100px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .fc-event-title {
+            white-space: normal;
+        }
+        .fc-daygrid-event-dot {
+            display: none;
+        }
+        
+        /* New styles for map management */
+        .map-editor-container {
+            position: relative;
+            height: 600px;
+            margin-bottom: 20px;
+        }
+        .map-toolbar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+        }
+        .map-toolbar .btn-group {
+            margin-bottom: 5px;
+        }
+        .feature-properties {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            max-width: 300px;
+            display: none;
+        }
+        .map-list-item {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .map-list-item:hover {
+            background-color: #f8f9fa;
+        }
+        .map-layer-control {
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast container (unchanged) -->
+    <div class="toast-container">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+                Operation completed successfully.
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="logo">EcoMaintain</div>
+                <ul class="nav flex-column p-3">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#dashboard" data-bs-toggle="tab">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <!-- NEW: Maps navigation item -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#maps" data-bs-toggle="tab">
+                            <i class="bi bi-map"></i> Maps
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#site-assessment" data-bs-toggle="tab">
+                            <i class="bi bi-clipboard-data"></i> Site Assessment
+                        </a>
+                    </li>
+                    <!-- Remaining navigation items unchanged -->
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 ms-sm-auto main-content">
+                <div class="tab-content">
+                    <!-- Dashboard Tab (unchanged) -->
+                    
+                    <!-- NEW: Maps Tab -->
+                    <div class="tab-pane fade" id="maps">
+                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                            <h1 class="h2">Map Management</h1>
+                            <div class="btn-toolbar mb-2 mb-md-0">
+                                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newMapModal">
+                                    <i class="bi bi-plus"></i> New Map
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">My Maps</h5>
+                                        <div class="list-group" id="mapsList">
+                                            <!-- Maps will be loaded here dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title" id="currentMapTitle">Select a map to edit</h5>
+                                        <div class="map-editor-container">
+                                            <div id="map-editor"></div>
+                                            <div class="map-toolbar" id="mapToolbar" style="display: none;">
+                                                <div class="btn-group-vertical">
+                                                    <button id="addPointBtn" class="btn btn-sm btn-outline-primary" title="Add Point">
+                                                        <i class="bi bi-geo-alt"></i>
+                                                    </button>
+                                                    <button id="addPolygonBtn" class="btn btn-sm btn-outline-success" title="Add Polygon">
+                                                        <i class="bi bi-pentagon"></i>
+                                                    </button>
+                                                    <button id="addLineBtn" class="btn btn-sm btn-outline-info" title="Add Line">
+                                                        <i class="bi bi-slash-lg"></i>
+                                                    </button>
+                                                    <button id="editFeaturesBtn" class="btn btn-sm btn-outline-warning" title="Edit Features">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button id="deleteFeatureBtn" class="btn btn-sm btn-outline-danger" title="Delete Feature">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                    <button id="saveMapBtn" class="btn btn-sm btn-outline-success" title="Save Map">
+                                                        <i class="bi bi-save"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="feature-properties" id="featureProperties">
+                                                <h6>Feature Properties</h6>
+                                                <form id="featureForm">
+                                                    <div class="mb-2">
+                                                        <label for="featureName" class="form-label">Name</label>
+                                                        <input type="text" class="form-control form-control-sm" id="featureName">
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <label for="featureDescription" class="form-label">Description</label>
+                                                        <textarea class="form-control form-control-sm" id="featureDescription" rows="2"></textarea>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <label for="featureType" class="form-label">Type</label>
+                                                        <select class="form-select form-select-sm" id="featureType">
+                                                            <option value="general">General</option>
+                                                            <option value="vegetation">Vegetation</option>
+                                                            <option value="water">Water Source</option>
+                                                            <option value="threat">Threat Area</option>
+                                                            <option value="restoration">Restoration Area</option>
+                                                            <option value="monitoring">Monitoring Point</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <label for="featureColor" class="form-label">Color</label>
+                                                        <input type="color" class="form-control form-control-sm" id="featureColor" value="#3388ff">
+                                                    </div>
+                                                    <button type="button" class="btn btn-primary btn-sm" id="saveFeatureBtn">Save Properties</button>
+                                                </form>
+                                            </div>
+                                            <div class="map-layer-control" id="mapLayerControl" style="display: none;">
+                                                <h6>Map Layers</h6>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="showPointsLayer" checked>
+                                                    <label class="form-check-label" for="showPointsLayer">Points</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="showPolygonsLayer" checked>
+                                                    <label class="form-check-label" for="showPolygonsLayer">Polygons</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="showLinesLayer" checked>
+                                                    <label class="form-check-label" for="showLinesLayer">Lines</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Remaining tabs unchanged -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing modals unchanged -->
+
+    <!-- NEW: New Map Modal -->
+    <div class="modal fade" id="newMapModal" tabindex="-1" aria-labelledby="newMapModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newMapModalLabel">Create New Map</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newMapForm">
+                        <div class="mb-3">
+                            <label for="mapName" class="form-label">Map Name *</label>
+                            <input type="text" class="form-control" id="mapName" required>
+                            <div class="invalid-feedback">Please provide a map name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="mapDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="mapDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="baseMap" class="form-label">Base Map</label>
+                            <select class="form-select" id="baseMap">
+                                <option value="osm">OpenStreetMap</option>
+                                <option value="satellite">Satellite</option>
+                                <option value="terrain">Terrain</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="createMapBtn">Create Map</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <!-- Leaflet Draw Plugin -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script>
+        // Data storage and management
+        const db = {
+            // Existing data properties...
+            maps: JSON.parse(localStorage.getItem('maps')) || [],
+            // ... rest of the data object
+        };
+
+        // Map editing variables
+        let currentMap = null;
+        let editMap = null;
+        let drawControl = null;
+        let selectedFeature = null;
+        let featureLayers = {
+            points: L.layerGroup(),
+            polygons: L.layerGroup(),
+            lines: L.layerGroup()
+        };
+
+        // Save data to localStorage
+        function saveData() {
+            // Existing save code...
+            localStorage.setItem('maps', JSON.stringify(db.maps));
+            // ... rest of saveData function
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Existing initialization code...
+            initMapEditor();
+            loadMaps();
+            // ... rest of initialization
+        });
+
+        // Initialize map editor
+        function initMapEditor() {
+            // Initialize the map editor
+            window.mapEditor = L.map('map-editor').setView([-33.4000, 150.3000], 13);
+            
+            // Add OpenStreetMap tiles by default
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(window.mapEditor);
+            
+            // Add feature layers to map
+            featureLayers.points.addTo(window.mapEditor);
+            featureLayers.polygons.addTo(window.mapEditor);
+            featureLayers.lines.addTo(window.mapEditor);
+            
+            // Initialize draw control (will be added when in edit mode)
+            initDrawControl();
+            
+            // Set up map editor event listeners
+            setupMapEditorListeners();
+        }
+        
+        // Initialize draw control
+        function initDrawControl() {
+            // Remove existing draw control if it exists
+            if (drawControl) {
+                window.mapEditor.removeControl(drawControl);
+            }
+            
+            // Initialize draw control
+            drawControl = new L.Control.Draw({
+                edit: {
+                    featureGroup: L.featureGroup([featureLayers.points, featureLayers.polygons, featureLayers.lines])
+                },
+                draw: {
+                    marker: true,
+                    polyline: true,
+                    polygon: true,
+                    rectangle: false,
+                    circle: false,
+                    circlemarker: false
+                }
+            });
+            
+            // Add event listeners for drawing
+            window.mapEditor.on(L.Draw.Event.CREATED, function (e) {
+                const layer = e.layer;
+                const type = e.layerType;
+                
+                // Add to appropriate layer group
+                if (type === 'marker') {
+                    featureLayers.points.addLayer(layer);
+                } else if (type === 'polygon') {
+                    featureLayers.polygons.addLayer(layer);
+                } else if (type === 'polyline') {
+                    featureLayers.lines.addLayer(layer);
+                }
+                
+                // Set default properties
+                layer.feature = layer.feature || {};
+                layer.feature.properties = layer.feature.properties || {
+                    name: 'New Feature',
+                    description: '',
+                    type: 'general',
+                    color: '#3388ff'
+                };
+                
+                // Style the feature
+                styleFeature(layer);
+                
+                // Add click event to edit properties
+                layer.on('click', function() {
+                    selectFeature(layer);
+                });
+            });
+            
+            window.mapEditor.on(L.Draw.Event.EDITED, function (e) {
+                // Save the map when features are edited
+                setTimeout(saveCurrentMap, 100);
+            });
+            
+            window.mapEditor.on(L.Draw.Event.DELETED, function (e) {
+                // Save the map when features are deleted
+                setTimeout(saveCurrentMap, 100);
+            });
+        }
+        
+        // Set up map editor listeners
+        function setupMapEditorListeners() {
+            // Toolbar buttons
+            document.getElementById('addPointBtn').addEventListener('click', function() {
+                new L.Draw.Marker(window.mapEditor, drawControl.options.draw.marker).enable();
+            });
+            
+            document.getElementById('addPolygonBtn').addEventListener('click', function() {
+                new L.Draw.Polygon(window.mapEditor, drawControl.options.draw.polygon).enable();
+            });
+            
+            document.getElementById('addLineBtn').addEventListener('click', function() {
+                new L.Draw.Polyline(window.mapEditor, drawControl.options.draw.polyline).enable();
+            });
+            
+            document.getElementById('editFeaturesBtn').addEventListener('click', function() {
+                drawControl._toolbars.edit._modes.edit.handler.enable();
+            });
+            
+            document.getElementById('deleteFeatureBtn').addEventListener('click', function() {
+                if (selectedFeature) {
+                    if (confirm('Are you sure you want to delete this feature?')) {
+                        window.mapEditor.removeLayer(selectedFeature);
+                        selectedFeature = null;
+                        document.getElementById('featureProperties').style.display = 'none';
+                        saveCurrentMap();
+                    }
+                } else {
+                    alert('Please select a feature to delete.');
+                }
+            });
+            
+            document.getElementById('saveMapBtn').addEventListener('click', function() {
+                saveCurrentMap();
+                showToast('Success', 'Map saved successfully');
+            });
+            
+            document.getElementById('saveFeatureBtn').addEventListener('click', function() {
+                if (selectedFeature) {
+                    selectedFeature.feature.properties = {
+                        name: document.getElementById('featureName').value,
+                        description: document.getElementById('featureDescription').value,
+                        type: document.getElementById('featureType').value,
+                        color: document.getElementById('featureColor').value
+                    };
+                    
+                    styleFeature(selectedFeature);
+                    saveCurrentMap();
+                    showToast('Success', 'Feature properties saved');
+                }
+            });
+            
+            // Layer visibility toggles
+            document.getElementById('showPointsLayer').addEventListener('change', function() {
+                if (this.checked) {
+                    window.mapEditor.addLayer(featureLayers.points);
+                } else {
+                    window.mapEditor.removeLayer(featureLayers.points);
+                }
+            });
+            
+            document.getElementById('showPolygonsLayer').addEventListener('change', function() {
+                if (this.checked) {
+                    window.mapEditor.addLayer(featureLayers.polygons);
+                } else {
+                    window.mapEditor.removeLayer(featureLayers.polygons);
+                }
+            });
+            
+            document.getElementById('showLinesLayer').addEventListener('change', function() {
+                if (this.checked) {
+                    window.mapEditor.addLayer(featureLayers.lines);
+                } else {
+                    window.mapEditor.removeLayer(featureLayers.lines);
+                }
+            });
+            
+            // New map form
+            document.getElementById('createMapBtn').addEventListener('click', function() {
+                const name = document.getElementById('mapName').value;
+                const description = document.getElementById('mapDescription').value;
+                const baseMap = document.getElementById('baseMap').value;
+                
+                if (!name) {
+                    document.getElementById('mapName').classList.add('is-invalid');
+                    return;
+                }
+                
+                createNewMap(name, description, baseMap);
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newMapModal'));
+                modal.hide();
+            });
+        }
+        
+        // Load maps list
+        function loadMaps() {
+            const mapsList = document.getElementById('mapsList');
+            mapsList.innerHTML = '';
+            
+            if (db.maps.length === 0) {
+                mapsList.innerHTML = '<div class="list-group-item">No maps created yet</div>';
+            } else {
+                db.maps.forEach(map => {
+                    const mapItem = document.createElement('a');
+                    mapItem.href = '#';
+                    mapItem.className = 'list-group-item list-group-item-action map-list-item';
+                    mapItem.innerHTML = `
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">${map.name}</h6>
+                            <small>${formatDate(map.createdAt)}</small>
+                        </div>
+                        <p class="mb-1">${map.description || 'No description'}</p>
+                        <small>${map.features ? Object.values(map.features).flat().length : 0} features</small>
+                    `;
+                    mapItem.addEventListener('click', () => loadMap(map.id));
+                    mapsList.appendChild(mapItem);
+                });
+            }
+        }
+        
+        // Create a new map
+        function createNewMap(name, description, baseMap) {
+            const newMap = {
+                id: generateId(),
+                name: name,
+                description: description,
+                baseMap: baseMap,
+                features: {
+                    points: [],
+                    polygons: [],
+                    lines: []
+                },
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            db.maps.push(newMap);
+            saveData();
+            loadMaps();
+            loadMap(newMap.id);
+            
+            showToast('Success', `Map "${name}" created successfully`);
+        }
+        
+        // Load a map for editing
+        function loadMap(mapId) {
+            currentMap = db.maps.find(m => m.id === mapId);
+            if (!currentMap) return;
+            
+            // Update UI
+            document.getElementById('currentMapTitle').textContent = currentMap.name;
+            document.getElementById('mapToolbar').style.display = 'block';
+            document.getElementById('mapLayerControl').style.display = 'block';
+            
+            // Clear existing features
+            featureLayers.points.clearLayers();
+            featureLayers.polygons.clearLayers();
+            featureLayers.lines.clearLayers();
+            
+            // Load base map
+            updateBaseMap(currentMap.baseMap);
+            
+            // Load features
+            loadMapFeatures(currentMap);
+            
+            // Enable drawing
+            window.mapEditor.addControl(drawControl);
+        }
+        
+        // Update base map
+        function updateBaseMap(baseMapType) {
+            // Remove existing base layers
+            window.mapEditor.eachLayer(layer => {
+                if (layer instanceof L.TileLayer) {
+                    window.mapEditor.removeLayer(layer);
+                }
+            });
+            
+            // Add selected base layer
+            let tileLayer;
+            switch(baseMapType) {
+                case 'satellite':
+                    tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                    });
+                    break;
+                case 'terrain':
+                    tileLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                        attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>'
+                    });
+                    break;
+                default: // OSM
+                    tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    });
+            }
+            
+            tileLayer.addTo(window.mapEditor);
+        }
+        
+        // Load map features
+        function loadMapFeatures(map) {
+            // Load points
+            if (map.features.points) {
+                map.features.points.forEach(pointData => {
+                    const marker = L.marker([pointData.lat, pointData.lng]);
+                    marker.feature = {
+                        properties: pointData.properties,
+                        geometry: pointData
+                    };
+                    
+                    // Add popup
+                    if (pointData.properties.name) {
+                        marker.bindPopup(`<strong>${pointData.properties.name}</strong><br>${pointData.properties.description || ''}`);
+                    }
+                    
+                    // Style the marker
+                    styleFeature(marker);
+                    
+                    // Add click event
+                    marker.on('click', function() {
+                        selectFeature(marker);
+                    });
+                    
+                    featureLayers.points.addLayer(marker);
+                });
+            }
+            
+            // Load polygons
+            if (map.features.polygons) {
+                map.features.polygons.forEach(polygonData => {
+                    const polygon = L.polygon(polygonData.latlngs);
+                    polygon.feature = {
+                        properties: polygonData.properties,
+                        geometry: polygonData
+                    };
+                    
+                    // Add popup
+                    if (polygonData.properties.name) {
+                        polygon.bindPopup(`<strong>${polygonData.properties.name}</strong><br>${polygonData.properties.description || ''}`);
+                    }
+                    
+                    // Style the polygon
+                    styleFeature(polygon);
+                    
+                    // Add click event
+                    polygon.on('click', function() {
+                        selectFeature(polygon);
+                    });
+                    
+                    featureLayers.polygons.addLayer(polygon);
+                });
+            }
+            
+            // Load lines
+            if (map.features.lines) {
+                map.features.lines.forEach(lineData => {
+                    const polyline = L.polyline(lineData.latlngs);
+                    polyline.feature = {
+                        properties: lineData.properties,
+                        geometry: lineData
+                    };
+                    
+                    // Add popup
+                    if (lineData.properties.name) {
+                        polyline.bindPopup(`<strong>${lineData.properties.name}</strong><br>${lineData.properties.description || ''}`);
+                    }
+                    
+                    // Style the line
+                    styleFeature(polyline);
+                    
+                    // Add click event
+                    polyline.on('click', function() {
+                        selectFeature(polyline);
+                    });
+                    
+                    featureLayers.lines.addLayer(polyline);
+                });
+            }
+        }
+        
+        // Style a feature based on its properties
+        function styleFeature(layer) {
+            const props = layer.feature.properties;
+            
+            if (layer instanceof L.Marker) {
+                // For markers, we could use custom icons based on type
+                // For simplicity, we'll just use the default marker with the selected color
+                layer.setStyle({
+                    color: props.color
+                });
+            } else if (layer instanceof L.Polygon) {
+                layer.setStyle({
+                    color: props.color,
+                    fillColor: props.color,
+                    fillOpacity: 0.4,
+                    weight: 2
+                });
+            } else if (layer instanceof L.Polyline) {
+                layer.setStyle({
+                    color: props.color,
+                    weight: 3
+                });
+            }
+        }
+        
+        // Select a feature for editing
+        function selectFeature(feature) {
+            selectedFeature = feature;
+            
+            // Show properties form
+            const propsForm = document.getElementById('featureProperties');
+            propsForm.style.display = 'block';
+            
+            // Populate form with feature properties
+            document.getElementById('featureName').value = feature.feature.properties.name;
+            document.getElementById('featureDescription').value = feature.feature.properties.description;
+            document.getElementById('featureType').value = feature.feature.properties.type;
+            document.getElementById('featureColor').value = feature.feature.properties.color;
+        }
+        
+        // Save the current map
+        function saveCurrentMap() {
+            if (!currentMap) return;
+            
+            // Update map features from layers
+            currentMap.features.points = [];
+            currentMap.features.polygons = [];
+            currentMap.features.lines = [];
+            
+            // Save points
+            featureLayers.points.eachLayer(layer => {
+                if (layer instanceof L.Marker) {
+                    currentMap.features.points.push({
+                        lat: layer.getLatLng().lat,
+                        lng: layer.getLatLng().lng,
+                        properties: layer.feature.properties
+                    });
+                }
+            });
+            
+            // Save polygons
+            featureLayers.polygons.eachLayer(layer => {
+                if (layer instanceof L.Polygon) {
+                    currentMap.features.polygons.push({
+                        latlngs: layer.getLatLngs().map(latlngs => 
+                            latlngs.map(latlng => [latlng.lat, latlng.lng])
+                        ),
+                        properties: layer.feature.properties
+                    });
+                }
+            });
+            
+            // Save lines
+            featureLayers.lines.eachLayer(layer => {
+                if (layer instanceof L.Polyline) {
+                    currentMap.features.lines.push({
+                        latlngs: layer.getLatLngs().map(latlng => [latlng.lat, latlng.lng]),
+                        properties: layer.feature.properties
+                    });
+                }
+            });
+            
+            // Update timestamp
+            currentMap.updatedAt = new Date().toISOString();
+            
+            // Save to database
+            saveData();
+        }
+
+        // ... rest of the existing JavaScript code remains unchanged
+    </script>
+</body>
+</html>
+
+
+
+
+
+
