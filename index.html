@@ -427,86 +427,86 @@
                 </div>
 
                 <!-- Interactive Map Section -->
-                <div id="map" class="content-section d-none">
-                    <h2 class="mb-4">Interactive Ecosystem Map</h2>
-                    
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <div class="btn-group" role="group">
-                                        <button type="button" class="btn btn-outline-primary" id="drawMarker">
-                                            <i class="bi bi-geo-alt"></i> Add Marker
-                                        </button>
-                                        <button type="button" class="btn btn-outline-success" id="drawPolygon">
-                                            <i class="bi bi-pentagon"></i> Draw Zone
-                                        </button>
-                                        <button type="button" class="btn btn-outline-info" id="drawLine">
-                                            <i class="bi bi-signpost"></i> Draw Path
-                                        </button>
-                                        <button type="button" class="btn btn-outline-warning" id="editFeatures">
-                                            <i class="bi bi-pencil"></i> Edit Features
-                                        </button>
-                                        <button type="button" class="btn btn-outline-danger" id="deleteFeatures">
-                                            <i class="bi bi-trash"></i> Delete
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 text-end">
-                                    <div class="btn-group" role="group">
-                                        <button type="button" class="btn btn-outline-secondary" id="showVegetation">
-                                            <i class="bi bi-tree"></i> Vegetation
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" id="showWeeds">
-                                            <i class="bi bi-shield-exclamation"></i> Weeds
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary" id="showWater">
-                                            <i class="bi bi-droplet"></i> Water Sources
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="map-container">
-                                <div id="mapid"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>Map Legend</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div style="width: 20px; height: 20px; background-color: #28a745; border-radius: 50%; margin-right: 10px;"></div>
-                                        <span>Native Vegetation</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div style="width: 20px; height: 20px; background-color: #dc3545; border-radius: 50%; margin-right: 10px;"></div>
-                                        <span>Weed Infestation</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div style="width: 20px; height: 20px; background-color: #007bff; border-radius: 50%; margin-right: 10px;"></div>
-                                        <span>Water Source</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div style="width: 20px; height: 20px; background-color: #ffc107; border-radius: 50%; margin-right: 10px;"></div>
-                                        <span>Restoration Area</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+<div id="map" class="content-section d-none">
+    <h2 class="mb-4">Interactive Ecosystem Map</h2>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary" id="drawMarker">
+                            <i class="bi bi-geo-alt"></i> Add Marker
+                        </button>
+                        <button type="button" class="btn btn-outline-success" id="drawPolygon">
+                            <i class="bi bi-pentagon"></i> Draw Zone
+                        </button>
+                        <button type="button" class="btn btn-outline-info" id="drawLine">
+                            <i class="bi bi-signpost"></i> Draw Path
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" id="editFeatures">
+                            <i class="bi bi-pencil"></i> Edit Features
+                        </button>
+                        <button type="button" class="btn btn-outline-danger" id="deleteFeatures">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
                     </div>
                 </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary" id="showVegetation">
+                            <i class="bi bi-tree"></i> Vegetation
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="showWeeds">
+                            <i class="bi bi-shield-exclamation"></i> Weeds
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="showWater">
+                            <i class="bi bi-droplet"></i> Water Sources
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <div id="mapid"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h5>Map Legend</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div style="width: 20px; height: 20px; background-color: #28a745; border-radius: 50%; margin-right: 10px;"></div>
+                        <span>Native Vegetation</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div style="width: 20px; height: 20px; background-color: #dc3545; border-radius: 50%; margin-right: 10px;"></div>
+                        <span>Weed Infestation</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div style="width: 20px; height: 20px; background-color: #007bff; border-radius: 50%; margin-right: 10px;"></div>
+                        <span>Water Source</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div style="width: 20px; height: 20px; background-color: #ffc107; border-radius: 50%; margin-right: 10px;"></div>
+                        <span>Restoration Area</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
                 <!-- Assessments Section -->
                 <div id="assessments" class="content-section d-none">
@@ -1700,21 +1700,21 @@
     }
 
     // Initialize the application
-    function initApp() {
-        loadData();
-        setupEventListeners();
-        loadDashboard();
-        loadProjects();
-        loadAssessments();
-        loadSpecies();
-        loadActivities();
-        loadMonitoring();
-        loadReports();
-        loadComplianceChecklist();
-        loadSettings();
-        initMap();
-        initCharts();
-    }
+function initApp() {
+    loadData();
+    setupEventListeners();
+    loadDashboard();
+    loadProjects();
+    loadAssessments();
+    loadSpecies();
+    loadActivities();
+    loadMonitoring();
+    loadReports();
+    loadComplianceChecklist();
+    loadSettings();
+    initMap(); // Changed from the old map initialization function
+    initCharts();
+}
 
     // Load dashboard data
     function loadDashboard() {
@@ -2140,151 +2140,177 @@
         }
     }
 
-    // Initialize map
-    function initMap() {
-        // Create map centered on a default location (Melbourne)
-        const map = L.map('mapid').setView([-37.8136, 144.9631], 15);
-        
-        // Add base tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-        
-        // Initialize the feature group to store editable layers
-        const drawnItems = new L.FeatureGroup();
-        map.addLayer(drawnItems);
-        
-        // Initialize the draw control and pass it the FeatureGroup of editable layers
-        const drawControl = new L.Control.Draw({
-            edit: {
-                featureGroup: drawnItems
-            },
-            draw: {
-                polygon: true,
-                polyline: true,
-                marker: true,
-                circle: false,
-                rectangle: false,
-                circlemarker: false
+    
+function initMap() {
+    // Only initialize the map when the map section is shown
+    const mapSection = document.getElementById('map');
+    
+    // Create an observer to detect when the map section becomes visible
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (!mutation.target.classList.contains('d-none')) {
+                // Map section is now visible, initialize the map
+                createMap();
+                observer.disconnect(); // Stop observing once done
             }
         });
-        map.addControl(drawControl);
-        
-        // Add sample data to map
-        addMapSampleData(map, drawnItems);
-        
-        // Event listeners for drawing actions
-        map.on(L.Draw.Event.CREATED, function (e) {
-            const type = e.layerType;
-            const layer = e.layer;
-            
-            // Assign an ID to the layer
-            layer._id = generateId();
-            
-            // Add popup with layer details
-            if (type === 'marker') {
-                layer.bindPopup(`
-                    <b>Marker</b><br>
-                    Latitude: ${layer.getLatLng().lat.toFixed(6)}<br>
-                    Longitude: ${layer.getLatLng().lng.toFixed(6)}<br>
-                    <button class="btn btn-sm btn-primary mt-2 edit-feature" data-id="${layer._id}">Edit Details</button>
-                `);
-                
-                // Save to database
-                db.mapData.markers.push({
-                    id: layer._id,
-                    lat: layer.getLatLng().lat,
-                    lng: layer.getLatLng().lng,
-                    title: 'New Marker',
-                    description: '',
-                    type: 'marker'
-                });
-            } else if (type === 'polygon') {
-                const latlngs = layer.getLatLngs()[0].map(latlng => [latlng.lat, latlng.lng]);
-                layer.bindPopup(`
-                    <b>Polygon</b><br>
-                    Area: ${L.GeometryUtil.geodesicArea(latlngs).toFixed(2)} sq meters<br>
-                    <button class="btn btn-sm btn-primary mt-2 edit-feature" data-id="${layer._id}">Edit Details</button>
-                `);
-                
-                // Save to database
-                db.mapData.polygons.push({
-                    id: layer._id,
-                    points: latlngs,
-                    title: 'New Polygon',
-                    description: '',
-                    type: 'polygon'
-                });
-            } else if (type === 'polyline') {
-                const latlngs = layer.getLatLngs().map(latlng => [latlng.lat, latlng.lng]);
-                layer.bindPopup(`
-                    <b>Polyline</b><br>
-                    Length: ${L.GeometryUtil.length(latlngs).toFixed(2)} meters<br>
-                    <button class="btn btn-sm btn-primary mt-2 edit-feature" data-id="${layer._id}">Edit Details</button>
-                `);
-                
-                // Save to database
-                db.mapData.polylines.push({
-                    id: layer._id,
-                    points: latlngs,
-                    title: 'New Polyline',
-                    description: '',
-                    type: 'polyline'
-                });
-            }
-            
-            drawnItems.addLayer(layer);
-            saveData();
-            showToast('Success', 'Map feature added successfully');
-        });
-        
-        map.on(L.Draw.Event.EDITED, function (e) {
-            const layers = e.layers;
-            layers.eachLayer(function(layer) {
-                // Update database with edited layer
-                if (layer instanceof L.Marker) {
-                    const marker = db.mapData.markers.find(m => m.id === layer._id);
-                    if (marker) {
-                        marker.lat = layer.getLatLng().lat;
-                        marker.lng = layer.getLatLng().lng;
-                    }
-                } else if (layer instanceof L.Polygon) {
-                    const polygon = db.mapData.polygons.find(p => p.id === layer._id);
-                    if (polygon) {
-                        polygon.points = layer.getLatLngs()[0].map(latlng => [latlng.lat, latlng.lng]);
-                    }
-                } else if (layer instanceof L.Polyline) {
-                    const polyline = db.mapData.polylines.find(p => p.id === layer._id);
-                    if (polyline) {
-                        polyline.points = layer.getLatLngs().map(latlng => [latlng.lat, latlng.lng]);
-                    }
-                }
-            });
-            saveData();
-            showToast('Success', 'Map features updated successfully');
-        });
-        
-        map.on(L.Draw.Event.DELETED, function (e) {
-            const layers = e.layers;
-            layers.eachLayer(function(layer) {
-                // Remove from database
-                if (layer instanceof L.Marker) {
-                    db.mapData.markers = db.mapData.markers.filter(m => m.id !== layer._id);
-                } else if (layer instanceof L.Polygon) {
-                    db.mapData.polygons = db.mapData.polygons.filter(p => p.id !== layer._id);
-                } else if (layer instanceof L.Polyline) {
-                    db.mapData.polylines = db.mapData.polylines.filter(p => p.id !== layer._id);
-                }
-            });
-            saveData();
-            showToast('Success', 'Map features deleted successfully');
-        });
-        
-        // Store map and drawnItems in global scope for later access
-        window.map = map;
-        window.drawnItems = drawnItems;
-        window.drawControl = drawControl;
+    });
+    
+    // Start observing the map section for class changes
+    observer.observe(mapSection, { attributes: true, attributeFilter: ['class'] });
+    
+    // Also check if map is already visible (e.g., if user navigates directly to map)
+    if (!mapSection.classList.contains('d-none')) {
+        createMap();
     }
+}
+
+// Create the actual map
+function createMap() {
+    // Check if map is already initialized
+    if (window.map) {
+        window.map.invalidateSize(); // Refresh map size if already exists
+        return;
+    }
+    
+    // Create map centered on a default location (Melbourne)
+    window.map = L.map('mapid').setView([-37.8136, 144.9631], 15);
+    
+    // Add base tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(window.map);
+    
+    // Initialize the feature group to store editable layers
+    window.drawnItems = new L.FeatureGroup();
+    window.map.addLayer(window.drawnItems);
+    
+    // Initialize the draw control and pass it the FeatureGroup of editable layers
+    window.drawControl = new L.Control.Draw({
+        edit: {
+            featureGroup: window.drawnItems
+        },
+        draw: {
+            polygon: true,
+            polyline: true,
+            marker: true,
+            circle: false,
+            rectangle: false,
+            circlemarker: false
+        }
+    });
+    window.map.addControl(window.drawControl);
+    
+    // Add sample data to map
+    addMapSampleData(window.map, window.drawnItems);
+    
+    // Event listeners for drawing actions
+    window.map.on(L.Draw.Event.CREATED, function (e) {
+        const type = e.layerType;
+        const layer = e.layer;
+        
+        // Assign an ID to the layer
+        layer._id = generateId();
+        
+        // Add popup with layer details
+        if (type === 'marker') {
+            layer.bindPopup(`
+                <b>Marker</b><br>
+                Latitude: ${layer.getLatLng().lat.toFixed(6)}<br>
+                Longitude: ${layer.getLatLng().lng.toFixed(6)}<br>
+                <button class="btn btn-sm btn-primary mt-2 edit-feature" data-id="${layer._id}">Edit Details</button>
+            `);
+            
+            // Save to database
+            db.mapData.markers.push({
+                id: layer._id,
+                lat: layer.getLatLng().lat,
+                lng: layer.getLatLng().lng,
+                title: 'New Marker',
+                description: '',
+                type: 'marker'
+            });
+        } else if (type === 'polygon') {
+            const latlngs = layer.getLatLngs()[0].map(latlng => [latlng.lat, latlng.lng]);
+            layer.bindPopup(`
+                <b>Polygon</b><br>
+                Area: ${L.GeometryUtil.geodesicArea(latlngs).toFixed(2)} sq meters<br>
+                <button class="btn btn-sm btn-primary mt-2 edit-feature" data-id="${layer._id}">Edit Details</button>
+            `);
+            
+            // Save to database
+            db.mapData.polygons.push({
+                id: layer._id,
+                points: latlngs,
+                title: 'New Polygon',
+                description: '',
+                type: 'polygon'
+            });
+        } else if (type === 'polyline') {
+            const latlngs = layer.getLatLngs().map(latlng => [latlng.lat, latlng.lng]);
+            layer.bindPopup(`
+                <b>Polyline</b><br>
+                Length: ${L.GeometryUtil.length(latlngs).toFixed(2)} meters<br>
+                <button class="btn btn-sm btn-primary mt-2 edit-feature" data-id="${layer._id}">Edit Details</button>
+            `);
+            
+            // Save to database
+            db.mapData.polylines.push({
+                id: layer._id,
+                points: latlngs,
+                title: 'New Polyline',
+                description: '',
+                type: 'polyline'
+            });
+        }
+        
+        window.drawnItems.addLayer(layer);
+        saveData();
+        showToast('Success', 'Map feature added successfully');
+    });
+    
+    window.map.on(L.Draw.Event.EDITED, function (e) {
+        const layers = e.layers;
+        layers.eachLayer(function(layer) {
+            // Update database with edited layer
+            if (layer instanceof L.Marker) {
+                const marker = db.mapData.markers.find(m => m.id === layer._id);
+                if (marker) {
+                    marker.lat = layer.getLatLng().lat;
+                    marker.lng = layer.getLatLng().lng;
+                }
+            } else if (layer instanceof L.Polygon) {
+                const polygon = db.mapData.polygons.find(p => p.id === layer._id);
+                if (polygon) {
+                    polygon.points = layer.getLatLngs()[0].map(latlng => [latlng.lat, latlng.lng]);
+                }
+            } else if (layer instanceof L.Polyline) {
+                const polyline = db.mapData.polylines.find(p => p.id === layer._id);
+                if (polyline) {
+                    polyline.points = layer.getLatLngs().map(latlng => [latlng.lat, latlng.lng]);
+                }
+            }
+        });
+        saveData();
+        showToast('Success', 'Map features updated successfully');
+    });
+    
+    window.map.on(L.Draw.Event.DELETED, function (e) {
+        const layers = e.layers;
+        layers.eachLayer(function(layer) {
+            // Remove from database
+            if (layer instanceof L.Marker) {
+                db.mapData.markers = db.mapData.markers.filter(m => m.id !== layer._id);
+            } else if (layer instanceof L.Polygon) {
+                db.mapData.polygons = db.mapData.polygons.filter(p => p.id !== layer._id);
+            } else if (layer instanceof L.Polyline) {
+                db.mapData.polylines = db.mapData.polylines.filter(p => p.id !== layer._id);
+            }
+        });
+        saveData();
+        showToast('Success', 'Map features deleted successfully');
+    });
+}
 
     // Add sample data to the map
     function addMapSampleData(map, drawnItems) {
@@ -3521,233 +3547,3 @@ function getSpeciesStatusBadgeClass(status) {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Map Display Fix
-
-The issue is that the Leaflet map is being initialized when the map container is hidden (with d-none class), which prevents it from rendering properly. Here's the fix:
-
-1. Update the JavaScript Map Initialization
-
-Replace your current initMap() function with this code:
-
-```javascript
-// Initialize map
-function initMap() {
-    // Only initialize the map when the map section is shown
-    const mapSection = document.getElementById('map');
-    
-    // Create an observer to detect when the map section becomes visible
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (!mutation.target.classList.contains('d-none')) {
-                // Map section is now visible, initialize the map
-                createMap();
-                observer.disconnect(); // Stop observing once done
-            }
-        });
-    });
-    
-    // Start observing the map section for class changes
-    observer.observe(mapSection, { attributes: true, attributeFilter: ['class'] });
-    
-    // Also check if map is already visible (e.g., if user navigates directly to map)
-    if (!mapSection.classList.contains('d-none')) {
-        createMap();
-    }
-}
-
-// Create the actual map
-function createMap() {
-    // Check if map is already initialized
-    if (window.map) {
-        window.map.invalidateSize(); // Refresh map size if already exists
-        return;
-    }
-    
-    // Create map centered on a default location (Melbourne)
-    window.map = L.map('mapid').setView([-37.8136, 144.9631], 15);
-    
-    // Add base tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(window.map);
-    
-    // Initialize the feature group to store editable layers
-    window.drawnItems = new L.FeatureGroup();
-    window.map.addLayer(window.drawnItems);
-    
-    // Initialize the draw control and pass it the FeatureGroup of editable layers
-    window.drawControl = new L.Control.Draw({
-        edit: {
-            featureGroup: window.drawnItems
-        },
-        draw: {
-            polygon: true,
-            polyline: true,
-            marker: true,
-            circle: false,
-            rectangle: false,
-            circlemarker: false
-        }
-    });
-    window.map.addControl(window.drawControl);
-    
-    // Add sample data to map
-    addMapSampleData(window.map, window.drawnItems);
-    
-    // Event listeners for drawing actions
-    window.map.on(L.Draw.Event.CREATED, function (e) {
-        const type = e.layerType;
-        const layer = e.layer;
-        
-        // Assign an ID to the layer
-        layer._id = generateId();
-        
-        // Add popup with layer details
-        if (type === 'marker') {
-            layer.bindPopup(`
-                <b>Marker</b><br>
-                Latitude: ${layer.getLatLng().lat.toFixed(6)}<br>
-                Longitude: ${layer.getLatLng().lng.toFixed(6)}<br>
-                <button class="btn btn-sm btn-primary mt-2 edit-feature" data-id="${layer._id}">Edit Details</button>
-            `);
-            
-            // Save to database
-            db.mapData.markers.push({
-                id: layer._id,
-                lat: layer.getLatLng().lat,
-                lng: layer.getLatLng().lng,
-                title: 'New Marker',
-                description: '',
-                type: 'marker'
-            });
-        } else if (type === 'polygon') {
-            const latlngs = layer.getLatLngs()[0].map(latlng => [latlng.lat, latlng.lng]);
-            layer.bindPopup(`
-                <b>Polygon</b><br>
-                Area: ${L.GeometryUtil.geodesicArea(latlngs).toFixed(2)} sq meters<br>
-                <button class="btn btn-sm btn-primary mt-2 edit-feature" data-id="${layer._id}">Edit Details</button>
-            `);
-            
-            // Save to database
-            db.mapData.polygons.push({
-                id: layer._id,
-                points: latlngs,
-                title: 'New Polygon',
-                description: '',
-                type: 'polygon'
-            });
-        } else if (type === 'polyline') {
-            const latlngs = layer.getLatLngs().map(latlng => [latlng.lat, latlng.lng]);
-            layer.bindPopup(`
-                <b>Polyline</b><br>
-                Length: ${L.GeometryUtil.length(latlngs).toFixed(2)} meters<br>
-                <button class="btn btn-sm btn-primary mt-2 edit-feature" data-id="${layer._id}">Edit Details</button>
-            `);
-            
-            // Save to database
-            db.mapData.polylines.push({
-                id: layer._id,
-                points: latlngs,
-                title: 'New Polyline',
-                description: '',
-                type: 'polyline'
-            });
-        }
-        
-        window.drawnItems.addLayer(layer);
-        saveData();
-        showToast('Success', 'Map feature added successfully');
-    });
-    
-    window.map.on(L.Draw.Event.EDITED, function (e) {
-        const layers = e.layers;
-        layers.eachLayer(function(layer) {
-            // Update database with edited layer
-            if (layer instanceof L.Marker) {
-                const marker = db.mapData.markers.find(m => m.id === layer._id);
-                if (marker) {
-                    marker.lat = layer.getLatLng().lat;
-                    marker.lng = layer.getLatLng().lng;
-                }
-            } else if (layer instanceof L.Polygon) {
-                const polygon = db.mapData.polygons.find(p => p.id === layer._id);
-                if (polygon) {
-                    polygon.points = layer.getLatLngs()[0].map(latlng => [latlng.lat, latlng.lng]);
-                }
-            } else if (layer instanceof L.Polyline) {
-                const polyline = db.mapData.polylines.find(p => p.id === layer._id);
-                if (polyline) {
-                    polyline.points = layer.getLatLngs().map(latlng => [latlng.lat, latlng.lng]);
-                }
-            }
-        });
-        saveData();
-        showToast('Success', 'Map features updated successfully');
-    });
-    
-    window.map.on(L.Draw.Event.DELETED, function (e) {
-        const layers = e.layers;
-        layers.eachLayer(function(layer) {
-            // Remove from database
-            if (layer instanceof L.Marker) {
-                db.mapData.markers = db.mapData.markers.filter(m => m.id !== layer._id);
-            } else if (layer instanceof L.Polygon) {
-                db.mapData.polygons = db.mapData.polygons.filter(p => p.id !== layer._id);
-            } else if (layer instanceof L.Polyline) {
-                db.mapData.polylines = db.mapData.polylines.filter(p => p.id !== layer._id);
-            }
-        });
-        saveData();
-        showToast('Success', 'Map features deleted successfully');
-    });
-}
-```
-
-2. Update the initApp() Function
-
-In your initApp() function, change the map initialization call from the old function to the new one:
-
-```javascript
-function initApp() {
-    loadData();
-    setupEventListeners();
-    loadDashboard();
-    loadProjects();
-    loadAssessments();
-    loadSpecies();
-    loadActivities();
-    loadMonitoring();
-    loadReports();
-    loadComplianceChecklist();
-    loadSettings();
-    initMap(); // Changed from the old map initialization function
-    initCharts();
-}
-```
-
-3. Remove the Old Map Initialization Code
-
-Find and remove the old map initialization code (the original initMap() function) to avoid conflicts.
-
-This fix ensures that the Leaflet map is only initialized when the map container is visible, which resolves the display issue you were experiencing.
