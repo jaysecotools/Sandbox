@@ -5267,3 +5267,514 @@
             </div>
             <div class="row mt-3">
                 <div
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function showMonitoringDetails(monitoring) {
+    const modalBody = document.getElementById('monitoringModalBody');
+    
+    modalBody.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Date:</strong> ${formatDate(monitoring.date)}</p>
+                <p><strong>Type:</strong> ${capitalizeFirstLetter(monitoring.type)}</p>
+                <p><strong>Location:</strong> ${monitoring.location}</p>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <p><strong>Data:</strong></p>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.entries(monitoring.data).map(([key, value]) => `
+                            <tr>
+                                <td>${key}</td>
+                                <td>${value}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <p><strong>Observations:</strong></p>
+                <p>${monitoring.observations || 'No observations provided'}</p>
+            </div>
+        </div>
+        ${monitoring.images && monitoring.images.length > 0 ? `
+        <div class="row mt-3">
+            <div class="col-12">
+                <p><strong>Images:</strong></p>
+                <div class="image-preview-container">
+                    ${monitoring.images.map(img => `<img src="${img}" class="image-thumbnail" alt="Monitoring image">`).join('')}
+                </div>
+            </div>
+        </div>
+        ` : ''}
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('monitoringModal'));
+    modal.show();
+}
+
+// Other functionality
+function rescheduleActivity(activity) {
+    const newDate = prompt('Enter new date for this activity (YYYY-MM-DD):');
+    if (newDate) {
+        // Validate date format
+        if (!isValidDate(newDate)) {
+            showToast('Error', 'Invalid date format. Please use YYYY-MM-DD', 'error');
+            return;
+        }
+        
+        activity.startDate = new Date(newDate).toISOString();
+        saveData();
+        loadDashboard();
+        loadActivities();
+        showToast('Success', 'Activity rescheduled successfully');
+    }
+}
+
+function editActivity(activity) {
+    // Populate the form with activity data
+    document.getElementById('activityTitle').value = activity.title;
+    document.getElementById('activityType').value = activity.type;
+    document.getElementById('startDate').value = formatDateTimeLocal(activity.startDate);
+    document.getElementById('endDate').value = activity.endDate ? formatDateTimeLocal(activity.endDate) : '';
+    document.getElementById('activityStatus').value = activity.status;
+    document.getElementById('location').value = activity.location || '';
+    document.getElementById('assignedTo').value = activity.assignedTo || '';
+    document.getElementById('activityDescription').value = activity.description || '';
+    document.getElementById('activityNotes').value = activity.notes || '';
+    
+    // Remove the activity from the list
+    db.activities = db.activities.filter(a => a.id !== activity.id);
+    saveData();
+    
+    // Close the modal
+    bootstrap.Modal.getInstance(document.getElementById('activityModal')).hide();
+    
+    // Scroll to the form
+    document.querySelector('[data-bs-target="activities"]').click();
+    document.getElementById('activityForm').scrollIntoView();
+    
+    showToast('Info', 'Activity loaded into form for editing');
+}
+
+function saveComplianceChecklist() {
+    saveData();
+    updateCompliancePercentage();
+    showToast('Success', 'Compliance checklist saved successfully');
+}
+
+function generateComplianceReport() {
+    const completedItems = db.complianceChecklist.filter(item => item.compliant === 'Yes').length;
+    const partialItems = db.complianceChecklist.filter(item => item.compliant === 'Partial').length;
+    const totalItems = db.complianceChecklist.length;
+    const progressPercentage = Math.round(((completedItems + (partialItems * 0.5)) / totalItems) * 100);
+    
+    const nonCompliantItems = db.complianceChecklist.filter(item => item.compliant === 'No');
+    
+    let reportHTML = `
+        <h3>Compliance Report</h3>
+        <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+        <div class="alert alert-${progressPercentage >= 80 ? 'success' : progressPercentage >= 60 ? 'warning' : 'danger'}">
+            <h4>Overall Compliance: ${progressPercentage}%</h4>
+        </div>
+        
+        <h4>Compliance Breakdown</h4>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Requirement</th>
+                    <th>Status</th>
+                    <th>Evidence</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    db.complianceChecklist.forEach(item => {
+        reportHTML += `
+            <tr class="${item.compliant === 'Yes' ? 'table-success' : item.compliant === 'Partial' ? 'table-warning' : 'table-danger'}">
+                <td>${item.requirement}</td>
+                <td>${item.compliant}</td>
+                <td>${item.evidence || 'No evidence provided'}</td>
+            </tr>
+        `;
+    });
+    
+    reportHTML += `
+            </tbody>
+        </table>
+    `;
+    
+    if (nonCompliantItems.length > 0) {
+        reportHTML += `
+            <h4>Areas Needing Improvement</h4>
+            <ul>
+        `;
+        
+        nonCompliantItems.forEach(item => {
+            reportHTML += `<li>${item.requirement}</li>`;
+        });
+        
+        reportHTML += `</ul>`;
+    }
+    
+    document.getElementById('reportPreview').innerHTML = reportHTML;
+    showToast('Success', 'Compliance report generated');
+}
+
+function generateReport(type, startDate, endDate, format, includeCharts) {
+    let reportData = [];
+    let title = '';
+    
+    switch (type) {
+        case 'assessment':
+            reportData = db.assessments;
+            title = 'Site Assessments';
+            break;
+        case 'activity':
+            reportData = db.activities;
+            title = 'Activities';
+            break;
+        case 'species':
+            reportData = db.species;
+            title = 'Species';
+            break;
+        case 'monitoring':
+            reportData = db.monitoring;
+            title = 'Monitoring Data';
+            break;
+        case 'compliance':
+            reportData = db.complianceChecklist;
+            title = 'Compliance';
+            break;
+    }
+    
+    // Filter by date if provided
+    if (startDate) {
+        const start = new Date(startDate);
+        reportData = reportData.filter(item => new Date(item.date || item.startDate || item.createdAt) >= start);
+    }
+    
+    if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // End of the day
+        reportData = reportData.filter(item => new Date(item.date || item.startDate || item.createdAt) <= end);
+    }
+    
+    if (format === 'csv') {
+        exportTableToCSV(`${type}-report.csv`, reportData);
+        return;
+    }
+    
+    let reportHTML = `
+        <h3>${title} Report</h3>
+        <p><strong>Date Range:</strong> ${startDate ? formatDate(startDate) : 'All dates'} - ${endDate ? formatDate(endDate) : 'All dates'}</p>
+        <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+        <p><strong>Records:</strong> ${reportData.length}</p>
+    `;
+    
+    if (includeCharts && reportData.length > 0) {
+        // Add a simple chart based on report type
+        if (type === 'assessment') {
+            const healthCounts = {
+                excellent: 0,
+                good: 0,
+                fair: 0,
+                poor: 0,
+                degraded: 0
+            };
+            
+            reportData.forEach(assessment => {
+                if (healthCounts.hasOwnProperty(assessment.health)) {
+                    healthCounts[assessment.health]++;
+                }
+            });
+            
+            reportHTML += `
+                <h4>Health Status Distribution</h4>
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="reportChart"></canvas>
+                </div>
+            `;
+        }
+    }
+    
+    // Add data table
+    reportHTML += `<h4>Data</h4>`;
+    
+    if (reportData.length === 0) {
+        reportHTML += `<p>No data found for the selected criteria.</p>`;
+    } else {
+        reportHTML += `<div class="table-responsive"><table class="table table-striped table-sm">`;
+        
+        // Table headers
+        reportHTML += `<thead><tr>`;
+        Object.keys(reportData[0]).forEach(key => {
+            if (key !== 'id' && key !== 'createdAt' && key !== 'images') {
+                reportHTML += `<th>${capitalizeFirstLetter(key)}</th>`;
+            }
+        });
+        reportHTML += `</tr></thead>`;
+        
+        // Table body
+        reportHTML += `<tbody>`;
+        reportData.forEach(item => {
+            reportHTML += `<tr>`;
+            Object.entries(item).forEach(([key, value]) => {
+                if (key !== 'id' && key !== 'createdAt' && key !== 'images') {
+                    if (key === 'health') {
+                        reportHTML += `<td><span class="badge ${getHealthBadgeClass(value)}">${capitalizeFirstLetter(value)}</span></td>`;
+                    } else if (key === 'status' && (type === 'activity' || type === 'species')) {
+                        if (type === 'activity') {
+                            reportHTML += `<td><span class="badge ${getStatusBadgeClass(value)}">${capitalizeFirstLetter(value)}</span></td>`;
+                        } else {
+                            reportHTML += `<td><span class="badge ${getSpeciesStatusBadgeClass(value)}">${capitalizeFirstLetter(value)}</span></td>`;
+                        }
+                    } else if (typeof value === 'object' && value !== null) {
+                        reportHTML += `<td>${Object.entries(value).map(([k, v]) => `${k}: ${v}`).join(', ')}</td>`;
+                    } else {
+                        reportHTML += `<td>${value}</td>`;
+                    }
+                }
+            });
+            reportHTML += `</tr>`;
+        });
+        reportHTML += `</tbody></table></div>`;
+    }
+    
+    document.getElementById('reportPreview').innerHTML = reportHTML;
+    
+    // Initialize chart if needed
+    if (includeCharts && reportData.length > 0 && type === 'assessment') {
+        setTimeout(() => {
+            const healthCounts = {
+                excellent: 0,
+                good: 0,
+                fair: 0,
+                poor: 0,
+                degraded: 0
+            };
+            
+            reportData.forEach(assessment => {
+                if (healthCounts.hasOwnProperty(assessment.health)) {
+                    healthCounts[assessment.health]++;
+                }
+            });
+            
+            const ctx = document.getElementById('reportChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(healthCounts).map(k => capitalizeFirstLetter(k)),
+                    datasets: [{
+                        label: 'Number of Assessments',
+                        data: Object.values(healthCounts),
+                        backgroundColor: [
+                            '#28a745',
+                            '#20c997',
+                            '#ffc107',
+                            '#fd7e14',
+                            '#dc3545'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }, 100);
+    }
+    
+    showToast('Success', `${title} report generated`);
+}
+
+function exportAllData() {
+    const dataStr = JSON.stringify(db, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'ecosystem-manager-backup.json';
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    showToast('Success', 'All data exported successfully');
+}
+
+function exportTableToCSV(filename, data) {
+    if (data.length === 0) {
+        showToast('Error', 'No data to export', 'error');
+        return;
+    }
+    
+    // Extract headers
+    const headers = Object.keys(data[0]).filter(key => key !== 'images');
+    
+    // Create CSV content
+    let csvContent = headers.join(',') + '\n';
+    
+    data.forEach(item => {
+        const row = headers.map(header => {
+            let value = item[header];
+            
+            if (typeof value === 'object' && value !== null) {
+                value = Object.entries(value).map(([k, v]) => `${k}: ${v}`).join('; ');
+            }
+            
+            // Escape quotes and wrap in quotes if contains commas
+            if (typeof value === 'string' && value.includes(',')) {
+                value = `"${value.replace(/"/g, '""')}"`;
+            }
+            
+            return value || '';
+        }).join(',');
+        
+        csvContent += row + '\n';
+    });
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast('Success', `Data exported to ${filename}`);
+}
+
+function backupDatabase() {
+    // In a real app, this would backup to a server or cloud storage
+    exportAllData(); // For now, just export the data
+    showToast('Backup Created', 'Database backup has been created successfully');
+}
+
+function resetTestData() {
+    if (confirm('Are you sure you want to reset all test data? This action cannot be undone.')) {
+        localStorage.clear();
+        location.reload();
+    }
+}
+
+// Utility functions
+function formatDate(dateString) {
+    if (!dateString) return 'Not specified';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-AU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function formatDateTime(dateString) {
+    if (!dateString) return 'Not specified';
+    const date = new Date(dateString);
+    return date.toLocaleString('en-AU', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function formatDateTimeLocal(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+function formatActivityType(type) {
+    const typeMap = {
+        'weed-control': 'Weed Control',
+        'revegetation': 'Revegetation',
+        'erosion-control': 'Erosion Control',
+        'fauna-survey': 'Fauna Survey',
+        'vegetation-survey': 'Vegetation Survey',
+        'water-quality': 'Water Quality Testing',
+        'other': 'Other'
+    };
+    return typeMap[type] || type;
+}
+
+function getStatusBadgeClass(status) {
+    const statusMap = {
+        'planned': 'bg-secondary',
+        'in-progress': 'bg-primary',
+        'completed': 'bg-success',
+        'cancelled': 'bg-danger'
+    };
+    return statusMap[status] || 'bg-secondary';
+}
+
+function getProjectStatusBadgeClass(status) {
+    const statusMap = {
+        'planning': 'bg-info',
+        'active': 'bg-success',
+        'on-hold': 'bg-warning',
+        'completed': 'bg-secondary'
+    };
+    return statusMap[status] || 'bg-secondary';
+}
+
+function getHealthBadgeClass(health) {
+    const healthMap = {
+        'excellent': 'bg-success',
+        'good': 'bg-info',
+        'fair': 'bg-warning',
+        'poor': 'bg-danger',
+        'degraded': 'bg-dark'
+    };
+    return healthMap[health] || 'bg-secondary';
+}
+
+function getSpeciesStatusBadgeClass(status) {
+    const statusMap = {
+        'native': 'bg-success',
+        'introduced': 'bg-secondary',
+        'weed': 'bg-danger',
+        'pest': 'bg-warning',
+        'endangered': 'bg-danger',
+        'vulnerable': 'bg-warning',
+        'threatened': 'bg-warning'
+    };
+    return statusMap[status] || 'bg-secondary';
+}
+
+function getActivityColor(type) {
+    const colorMap = {
+        'weed-control': '#dc3545',
+        'revegetation': '#28a745',
+        'erosion-control': '
