@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
+    <!-- Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
     <style>
         .sidebar {
             min-height: 100vh;
@@ -71,7 +73,7 @@
             font-size: 1.2rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        #map { 
+        #mapid { 
             height: 100%;
             width: 100%;
             border-radius: 5px;
@@ -146,6 +148,17 @@
         .project-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .leaflet-draw-toolbar a {
+            background-image: none;
+        }
+        .leaflet-draw-toolbar a:first-child {
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+        .leaflet-draw-toolbar a:last-child {
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
         }
     </style>
 </head>
@@ -2920,7 +2933,7 @@
                     <p><strong>Scientific Name:</strong> ${species.scientificName || 'Not specified'}</p>
                     <p><strong>Type:</strong> ${capitalizeFirstLetter(species.type)}</p>
                 </div>
-                <div class="col-md-6">
+                <div classcol-md-6">
                     <p><strong>Status:</strong> <span class="badge ${getSpeciesStatusBadgeClass(species.status)}">${capitalizeFirstLetter(species.status)}</span></p>
                     <p><strong>Risk Level:</strong> ${species.riskLevel ? `<span class="risk-indicator risk-${species.riskLevel}"></span>${capitalizeFirstLetter(species.riskLevel)}` : 'Not specified'}</p>
                 </div>
@@ -3128,7 +3141,7 @@
         
         db.complianceChecklist.forEach(item => {
             reportHTML += `
-                <tr class="${item.compliant === 'Yes' ? 'table-success' : item.compliant === 'Partial' ? 'table-warning' : 'table-danger'}">
+                <tr class="${item.compliant === 'Yes' ? 'table-success' : item.compliant === 'Partial' : 'table-warning' : 'table-danger'}">
                     <td>${item.requirement}</td>
                     <td>${item.compliant}</td>
                     <td>${item.evidence || 'No evidence provided'}</td>
@@ -3318,7 +3331,7 @@
                         responsive: true,
                         maintainAspectRatio: false
                     }
-                    });
+                });
             }, 100);
         }
         
