@@ -220,13 +220,13 @@
             border-left-color: var(--danger);
         }
 
-.list-view, .calendar-view {
-    display: none;
-}
+        .list-view, .calendar-view {
+            display: none;
+        }
 
-.list-view.active, .calendar-view.active {
-    display: block;
-}
+        .list-view.active, .calendar-view.active {
+            display: block;
+        }
 
         /* Toast Notification */
         .toast-container {
@@ -807,9 +807,9 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="scientificName" class="form-label">Scientific Name</label>
-                                            <input type="text" class="form-control" id="scientificName">
-                                        </div>
+                            <label for="scientificName" class="form-label">Scientific Name</label>
+                            <input type="text" class="form-control" id="scientificName">
+                        </div>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -2182,7 +2182,7 @@
                 if (monthlyData[monthKey]) {
                     monthlyData[monthKey].assessments++;
                 }
-            });
+            }
             
             // Count maintenance by month
             maintenance.forEach(item => {
@@ -2680,31 +2680,31 @@
         }
 
         // View toggle functionality
-function setupViewToggle() {
-    const viewButtons = document.querySelectorAll('.view-toggle button');
-    const listView = document.getElementById('list-view');
-    const calendarView = document.getElementById('calendar-view');
-    
-    viewButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const targetView = this.getAttribute('data-view');
+        function setupViewToggle() {
+            const viewButtons = document.querySelectorAll('.view-toggle button');
+            const listView = document.getElementById('list-view');
+            const calendarView = document.getElementById('calendar-view');
             
-            // Update button states
-            viewButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Show/hide views
-            if (targetView === 'list-view') {
-                listView.style.display = 'block';
-                calendarView.style.display = 'none';
-            } else if (targetView === 'calendar-view') {
-                listView.style.display = 'none';
-                calendarView.style.display = 'block';
-                loadCalendar();
-            }
-        });
-    });
-}
+            viewButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetView = this.getAttribute('data-view');
+                    
+                    // Update button states
+                    viewButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show/hide views
+                    if (targetView === 'list-view') {
+                        listView.classList.add('active');
+                        calendarView.classList.remove('active');
+                    } else if (targetView === 'calendar-view') {
+                        listView.classList.remove('active');
+                        calendarView.classList.add('active');
+                        loadCalendar();
+                    }
+                });
+            });
+        }
 
         // Navigation
         document.querySelectorAll('.sidebar .nav-link').forEach(link => {
@@ -2729,11 +2729,11 @@ function setupViewToggle() {
                     if (target === 'projects') loadProjects();
                     if (target === 'assessments') loadAssessments();
                     if (target === 'species') loadSpecies();
-                   if (target === 'maintenance') {
-    loadMaintenance();
-    // Reset to list view when navigating to maintenance
-    document.querySelector('[data-view="list-view"]').click();
-}
+                    if (target === 'maintenance') {
+                        loadMaintenance();
+                        // Reset to list view when navigating to maintenance
+                        document.querySelector('[data-view="list-view"]').click();
+                    }
                     if (target === 'charts') loadAnalyticsCharts();
                     if (target === 'data') {
                         loadDataSummary();
