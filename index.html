@@ -3006,3 +3006,249 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TO DO:
+
+Adding the Calendar Functionality to Your Maintenance Page
+
+I can see that you've already included the FullCalendar library and have some calendar functionality in your code, but there are a few issues preventing it from working correctly. Let me help you fix this.
+
+The Main Issues:
+
+1. The calendar container is not properly initialized
+2. The calendar view toggle functionality needs fixing
+3. The calendar events aren't being displayed correctly
+
+Here's what you need to add/fix:
+
+1. Fix the Calendar Initialization
+
+In your loadCalendar() function, you need to ensure the calendar element exists before initializing:
+
+```javascript
+function loadCalendar() {
+    const calendarEl = document.getElementById('calendar');
+    
+    // Check if calendar element exists
+    if (!calendarEl) {
+        console.error('Calendar element not found');
+        return;
+    }
+    
+    // Clear any existing calendar
+    if (calendar) {
+        calendar.destroy();
+    }
+    
+    // Initialize the calendar
+    calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: function(fetchInfo, successCallback, failureCallback) {
+            const maintenanceItems = db.getMaintenance();
+            const events = maintenanceItems.map(item => {
+                let color;
+                switch(item.priority) {
+                    case 'high': color = '#dc3545'; break;
+                    case 'medium': color = '#ffc107'; break;
+                    default: color = '#28a745';
+                }
+                
+                if (item.status === 'completed') {
+                    color = '#6c757d';
+                } else if (item.status === 'overdue') {
+                    color = '#dc3545';
+                }
+                
+                return {
+                    id: item.id,
+                    title: `${item.activity} (${getProjectName(item.projectId)})`,
+                    start: item.date,
+                    allDay: true,
+                    backgroundColor: color,
+                    borderColor: color,
+                    extendedProps: {
+                        type: item.type,
+                        priority: item.priority,
+                        status: item.status,
+                        description: item.description,
+                        projectId: item.projectId
+                    }
+                };
+            });
+            
+            successCallback(events);
+        },
+        eventClick: function(info) {
+            const event = info.event;
+            const statusClass = getMaintenanceStatusBadgeClass(event.extendedProps.status);
+            const priorityClass = getPriorityBadgeClass(event.extendedProps.priority);
+            
+            const modalContent = `
+                <p><strong>Project:</strong> ${getProjectName(event.extendedProps.projectId)}</p>
+                <p><strong>Date:</strong> ${formatDate(event.startStr)}</p>
+                <p><strong>Type:</strong> ${event.extendedProps.type.replace('-', ' ').toUpperCase()}</p>
+                <p><strong>Priority:</strong> <span class="badge ${priorityClass}">${event.extendedProps.priority.toUpperCase()}</span></p>
+                <p><strong>Status:</strong> <span class="badge ${statusClass}">${event.extendedProps.status.charAt(0).toUpperCase() + event.extendedProps.status.slice(1)}</span></p>
+                <p><strong>Description:</strong> ${event.extendedProps.description}</p>
+            `;
+            
+            // Update modal content
+            document.getElementById('modalMaintenanceTitle').textContent = event.title;
+            document.getElementById('modalMaintenanceBody').innerHTML = modalContent;
+            
+            // Show/hide complete button
+            const completeButton = document.getElementById('modalCompleteButton');
+            if (event.extendedProps.status === 'scheduled') {
+                completeButton.style.display = 'block';
+                completeButton.onclick = function() {
+                    completeMaintenance(event.id);
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('maintenanceModal'));
+                    modal.hide();
+                };
+            } else {
+                completeButton.style.display = 'none';
+            }
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('maintenanceModal'));
+            modal.show();
+        }
+    });
+    
+    calendar.render();
+}
+```
+
+2. Fix the View Toggle Function
+
+Update your setupViewToggle() function to properly handle the calendar view:
+
+```javascript
+function setupViewToggle() {
+    const viewButtons = document.querySelectorAll('.view-toggle button');
+    const listView = document.getElementById('list-view');
+    const calendarView = document.getElementById('calendar-view');
+    
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetView = this.getAttribute('data-view');
+            
+            // Update button states
+            viewButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show/hide views
+            if (targetView === 'list-view') {
+                listView.classList.add('active');
+                calendarView.classList.remove('active');
+            } else if (targetView === 'calendar-view') {
+                listView.classList.remove('active');
+                calendarView.classList.add('active');
+                // Load or refresh the calendar
+                loadCalendar();
+            }
+        });
+    });
+}
+```
+
+3. Ensure the Calendar is Loaded When Navigating to Maintenance
+
+Update the navigation handler to load the calendar when the maintenance section is accessed:
+
+```javascript
+// Inside your navigation event listener
+if (target === 'maintenance') {
+    loadMaintenance();
+    // Reset to list view when navigating to maintenance
+    document.querySelector('[data-view="list-view"]').click();
+    // Also make sure the calendar is available if needed
+    setTimeout(() => {
+        if (document.getElementById('calendar-view').classList.contains('active')) {
+            loadCalendar();
+        }
+    }, 100);
+}
+```
+
+4. Add CSS for Calendar Customization
+
+Make sure your calendar customization CSS is included:
+
+```css
+/* Calendar customization */
+.fc-event {
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    padding: 2px 4px;
+}
+
+.fc-daygrid-event-dot {
+    display: none;
+}
+
+.fc-event-title {
+    font-weight: 500;
+}
+
+.fc-toolbar-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.fc-button {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: white !important;
+}
+
+.fc-button:hover {
+    background-color: var(--accent-light) !important;
+    border-color: var(--accent-light) !important;
+}
+
+.fc-button-active {
+    background-color: var(--secondary) !important;
+    border-color: var(--secondary) !important;
+}
+```
+
+5. Initialize the Calendar on Page Load
+
+Make sure the calendar is available when the maintenance page is first loaded by calling loadCalendar() when the maintenance section becomes active.
+
+Complete Implementation:
+
+Add these fixes to your existing code. The key changes are:
+
+1. Proper calendar initialization with error checking
+2. Fixed view toggle functionality
+3. Ensuring the calendar loads when the maintenance section is accessed
+4. Added appropriate CSS styling for the calendar
+
+After implementing these changes, your calendar should appear and function correctly in the maintenance page. The calendar will display maintenance activities as events with different colors based on priority and status, and clicking on an event will show a modal with details.
+
+Let me know if you need any clarification or have additional questions!
