@@ -734,8 +734,8 @@
                                     <tbody id="assessments-table">
                                         <!-- Assessments will be loaded here -->
                                         <tr>
-                                            <td colspan="5" class="text-center">No assessments recorded</td>
-                                        </tr>
+                                                    <td colspan="5" class="text-center">No assessments recorded</td>
+                                                </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -829,8 +829,8 @@
                                     <tbody id="species-table">
                                         <!-- Species will be loaded here -->
                                         <tr>
-                                            <td colspan="6" class="text-center">No species recorded</td>
-                                        </tr>
+                                                    <td colspan="6" class="text-center">No species recorded</td>
+                                                </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -1026,7 +1026,7 @@
                                     <label for="maintenanceDescription" class="form-label">Description *</label>
                                     <textarea class="form-control" id="maintenanceDescription" rows="3" required></textarea>
                                 </div>
-                                <button type="submit" class="btn btn-primary">Schedule Activity</button>
+                                <button type="submit", class="btn btn-primary">Schedule Activity</button>
                             </form>
                         </div>
                     </div>
@@ -1326,7 +1326,7 @@
             
             deleteAssessment: function(id) {
                 try {
-                    let assessments = this.getAssessments();
+                    let assessments = db.getAssessments();
                     assessments = assessments.filter(a => a.id !== id);
                     localStorage.setItem('assessments', JSON.stringify(assessments));
                     return true;
@@ -1363,7 +1363,7 @@
             
             deleteSpecies: function(id) {
                 try {
-                    let allSpecies = this.getSpecies();
+                    let allSpecies = db.getSpecies();
                     allSpecies = allSpecies.filter(s => s.id !== id);
                     localStorage.setItem('species', JSON.stringify(allSpecies));
                     return true;
@@ -1965,7 +1965,7 @@
                         data: Object.values(speciesTypeData),
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.8)',
-                            'rgba(54, 162, 235, 0.8)
+                            'rgba(54, 162, 235, 0.8)',
                             'rgba(255, 206, 86, 0.8)',
                             'rgba(153, 102, 255, 0.8)',
                             'rgba(255, 159, 64, 0.8)'
@@ -2279,6 +2279,8 @@
                     }
                 }
             });
+            
+
             
             // Maintenance Type Chart for Analytics
             const maintenanceTypeData = {
