@@ -596,25 +596,25 @@
                     updatedData.waterQuality += 1;
                     updatedData.budget -= choice.cost * costMultiplier;
                     break;
-                case "observe_wildlife":
-                    // Random chance to discover new wildlife based on biodiversity
-                    if (Math.random() < updatedData.biodiversityIndex / 100 && 
-                        updatedData.wildlifeObserved.length < Object.keys(tasmaniaWildlife).length) {
-                        const possibleNewSpecies = Object.keys(tasmaniaWildlife).filter(
-                            species => !updatedData.wildlifeObserved.includes(species) && 
-                            tasmaniaWildlife[species].habitat === locationData.biome
-                        );
-                        if (possibleNewSpecies.length > 0) {
-                            const newSpecies = possibleNewSpecies[Math.floor(Math.random() * possibleNewSpecies.length)];
-                            updatedData.wildlifeObserved.push(newSpecies);
-                            updatedData.biodiversityIndex += 2;
-                            
-                            // Add notification to story log
-                            updatedData.storyLog.push(`🦘 You discovered a ${tasmaniaWildlife[newSpecies].name}!`);
-                        }
-                    }
-                    updatedData.ecosystemHealth += 1;
-                    break;
+// ... inside updateEcosystem, in the "observe_wildlife" case ...
+case "observe_wildlife":
+    // Improved: Allow "forest" species in forest biomes, "varied" everywhere
+    const possibleNewSpecies = Object.keys(tasmaniaWildlife).filter(species => {
+        if (updatedData.wildlifeObserved.includes(species)) return false;
+        const habitat = tasmaniaWildlife[species].habitat;
+        if (habitat === "varied") return true;
+        if (habitat === "forest" && locationData.biome.includes("forest")) return true;
+        return habitat === locationData.biome;
+    });
+    if (Math.random() < updatedData.biodiversityIndex / 100 && possibleNewSpecies.length > 0) {
+        const newSpecies = possibleNewSpecies[Math.floor(Math.random() * possibleNewSpecies.length)];
+        updatedData.wildlifeObserved.push(newSpecies);
+        updatedData.biodiversityIndex += 2;
+        if (!updatedData.storyLog) updatedData.storyLog = [];
+        updatedData.storyLog.push(`🦘 You discovered a ${tasmaniaWildlife[newSpecies].name}!`);
+    }
+    updatedData.ecosystemHealth += 1;
+    break;
                 case "explore":
                     // Explore new locations
                     const unexploredLocations = Object.keys(locations).filter(
