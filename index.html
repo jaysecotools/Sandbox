@@ -960,10 +960,10 @@ if (
             if (budget >= 100 * costMultiplier) {
                 specialChoices.push({ id: "plant_trees", text: "Plant native trees", cost: 100, time: 2, className: "tree-planting-action" });
             }
-            
-            // Add location-specific actions
-            if (locationsVisited.includes('macquarie_harbor')) {
-                specialChoices.push({ id: "check_harbour", text: "Monitor harbour health", cost: 0, time: 1, className: "water-quality-action" });
+
+                // Only show harbour actions if currently at Macquarie Harbor
+if (currentLocation === 'macquarie_harbor') {
+    specialChoices.push({ id: "check_harbour", text: "Monitor harbour health", cost: 0, time: 1, className: "water-quality-action" });
             }
             
             // Add fundraising and volunteer actions based on reputation
