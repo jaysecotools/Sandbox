@@ -2231,16 +2231,8 @@ Try it yourself at: ${window.location.href}`;
             );
         }
 
-        // Render the app
-        const appContainer = document.getElementById('root');
-        if (ReactDOM.createRoot) {
-            // React 18+
-            const root = ReactDOM.createRoot(appContainer);
-            root.render(<EcoQuest />);
-        } else {
-            // React 17 and earlier
-            ReactDOM.render(<EcoQuest />, appContainer);
-        }
+// Render the app - SIMPLIFIED VERSION
+ReactDOM.render(<EcoQuest />, document.getElementById('root'));
     </script>
 </body>
 </html>
