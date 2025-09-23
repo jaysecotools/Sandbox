@@ -2231,8 +2231,20 @@ Try it yourself at: ${window.location.href}`;
             );
         }
 
-// Render the app - SIMPLIFIED VERSION
-ReactDOM.render(<EcoQuest />, document.getElementById('root'));
+// Render the app - ALTERNATIVE FIX
+const appContainer = document.getElementById('root');
+try {
+    // Try React 18 approach first
+    if (ReactDOM.createRoot) {
+        const root = ReactDOM.createRoot(appContainer);
+        root.render(<EcoQuest />);
+    } else {
+        throw new Error('Use React 17 method');
+    }
+} catch (error) {
+    // Fallback to React 17 method
+    ReactDOM.render(<EcoQuest />, appContainer);
+}
     </script>
 </body>
 </html>
